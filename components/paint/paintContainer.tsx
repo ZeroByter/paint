@@ -5,6 +5,7 @@ import CursorHandle from "./cursorHandle";
 import Location from "@shared/types/location";
 import Layer from "@shared/types/layer";
 import { randomString } from "@shared/utils";
+import LayersContainer from "./layers/layersContainer";
 
 const imageSize = 50;
 
@@ -54,14 +55,12 @@ const PaintContainer: FC = () => {
   });
 
   return (
-    <div
-      className={css.root}
-      style={styledMemo}
-      onMouseDown={handleMouseClick}
-      onMouseMove={handleMouseMove}
-    >
-      {renderLayers}
+    <div className={css.root} style={styledMemo}>
+      <div onMouseDown={handleMouseClick} onMouseMove={handleMouseMove}>
+        {renderLayers}
+      </div>
       <CursorHandle location={mouseScaledLoc} />
+      <LayersContainer layers={layers} />
     </div>
   );
 };

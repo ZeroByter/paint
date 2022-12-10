@@ -1,5 +1,4 @@
 import Head from "next/head";
-import Canvas from "../components/paint/canvas";
 import PaintContainer from "../components/paint/paintContainer";
 
 export default function Home() {

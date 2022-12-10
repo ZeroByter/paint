@@ -3,6 +3,8 @@ import { randomString } from "@shared/utils";
 class Layer {
   id: string;
 
+  name: string;
+
   width: number;
   height: number;
 
@@ -11,6 +13,8 @@ class Layer {
 
   constructor(width: number, height: number) {
     this.id = randomString();
+
+    this.name = "New Layer";
 
     this.width = width;
     this.height = height;
