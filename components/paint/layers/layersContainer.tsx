@@ -1,33 +1,26 @@
 import Layer, { ActiveLayersState } from "@shared/types/layer";
+import { PaintFetcher } from "components/contexts/paint";
 import { FC, MouseEvent } from "react";
 import LayerContainer from "./layerContainer";
 import css from "./layersContainer.module.scss";
 
-type Props = {
-  layers: Layer[];
-  activeLayers: ActiveLayersState;
-  addLayer: () => void;
-  setSetActiveLayers: (activeLayers: ActiveLayersState) => void;
-};
+const LayersContainer: FC = () => {
+  const { layers, setLayers, activeLayers, setActiveLayers } = PaintFetcher();
 
-const LayersContainer: FC<Props> = ({
-  layers,
-  activeLayers,
-  addLayer,
-  setSetActiveLayers,
-}) => {
   const renderLayers = layers.map((layer) => {
     return (
       <LayerContainer
         key={layer.id}
         layer={layer}
         activeLayer={layer.id in activeLayers}
+        activeLayers={activeLayers}
+        setActiveLayers={setActiveLayers}
       />
     );
   });
 
   const handleAddLayerClick = (e: MouseEvent<HTMLButtonElement>) => {
-    addLayer();
+    setLayers([...layers, new Layer(50, 50, false)]);
   };
 
   return (

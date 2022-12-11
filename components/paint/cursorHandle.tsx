@@ -1,18 +1,17 @@
 import Location from "@shared/types/location";
+import { PaintFetcher } from "components/contexts/paint";
 import { FC, useMemo } from "react";
 import css from "./cursorHandle.module.scss";
 
-type Props = {
-  location: Location;
-};
+const CursorHandle: FC = () => {
+  const { mouseScaledLoc } = PaintFetcher();
 
-const CursorHandle: FC<Props> = ({ location }) => {
   const styledMemo = useMemo(() => {
     return {
-      left: `${location.x}px`,
-      top: `${location.y}px`,
+      left: `${mouseScaledLoc.x}px`,
+      top: `${mouseScaledLoc.y}px`,
     };
-  }, [location]);
+  }, [mouseScaledLoc]);
 
   return <div className={css.root} style={styledMemo}></div>;
 };

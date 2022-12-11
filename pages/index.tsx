@@ -1,3 +1,4 @@
+import PaintProvider from "components/contexts/paint";
 import Head from "next/head";
 import PaintContainer from "../components/paint/paintContainer";
 
@@ -9,7 +10,9 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <PaintContainer />
+      <PaintProvider>
+        <PaintContainer />
+      </PaintProvider>
     </>
   );
 }

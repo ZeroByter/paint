@@ -4,21 +4,22 @@ import css from "./paintContainer.module.scss";
 import CursorHandle from "./cursorHandle";
 import Location from "@shared/types/location";
 import Layer, { ActiveLayersState } from "@shared/types/layer";
-import { randomString } from "@shared/utils";
 import LayersContainer from "./layers/layersContainer";
+import { PaintFetcher } from "components/contexts/paint";
 
 const imageSize = 50;
 
 const PaintContainer: FC = () => {
-  const [scale, setScale] = useState(10);
-  const [mouseLoc, setMouseLoc] = useState<Location>({ x: 0, y: 0 });
-  const [mouseScaledLoc, setMouseScaledLoc] = useState<Location>({
-    x: 0,
-    y: 0,
-  });
-
-  const [layers, setLayers] = useState<Layer[]>([]);
-  const [activeLayers, setActiveLayers] = useState<ActiveLayersState>({});
+  const {
+    scale,
+    setLayers,
+    setActiveLayers,
+    setMouseLoc,
+    setMouseScaledLoc,
+    layers,
+    activeLayers,
+    mouseLoc,
+  } = PaintFetcher();
 
   useEffect(() => {
     const newLayers: Layer[] = [];
@@ -49,10 +50,6 @@ const PaintContainer: FC = () => {
     }
   };
 
-  const handleAddLayer = () => {
-    setLayers([...layers, new Layer(50, 50, false)]);
-  };
-
   const styledMemo = useMemo(() => {
     return { height: `${imageSize * scale}px` };
   }, [scale]);
@@ -66,13 +63,8 @@ const PaintContainer: FC = () => {
       <div onMouseDown={handleMouseClick} onMouseMove={handleMouseMove}>
         {renderLayers}
       </div>
-      <CursorHandle location={mouseScaledLoc} />
-      <LayersContainer
-        layers={layers}
-        activeLayers={activeLayers}
-        addLayer={handleAddLayer}
-        setSetActiveLayers={setActiveLayers}
-      />
+      <CursorHandle />
+      <LayersContainer />
     </div>
   );
 };
