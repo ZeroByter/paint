@@ -3,7 +3,7 @@ import Canvas from "./canvas";
 import css from "./paintContainer.module.scss";
 import CursorHandle from "./cursorHandle";
 import Location from "@shared/types/location";
-import Layer from "@shared/types/layer";
+import Layer, { ActiveLayersState } from "@shared/types/layer";
 import { randomString } from "@shared/utils";
 import LayersContainer from "./layers/layersContainer";
 
@@ -18,15 +18,18 @@ const PaintContainer: FC = () => {
   });
 
   const [layers, setLayers] = useState<Layer[]>([]);
-  const [activeLayers, setActiveLayers] = useState<number[]>([]);
+  const [activeLayers, setActiveLayers] = useState<ActiveLayersState>({});
 
   useEffect(() => {
     const newLayers: Layer[] = [];
 
-    newLayers.push(new Layer(50, 50));
+    newLayers.push(new Layer(50, 50, true));
 
     setLayers(newLayers);
-    setActiveLayers([0]);
+
+    const newSelectedLayers: ActiveLayersState = {};
+    newSelectedLayers[newLayers[0].id] = null;
+    setActiveLayers(newSelectedLayers);
   }, []);
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
@@ -38,12 +41,16 @@ const PaintContainer: FC = () => {
   };
 
   const handleMouseClick = (e: MouseEvent<HTMLDivElement>) => {
-    for (const activeLayerIndex of activeLayers) {
-      const activeLayer = layers[activeLayerIndex];
+    for (const layer of layers) {
+      if (!(layer.id in activeLayers)) continue;
 
-      activeLayer.setPixelData(mouseLoc.x, mouseLoc.y, 255, 0, 0, 255);
-      activeLayer.updatePixels();
+      layer.setPixelData(mouseLoc.x, mouseLoc.y, 255, 0, 0, 255);
+      layer.updatePixels();
     }
+  };
+
+  const handleAddLayer = () => {
+    setLayers([...layers, new Layer(50, 50, false)]);
   };
 
   const styledMemo = useMemo(() => {
@@ -60,7 +67,12 @@ const PaintContainer: FC = () => {
         {renderLayers}
       </div>
       <CursorHandle location={mouseScaledLoc} />
-      <LayersContainer layers={layers} />
+      <LayersContainer
+        layers={layers}
+        activeLayers={activeLayers}
+        addLayer={handleAddLayer}
+        setSetActiveLayers={setActiveLayers}
+      />
     </div>
   );
 };

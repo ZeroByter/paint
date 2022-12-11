@@ -11,16 +11,16 @@ class Layer {
   pixels: Uint8ClampedArray;
   pixelsId: string;
 
-  constructor(width: number, height: number) {
+  constructor(width: number, height: number, initial: boolean) {
     this.id = randomString();
 
-    this.name = "New Layer";
+    this.name = initial ? "Background" : "Layer #";
 
     this.width = width;
     this.height = height;
 
     this.pixels = new Uint8ClampedArray(50 * 50 * 4);
-    this.pixels.fill(255);
+    this.pixels.fill(initial ? 255 : 0);
 
     this.pixelsId = this.id;
   }
@@ -53,5 +53,7 @@ class Layer {
     this.pixelsId = randomString();
   }
 }
+
+export type ActiveLayersState = { [id: string]: null };
 
 export default Layer;
