@@ -1,16 +1,17 @@
-import { FC, MouseEvent, useEffect, useMemo, useState } from "react";
+import { FC, MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import Canvas from "./canvas";
 import css from "./paintContainer.module.scss";
 import CursorHandle from "./cursorHandle";
-import Location from "@shared/types/location";
 import Layer, { ActiveLayersState } from "@shared/types/layer";
 import LayersContainer from "./layers/layersContainer";
 import { PaintFetcher } from "components/contexts/paint";
 
-const imageSize = 50;
-
 const PaintContainer: FC = () => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
   const {
+    width,
+    height,
     scale,
     setLayers,
     setActiveLayers,
@@ -24,7 +25,7 @@ const PaintContainer: FC = () => {
   useEffect(() => {
     const newLayers: Layer[] = [];
 
-    newLayers.push(new Layer(50, 50, true));
+    newLayers.push(new Layer(width, height, true));
 
     setLayers(newLayers);
 
@@ -35,9 +36,18 @@ const PaintContainer: FC = () => {
   }, []);
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    const offset = { x: 0, y: 0 };
+
+    if (containerRef.current) {
+      const container = containerRef.current;
+      const rect = container.getBoundingClientRect();
+      offset.x = rect.x;
+      offset.y = rect.y;
+    }
+
     setMouseLoc({
-      x: Math.floor(e.clientX / scale),
-      y: Math.floor(e.clientY / scale),
+      x: Math.floor((e.clientX - offset.x) / scale),
+      y: Math.floor((e.clientY - offset.y) / scale),
     });
     setMouseScaledLoc({ x: mouseLoc.x * scale, y: mouseLoc.y * scale });
   };
@@ -52,15 +62,15 @@ const PaintContainer: FC = () => {
   };
 
   const styledMemo = useMemo(() => {
-    return { height: `${imageSize * scale}px` };
-  }, [scale]);
+    return { width: `${width * scale}px`, height: `${height * scale}px` };
+  }, [width, height, scale]);
 
   const renderLayers = layers.map((layer) => {
     return <Canvas key={layer.id} layer={layer} />;
   });
 
   return (
-    <div className={css.root} style={styledMemo}>
+    <div className={css.root} style={styledMemo} ref={containerRef}>
       <div onMouseDown={handleMouseClick} onMouseMove={handleMouseMove}>
         {renderLayers}
       </div>

@@ -1,0 +1,11 @@
+.root {
+  position: relative;
+
+  .menuContainer {
+    background: hsl(0deg 0% 15%);
+    position: absolute;
+    top: calc(100% + 4px);
+    left: -2px;
+    padding: 2px;
+  }
+}

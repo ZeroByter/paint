@@ -5,7 +5,8 @@ import LayerContainer from "./layerContainer";
 import css from "./layersContainer.module.scss";
 
 const LayersContainer: FC = () => {
-  const { layers, setLayers, activeLayers, setActiveLayers } = PaintFetcher();
+  const { width, height, layers, setLayers, activeLayers, setActiveLayers } =
+    PaintFetcher();
 
   const renderLayers = layers.map((layer) => {
     return (
@@ -20,7 +21,7 @@ const LayersContainer: FC = () => {
   });
 
   const handleAddLayerClick = (e: MouseEvent<HTMLButtonElement>) => {
-    setLayers([...layers, new Layer(50, 50, false)]);
+    setLayers([...layers, new Layer(width, height, false)]);
   };
 
   return (

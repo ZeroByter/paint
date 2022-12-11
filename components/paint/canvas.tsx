@@ -20,7 +20,11 @@ const Canvas: FC<Props> = ({ layer }) => {
 
     ctxRef.current = ctx;
 
-    ctx.putImageData(new ImageData(layer.pixels, 50, 50), 0, 0);
+    ctx.putImageData(
+      new ImageData(layer.pixels, layer.width, layer.height),
+      0,
+      0
+    );
   }, []);
 
   useEffect(() => {
@@ -29,8 +33,12 @@ const Canvas: FC<Props> = ({ layer }) => {
     const ctx = ctxRef.current;
     if (!ctx) return;
 
-    ctx.putImageData(new ImageData(layer.pixels, 50, 50), 0, 0);
-  }, [layer.id, layer.pixels, layer.pixelsId]);
+    ctx.putImageData(
+      new ImageData(layer.pixels, layer.width, layer.height),
+      0,
+      0
+    );
+  }, [layer.id, layer.pixels, layer.pixelsId, layer.width, layer.height]);
 
   return <canvas ref={canvasRef} className={css.root}></canvas>;
 };

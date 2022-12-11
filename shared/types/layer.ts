@@ -19,7 +19,7 @@ class Layer {
     this.width = width;
     this.height = height;
 
-    this.pixels = new Uint8ClampedArray(50 * 50 * 4);
+    this.pixels = new Uint8ClampedArray(width * height * 4);
     this.pixels.fill(initial ? 255 : 0);
 
     this.pixelsId = this.id;
