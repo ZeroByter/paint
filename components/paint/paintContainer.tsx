@@ -31,6 +31,7 @@ const PaintContainer: FC = () => {
     const newSelectedLayers: ActiveLayersState = {};
     newSelectedLayers[newLayers[0].id] = null;
     setActiveLayers(newSelectedLayers);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
