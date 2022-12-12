@@ -1,10 +1,22 @@
 import PaintProvider from "components/contexts/paint";
 import ToolbarProvider from "components/contexts/toolbar";
-import ToolbarContainer from "components/toolbar/toolbarContainer";
+import ToolbarContainer, {
+  MenuItem,
+} from "components/toolbar/toolbarContainer";
 import Head from "next/head";
 import PaintContainer from "../components/paint/paintContainer";
 
 export default function Home() {
+  const toolbarMenuItems: MenuItem[] = [
+    {
+      text: "meme",
+      subItems: [
+        { text: "Load", onClick: () => {} },
+        { text: "Save", onClick: () => {} },
+      ],
+    },
+  ];
+
   return (
     <>
       <Head>
@@ -14,7 +26,7 @@ export default function Home() {
 
       <PaintProvider>
         <ToolbarProvider>
-          <ToolbarContainer />
+          <ToolbarContainer menuItems={toolbarMenuItems} />
         </ToolbarProvider>
         <PaintContainer />
       </PaintProvider>

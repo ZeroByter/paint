@@ -7,5 +7,9 @@
     top: calc(100% + 4px);
     left: -2px;
     padding: 2px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
   }
 }
