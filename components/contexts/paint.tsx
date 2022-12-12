@@ -1,5 +1,7 @@
+import { ilerp, lerp } from "@client/utils";
 import Layer, { ActiveLayersState } from "@shared/types/layer";
 import Location from "@shared/types/location";
+import { xor } from "lodash";
 import { createContext, FC, ReactNode, useContext, useState } from "react";
 
 type PaintContextType = {
@@ -8,8 +10,12 @@ type PaintContextType = {
   height: number;
   setHeight: (newHeight: number) => void;
 
+  offset: Location;
+  setOffset: (newOffset: Location) => void;
+
   scale: number;
   setScale: (newScale: number) => void;
+
   mouseLoc: Location;
   setMouseLoc: (newLoc: Location) => void;
   mouseScaledLoc: Location;
@@ -21,6 +27,8 @@ type PaintContextType = {
   setActiveLayers: (newScale: ActiveLayersState) => void;
 
   loadFromImage: (image: HTMLImageElement) => void;
+
+  getRealScale: () => number;
 };
 
 const defaultValue: PaintContextType = {
@@ -29,8 +37,12 @@ const defaultValue: PaintContextType = {
   height: 0,
   setHeight: () => {},
 
+  offset: { x: 0, y: 0 },
+  setOffset: () => {},
+
   scale: 1,
   setScale: () => {},
+
   mouseLoc: { x: 0, y: 0 },
   setMouseLoc: () => {},
   mouseScaledLoc: { x: 0, y: 0 },
@@ -42,6 +54,8 @@ const defaultValue: PaintContextType = {
   setActiveLayers: () => {},
 
   loadFromImage: () => {},
+
+  getRealScale: () => 0,
 };
 
 export const PaintContext = createContext<PaintContextType>(defaultValue);
@@ -54,7 +68,10 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const [width, setWidth] = useState(50);
   const [height, setHeight] = useState(50);
 
-  const [scale, setScale] = useState(10);
+  const [offset, setOffset] = useState<Location>({ x: 0, y: 0 });
+
+  const [scale, setScale] = useState(ilerp(0.25, 1600, 10) * 100);
+
   const [mouseLoc, setMouseLoc] = useState<Location>({ x: 0, y: 0 });
   const [mouseScaledLoc, setMouseScaledLoc] = useState<Location>({
     x: 0,
@@ -79,6 +96,10 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setScale(Math.min(b, a));
   };
 
+  const getRealScale = () => {
+    return lerp(0.25, 1600, scale / 100);
+  };
+
   return (
     <PaintContext.Provider
       value={{
@@ -86,6 +107,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
         setWidth,
         height,
         setHeight,
+        offset,
+        setOffset,
         scale,
         setScale,
         mouseLoc,
@@ -97,6 +120,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
         activeLayers,
         setActiveLayers,
         loadFromImage,
+        getRealScale,
       }}
     >
       {children}

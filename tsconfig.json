@@ -17,6 +17,7 @@
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["shared/*"],
+      "@client/*": ["client/*"],
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
