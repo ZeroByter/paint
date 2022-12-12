@@ -52,8 +52,7 @@ const PaintContainer: FC = () => {
 
   const handleScroll = useCallback(
     (e: WheelEvent) => {
-      //setScale(scale + e.deltaY / 1000);
-      setScale(0.23);
+      setScale(scale + e.deltaY / 1000);
     },
     [scale, setScale]
   );
