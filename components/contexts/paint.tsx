@@ -19,6 +19,8 @@ type PaintContextType = {
   setLayers: (newScale: Layer[]) => void;
   activeLayers: ActiveLayersState;
   setActiveLayers: (newScale: ActiveLayersState) => void;
+
+  loadFromImage: (image: HTMLImageElement) => void;
 };
 
 const defaultValue: PaintContextType = {
@@ -38,6 +40,8 @@ const defaultValue: PaintContextType = {
   setLayers: () => {},
   activeLayers: {},
   setActiveLayers: () => {},
+
+  loadFromImage: () => {},
 };
 
 export const PaintContext = createContext<PaintContextType>(defaultValue);
@@ -60,6 +64,21 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const [layers, setLayers] = useState<Layer[]>([]);
   const [activeLayers, setActiveLayers] = useState<ActiveLayersState>({});
 
+  const loadFromImage = (image: HTMLImageElement) => {
+    setWidth(image.width);
+    setHeight(image.height);
+
+    const newLayer = new Layer(image.width, image.height, true);
+    newLayer.setPixelDataFromImage(image);
+
+    setLayers([newLayer]);
+    setActiveLayers({ [newLayer.id]: null });
+
+    const a = window.innerWidth / image.width;
+    const b = (window.innerHeight - 31) / image.height; //TODO: 31 is a bad hard-wired variable, need to make this actually dynamic based on canvas's available size!
+    setScale(Math.min(b, a));
+  };
+
   return (
     <PaintContext.Provider
       value={{
@@ -77,6 +96,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
         setLayers,
         activeLayers,
         setActiveLayers,
+        loadFromImage,
       }}
     >
       {children}

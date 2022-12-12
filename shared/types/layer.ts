@@ -49,6 +49,20 @@ class Layer {
     this.pixels[index + 3] = a;
   }
 
+  setPixelDataFromImage(image: HTMLImageElement) {
+    image.crossOrigin = "anonymous";
+
+    const canvas = document.createElement("canvas");
+    canvas.width = image.width;
+    canvas.height = image.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx || canvas.width == 0 || canvas.height == 0) return;
+
+    ctx.drawImage(image, 0, 0);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    this.pixels = imageData.data;
+  }
+
   updatePixels() {
     this.pixelsId = randomString();
   }

@@ -1,4 +1,12 @@
-import { FC, MouseEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FC,
+  MouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Canvas from "./canvas";
 import css from "./paintContainer.module.scss";
 import CursorHandle from "./cursorHandle";
@@ -13,6 +21,7 @@ const PaintContainer: FC = () => {
     width,
     height,
     scale,
+    setScale,
     setLayers,
     setActiveLayers,
     setMouseLoc,
@@ -20,6 +29,7 @@ const PaintContainer: FC = () => {
     layers,
     activeLayers,
     mouseLoc,
+    loadFromImage,
   } = PaintFetcher();
 
   useEffect(() => {
@@ -32,8 +42,45 @@ const PaintContainer: FC = () => {
     const newSelectedLayers: ActiveLayersState = {};
     newSelectedLayers[newLayers[0].id] = null;
     setActiveLayers(newSelectedLayers);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    document.addEventListener("paste", handlePaste);
+
+    return () => {
+      document.removeEventListener("paste", handlePaste);
+    };
   }, []);
+
+  const handleScroll = useCallback(
+    (e: WheelEvent) => {
+      //setScale(scale + e.deltaY / 1000);
+      setScale(0.23);
+    },
+    [scale, setScale]
+  );
+
+  useEffect(() => {
+    document.addEventListener("wheel", handleScroll);
+
+    return () => {
+      document.removeEventListener("wheel", handleScroll);
+    };
+  }, [handleScroll]);
+
+  const handlePaste = (e: ClipboardEvent) => {
+    if (!e.clipboardData || e.clipboardData.files.length != 1) return; //TODO: Support multiple images? Each image to it's own layer, canvas size is of the biggest image
+
+    for (let i = 0; i < e.clipboardData.files.length; i++) {
+      const file = e.clipboardData.files[i];
+
+      if (!file.type.startsWith("image")) continue;
+
+      const image = new Image();
+      image.onload = () => {
+        loadFromImage(image);
+      };
+      image.src = window.URL.createObjectURL(file);
+    }
+  };
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     const offset = { x: 0, y: 0 };
@@ -62,7 +109,10 @@ const PaintContainer: FC = () => {
   };
 
   const styledMemo = useMemo(() => {
-    return { width: `${width * scale}px`, height: `${height * scale}px` };
+    return {
+      width: `${Math.floor(width * scale)}px`,
+      height: `${Math.floor(height * scale)}px`,
+    };
   }, [width, height, scale]);
 
   const renderLayers = layers.map((layer) => {
