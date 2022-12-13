@@ -19,6 +19,8 @@ type PaintContextType = {
 
   mouseLoc: Location;
   setMouseLoc: (newLoc: Location) => void;
+  lastMouseLoc: Location;
+  setLastMouseLoc: (newLoc: Location) => void;
   mouseScaledLoc: Location;
   setMouseScaledLoc: (newLoc: Location) => void;
 
@@ -44,7 +46,7 @@ type PaintContextType = {
     b: number,
     a: number,
     update: boolean
-  ) => void;
+  ) => Layer[];
 };
 
 const defaultValue: PaintContextType = {
@@ -61,6 +63,8 @@ const defaultValue: PaintContextType = {
 
   mouseLoc: { x: 0, y: 0 },
   setMouseLoc: () => {},
+  lastMouseLoc: { x: 0, y: 0 },
+  setLastMouseLoc: () => {},
   mouseScaledLoc: { x: 0, y: 0 },
   setMouseScaledLoc: () => {},
 
@@ -78,7 +82,9 @@ const defaultValue: PaintContextType = {
 
   getRealScale: () => 0,
 
-  setPixelColor: () => {},
+  setPixelColor: () => {
+    return [];
+  },
 };
 
 export const PaintContext = createContext<PaintContextType>(defaultValue);
@@ -95,6 +101,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
 
   const [scale, setScale] = useState(ilerp(0.25, 1600, 10));
 
+  const [lastMouseLoc, setLastMouseLoc] = useState<Location>({ x: 0, y: 0 });
   const [mouseLoc, setMouseLoc] = useState<Location>({ x: 0, y: 0 });
   const [mouseScaledLoc, setMouseScaledLoc] = useState<Location>({
     x: 0,
@@ -141,12 +148,17 @@ const PaintProvider: FC<Props> = ({ children }) => {
     a: number,
     update = false
   ) => {
+    const affectedLayers = [];
+
     for (const layer of layers) {
       if (!(layer.id in activeLayers)) continue;
 
       layer.setPixelData(x, y, r, g, b, a);
-      update && layer.updatePixels();
+      affectedLayers.push(layer);
+      if (update) layer.updatePixels();
     }
+
+    return affectedLayers;
   };
 
   return (
@@ -160,6 +172,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
         setOffset,
         scale,
         setScale,
+        lastMouseLoc,
+        setLastMouseLoc,
         mouseLoc,
         setMouseLoc,
         mouseScaledLoc,

@@ -7,11 +7,13 @@ const ColorTemplates: FC = () => {
   const renderTopColors = useMemo(() => {
     const templates = [];
 
-    templates.push(<ColorTemplate deg={0} sat={0} lig={0} />);
-    templates.push(<ColorTemplate deg={0} sat={0} />);
+    templates.push(<ColorTemplate key={0} deg={0} sat={0} lig={0} />);
+    templates.push(<ColorTemplate key={1} deg={0} sat={0} />);
 
     for (let i = 0; i < 14; i++) {
-      templates.push(<ColorTemplate deg={(i / 14) * 360} sat={100} />);
+      templates.push(
+        <ColorTemplate key={2 + i} deg={(i / 14) * 360} sat={100} />
+      );
     }
 
     return templates;
@@ -20,11 +22,13 @@ const ColorTemplates: FC = () => {
   const renderBottomColors = useMemo(() => {
     const templates = [];
 
-    templates.push(<ColorTemplate deg={0} sat={0} lig={100} />);
-    templates.push(<ColorTemplate deg={0} sat={0} lig={75} />);
+    templates.push(<ColorTemplate key={0} deg={0} sat={0} lig={100} />);
+    templates.push(<ColorTemplate key={1} deg={0} sat={0} lig={75} />);
 
     for (let i = 0; i < 14; i++) {
-      templates.push(<ColorTemplate deg={(i / 14) * 360} sat={100} lig={25} />);
+      templates.push(
+        <ColorTemplate key={2 + i} deg={(i / 14) * 360} sat={100} lig={25} />
+      );
     }
 
     return templates;
