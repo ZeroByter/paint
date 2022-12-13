@@ -11,8 +11,10 @@ const PaintToolbar: FC = () => {
   const { loadFromImage } = PaintFetcher();
 
   const handleLoadUrl = () => {
-    const url =
-      "https://cdn.pixabay.com/photo/2015/03/17/02/01/cubes-677092__480.png"; //prompt("Image URL");
+    const url = prompt(
+      "Image URL",
+      "https://cdn.pixabay.com/photo/2015/03/17/02/01/cubes-677092__480.png"
+    );
 
     if (isEmpty(url)) return;
 

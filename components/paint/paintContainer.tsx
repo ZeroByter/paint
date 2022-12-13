@@ -78,10 +78,9 @@ const PaintContainer: FC = () => {
     const realScale = getRealScale();
 
     return {
-      width: `${Math.floor(width * realScale)}px`,
-      height: `${Math.floor(height * realScale)}px`,
+      transform: `scale(${realScale})`,
     };
-  }, [width, height, getRealScale]);
+  }, [getRealScale]);
 
   const renderLayers = layers.map((layer) => {
     return <Canvas key={layer.id} layer={layer} />;
@@ -94,8 +93,8 @@ const PaintContainer: FC = () => {
           {renderLayers}
           <CursorHandle />
         </LayersContainer>
-        <LayersPanelContainer />
       </div>
+      <LayersPanelContainer />
     </RootContainer>
   );
 };
