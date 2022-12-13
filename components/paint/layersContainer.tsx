@@ -1,3 +1,4 @@
+import { ilerp, lerp } from "@client/utils";
 import Location from "@shared/types/location";
 import { PaintFetcher } from "components/contexts/paint";
 import {
@@ -21,11 +22,11 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
 
   const {
     offset,
+    lastMouseLoc,
+    setLastMouseLoc,
+    mouseLoc,
     setMouseLoc,
     setMouseScaledLoc,
-    layers,
-    activeLayers,
-    mouseLoc,
     getRealScale,
     width,
     height,
@@ -39,6 +40,7 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
 
     if (e.button == 0 || e.button == 2) {
       const useColor = e.button == 0 ? primaryColor : secondaryColor;
+
       setPixelColor(
         mouseLoc.x,
         mouseLoc.y,
@@ -63,6 +65,8 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
 
     const realScale = getRealScale();
 
+    setLastMouseLoc({ ...mouseLoc });
+
     setMouseLoc({
       x: Math.floor(
         (e.clientX -
@@ -83,15 +87,43 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
 
     if (isMouseDown && (e.buttons == 1 || e.buttons == 2)) {
       const useColor = e.buttons == 1 ? primaryColor : secondaryColor;
-      setPixelColor(
-        mouseLoc.x,
-        mouseLoc.y,
-        useColor.r,
-        useColor.g,
-        useColor.b,
-        useColor.a,
+
+      const minX = Math.min(mouseLoc.x, lastMouseLoc.x);
+      const minY = Math.min(mouseLoc.y, lastMouseLoc.y);
+      const maxX = Math.max(mouseLoc.x, lastMouseLoc.x);
+      const maxY = Math.max(mouseLoc.y, lastMouseLoc.y);
+
+      if (
+        (mouseLoc.x == lastMouseLoc.x && mouseLoc.y == lastMouseLoc.y) ||
         true
-      );
+      ) {
+        setPixelColor(
+          mouseLoc.x,
+          mouseLoc.y,
+          useColor.r,
+          useColor.g,
+          useColor.b,
+          useColor.a,
+          true
+        );
+      } else {
+        for (let y = minY; y < maxY; y++) {
+          for (let x = minX; x < maxX; x++) {
+            const roundedX = minX + Math.round(ilerp(minX, maxX, x));
+            const roundedY = minY + Math.round(ilerp(minY, maxY, y));
+
+            setPixelColor(
+              roundedX,
+              roundedY,
+              useColor.r,
+              useColor.g,
+              useColor.b,
+              useColor.a,
+              false
+            );
+          }
+        }
+      }
     }
   };
 
