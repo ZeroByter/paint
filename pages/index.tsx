@@ -16,9 +16,7 @@ export default function Home() {
       <PaintProvider>
         <div className={css.root}>
           <PaintToolbar />
-          <div className={css.paintContainer}>
-            <PaintContainer />
-          </div>
+          <PaintContainer />
         </div>
       </PaintProvider>
     </>
