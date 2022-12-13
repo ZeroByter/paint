@@ -1,10 +1,10 @@
 import Location from "@shared/types/location";
 import { PaintFetcher } from "components/contexts/paint";
-import { FC, MouseEvent, ReactElement, useState } from "react";
+import { FC, MouseEvent, ReactNode, useState } from "react";
 import css from "./rootContainer.module.scss";
 
 type Props = {
-  children: ReactElement;
+  children: ReactNode;
 };
 
 const RootContainer: FC<Props> = ({ children }) => {
@@ -19,16 +19,7 @@ const RootContainer: FC<Props> = ({ children }) => {
       y: 0,
     });
 
-  const {
-    offset,
-    setOffset,
-    setMouseLoc,
-    setMouseScaledLoc,
-    layers,
-    activeLayers,
-    mouseLoc,
-    getRealScale,
-  } = PaintFetcher();
+  const { offset, setOffset, getRealScale } = PaintFetcher();
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
     setIsMouseDown(true);
@@ -39,9 +30,15 @@ const RootContainer: FC<Props> = ({ children }) => {
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (isMouseDown) {
       if (e.buttons == 4) {
+        const realScale = getRealScale();
+
         setOffset({
-          x: mouseDragContainerPosStart.x + (e.clientX - mouseDragStart.x),
-          y: mouseDragContainerPosStart.y + (e.clientY - mouseDragStart.y),
+          x:
+            mouseDragContainerPosStart.x +
+            (e.clientX - mouseDragStart.x) / realScale,
+          y:
+            mouseDragContainerPosStart.y +
+            (e.clientY - mouseDragStart.y) / realScale,
         });
       }
     }

@@ -30,13 +30,14 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
 
   const {
     offset,
-    setOffset,
     setMouseLoc,
     setMouseScaledLoc,
     layers,
     activeLayers,
     mouseLoc,
     getRealScale,
+    width,
+    height,
   } = PaintFetcher();
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
@@ -58,8 +59,20 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
     const realScale = getRealScale();
 
     setMouseLoc({
-      x: Math.floor((e.clientX - containerOffset.x - offset.x) / realScale),
-      y: Math.floor((e.clientY - containerOffset.y - offset.y) / realScale),
+      x: Math.floor(
+        (e.clientX -
+          containerOffset.x +
+          (width * realScale) / 2 -
+          offset.x * realScale) /
+          realScale
+      ),
+      y: Math.floor(
+        (e.clientY -
+          containerOffset.y +
+          (height * realScale) / 2 -
+          offset.y * realScale) /
+          realScale
+      ),
     });
     setMouseScaledLoc({ x: mouseLoc.x * realScale, y: mouseLoc.y * realScale });
 
@@ -85,10 +98,12 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
 
   const styledContainerMemo = useMemo(() => {
     return {
+      width: `${width}px`,
+      height: `${height}px`,
       left: `${offset.x}px`,
       top: `${offset.y}px`,
     };
-  }, [offset]);
+  }, [width, height, offset]);
 
   return (
     <div
