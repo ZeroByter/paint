@@ -1,6 +1,7 @@
 import { FC } from "react";
 import css from "./colorsPanel.module.scss";
 import ColorsPreview from "./colorsPreview";
+import ColorTemplates from "./colorTemplates";
 import ColorWheel from "./colorWheel";
 
 const ColorsPanel: FC = () => {
@@ -18,7 +19,9 @@ const ColorsPanel: FC = () => {
           <ColorWheel />
         </div>
       </div>
-      <div className={css.row}>color samples...</div>
+      <div className={css.row}>
+        <ColorTemplates />
+      </div>
     </div>
   );
 };

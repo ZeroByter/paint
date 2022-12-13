@@ -1,0 +1,11 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding-top: 10px;
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
