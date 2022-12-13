@@ -70,7 +70,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
 
   const [offset, setOffset] = useState<Location>({ x: 0, y: 0 });
 
-  const [scale, setScale] = useState(ilerp(0.25, 1600, 10) * 100);
+  const [scale, setScale] = useState(ilerp(0.25, 1600, 10));
 
   const [mouseLoc, setMouseLoc] = useState<Location>({ x: 0, y: 0 });
   const [mouseScaledLoc, setMouseScaledLoc] = useState<Location>({
@@ -97,7 +97,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
   };
 
   const getRealScale = () => {
-    return lerp(0.25, 1600, scale / 100);
+    return lerp(0.25, 1600, scale);
   };
 
   return (
