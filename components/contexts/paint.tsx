@@ -35,6 +35,16 @@ type PaintContextType = {
   loadFromImage: (image: HTMLImageElement) => void;
 
   getRealScale: () => number;
+
+  setPixelColor: (
+    x: number,
+    y: number,
+    r: number,
+    g: number,
+    b: number,
+    a: number,
+    update: boolean
+  ) => void;
 };
 
 const defaultValue: PaintContextType = {
@@ -67,6 +77,8 @@ const defaultValue: PaintContextType = {
   loadFromImage: () => {},
 
   getRealScale: () => 0,
+
+  setPixelColor: () => {},
 };
 
 export const PaintContext = createContext<PaintContextType>(defaultValue);
@@ -120,6 +132,23 @@ const PaintProvider: FC<Props> = ({ children }) => {
     return lerp(0.25, 1600, scale);
   };
 
+  const setPixelColor = (
+    x: number,
+    y: number,
+    r: number,
+    g: number,
+    b: number,
+    a: number,
+    update = false
+  ) => {
+    for (const layer of layers) {
+      if (!(layer.id in activeLayers)) continue;
+
+      layer.setPixelData(x, y, r, g, b, a);
+      update && layer.updatePixels();
+    }
+  };
+
   return (
     <PaintContext.Provider
       value={{
@@ -145,6 +174,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
         setSecondaryColor,
         loadFromImage,
         getRealScale,
+        setPixelColor,
       }}
     >
       {children}

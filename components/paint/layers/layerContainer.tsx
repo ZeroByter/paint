@@ -8,6 +8,7 @@ type Props = {
   activeLayer: boolean;
   activeLayers: ActiveLayersState;
   setActiveLayers: (activeLayers: ActiveLayersState) => void;
+  shiftKey: boolean;
 };
 
 const LayerContainer: FC<Props> = ({
@@ -15,15 +16,20 @@ const LayerContainer: FC<Props> = ({
   activeLayer,
   activeLayers,
   setActiveLayers,
+  shiftKey,
 }) => {
   const handleActiveLayerChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked) {
-      const newActiveLayers = _.flow([_.clone, _.set([layer.id], null)])(
-        activeLayers
-      );
-      setActiveLayers(newActiveLayers);
+    if (shiftKey) {
+      if (e.target.checked) {
+        const newActiveLayers = _.flow([_.clone, _.set([layer.id], null)])(
+          activeLayers
+        );
+        setActiveLayers(newActiveLayers);
+      } else {
+        setActiveLayers(_.omit([layer.id], activeLayers));
+      }
     } else {
-      setActiveLayers(_.omit([layer.id], activeLayers));
+      setActiveLayers({ [layer.id]: null });
     }
   };
 
