@@ -91,9 +91,11 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setLayers([newLayer]);
     setActiveLayers({ [newLayer.id]: null });
 
+    setOffset({ x: 0, y: 0 });
+
     const a = window.innerWidth / image.width;
     const b = (window.innerHeight - 31) / image.height; //TODO: 31 is a bad hard-wired variable, need to make this actually dynamic based on canvas's available size!
-    setScale(Math.min(b, a));
+    setScale(ilerp(0.25, 1600, Math.min(b, a)));
   };
 
   const getRealScale = () => {
