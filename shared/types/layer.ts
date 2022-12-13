@@ -4,6 +4,7 @@ class Layer {
   id: string;
 
   name: string;
+  order: number;
 
   width: number;
   height: number;
@@ -11,10 +12,16 @@ class Layer {
   pixels: Uint8ClampedArray;
   pixelsId: string;
 
-  constructor(width: number, height: number, initial: boolean) {
+  constructor(
+    width: number,
+    height: number,
+    initial: boolean,
+    newOrder: number = 0
+  ) {
     this.id = randomString();
 
     this.name = initial ? "Background" : "Layer #";
+    this.order = newOrder;
 
     this.width = width;
     this.height = height;

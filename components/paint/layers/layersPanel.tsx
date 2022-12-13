@@ -1,12 +1,31 @@
 import Layer from "@shared/types/layer";
 import { PaintFetcher } from "components/contexts/paint";
-import { FC, MouseEvent } from "react";
+import { FC, MouseEvent, useEffect, useState } from "react";
 import LayerContainer from "./layerContainer";
 import css from "./layersPanel.module.scss";
 
 const LayersPanel: FC = () => {
+  const [shift, setShift] = useState(false);
+
   const { width, height, layers, setLayers, activeLayers, setActiveLayers } =
     PaintFetcher();
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    setShift(e.shiftKey);
+  };
+  const handleKeyUp = (e: KeyboardEvent) => {
+    setShift(false);
+  };
 
   const renderLayers = layers.map((layer) => {
     return (
@@ -16,12 +35,18 @@ const LayersPanel: FC = () => {
         activeLayer={layer.id in activeLayers}
         activeLayers={activeLayers}
         setActiveLayers={setActiveLayers}
+        shiftKey={shift}
       />
     );
   });
 
   const handleAddLayerClick = (e: MouseEvent<HTMLButtonElement>) => {
-    setLayers([...layers, new Layer(width, height, false)]);
+    const newLayers = [
+      ...layers,
+      new Layer(width, height, false, layers.length),
+    ].sort((a, b) => a.order - b.order);
+
+    setLayers(newLayers);
   };
 
   return (

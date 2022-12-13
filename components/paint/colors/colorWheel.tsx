@@ -70,43 +70,60 @@ const ColorWheel: FC = () => {
     }
   };
 
-  const handleMouseMove = (e: MouseEvent<HTMLCanvasElement>) => {
+  const setMouseDownFalse = () => {
+    setIsMouseDown(false);
+
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (canvas) {
+      const halfSize = canvas.width / 2;
 
-    if (isMouseDown) {
-      const rect = canvas.getBoundingClientRect();
-      let newLoc = { x: e.clientX - rect.x, y: e.clientY - rect.y };
-      if (
-        distance(newLoc.x, newLoc.y, canvas.width / 2, canvas.height / 2) <
-        canvas.width / 2
-      ) {
-        setMouseLoc(newLoc);
-
-        const hsl = xyToColor(newLoc.x, newLoc.y);
-        const rgb = hslToRgb(hsl.deg / 360, hsl.sat / 100, hsl.lig / 100);
-
-        if (e.buttons == 1) {
-          setPrimaryColor(new Color(rgb[0], rgb[1], rgb[2], 255));
-        } else {
-          setSecondaryColor(new Color(rgb[0], rgb[1], rgb[2], 255));
-        }
-      } else {
-        setIsMouseDown(false);
-      }
+      setMouseLoc({ x: halfSize, y: halfSize });
     }
   };
 
-  const handleMouseDown = () => {
+  const handlePickColor = (x: number, y: number, primary: boolean) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    let newLoc = { x: x - rect.x, y: y - rect.y };
+    if (
+      distance(newLoc.x, newLoc.y, canvas.width / 2, canvas.height / 2) <
+      canvas.width / 2
+    ) {
+      setMouseLoc(newLoc);
+
+      const hsl = xyToColor(newLoc.x, newLoc.y);
+      const rgb = hslToRgb(hsl.deg / 360, hsl.sat / 100, hsl.lig / 100);
+
+      if (primary) {
+        setPrimaryColor(new Color(rgb[0], rgb[1], rgb[2], 255));
+      } else {
+        setSecondaryColor(new Color(rgb[0], rgb[1], rgb[2], 255));
+      }
+    } else {
+      setMouseDownFalse();
+    }
+  };
+
+  const handleMouseMove = (e: MouseEvent<HTMLCanvasElement>) => {
+    if (isMouseDown) {
+      handlePickColor(e.clientX, e.clientY, e.buttons == 1);
+    }
+  };
+
+  const handleMouseDown = (e: MouseEvent<HTMLCanvasElement>) => {
     setIsMouseDown(true);
+
+    handlePickColor(e.clientX, e.clientY, e.button == 0);
   };
 
   const handleMouseUp = () => {
-    setIsMouseDown(false);
+    setMouseDownFalse();
   };
 
   const handleMouseLeave = () => {
-    setIsMouseDown(false);
+    setMouseDownFalse();
   };
 
   const handleContextMenu = (e: MouseEvent<HTMLCanvasElement>) => {

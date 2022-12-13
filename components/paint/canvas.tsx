@@ -46,9 +46,17 @@ const Canvas: FC<Props> = ({ layer }) => {
     return false;
   };
 
+  const memoStyle = useMemo(
+    () => ({
+      zIndex: layer.order,
+    }),
+    [layer]
+  );
+
   return (
     <canvas
       ref={canvasRef}
+      style={memoStyle}
       className={css.root}
       onContextMenu={handleContextMenu}
     ></canvas>

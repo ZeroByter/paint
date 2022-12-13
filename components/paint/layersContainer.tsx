@@ -31,10 +31,24 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
     height,
     primaryColor,
     secondaryColor,
+    setPixelColor,
   } = PaintFetcher();
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
     setIsMouseDown(true);
+
+    if (e.button == 0 || e.button == 2) {
+      const useColor = e.button == 0 ? primaryColor : secondaryColor;
+      setPixelColor(
+        mouseLoc.x,
+        mouseLoc.y,
+        useColor.r,
+        useColor.g,
+        useColor.b,
+        useColor.a,
+        true
+      );
+    }
   };
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
@@ -67,24 +81,17 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
     });
     setMouseScaledLoc({ x: mouseLoc.x * realScale, y: mouseLoc.y * realScale });
 
-    if (isMouseDown) {
-      if (e.buttons == 1 || e.buttons == 2) {
-        for (const layer of layers) {
-          if (!(layer.id in activeLayers)) continue;
-
-          const useColor = e.buttons == 1 ? primaryColor : secondaryColor;
-
-          layer.setPixelData(
-            mouseLoc.x,
-            mouseLoc.y,
-            useColor.r,
-            useColor.g,
-            useColor.b,
-            useColor.a
-          );
-          layer.updatePixels();
-        }
-      }
+    if (isMouseDown && (e.buttons == 1 || e.buttons == 2)) {
+      const useColor = e.buttons == 1 ? primaryColor : secondaryColor;
+      setPixelColor(
+        mouseLoc.x,
+        mouseLoc.y,
+        useColor.r,
+        useColor.g,
+        useColor.b,
+        useColor.a,
+        true
+      );
     }
   };
 
