@@ -3,11 +3,12 @@ import Canvas from "./canvas";
 import css from "./paintContainer.module.scss";
 import CursorHandle from "./cursorHandle";
 import Layer, { ActiveLayersState } from "@shared/types/layer";
-import LayersPanelContainer from "./layers/layersPanelContainer";
+import LayersPanel from "./layers/layersPanel";
 import { PaintFetcher } from "components/contexts/paint";
 import { clamp } from "lodash";
 import RootContainer from "./rootContainer";
 import LayersContainer from "./layersContainer";
+import ColorsPanel from "./colors/colorsPanel";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -94,7 +95,8 @@ const PaintContainer: FC = () => {
           <CursorHandle />
         </LayersContainer>
       </div>
-      <LayersPanelContainer />
+      <LayersPanel />
+      <ColorsPanel />
     </RootContainer>
   );
 };

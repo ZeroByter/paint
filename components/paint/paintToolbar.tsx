@@ -1,4 +1,3 @@
-import Layer from "@shared/types/layer";
 import { PaintFetcher } from "components/contexts/paint";
 import ToolbarProvider from "components/contexts/toolbar";
 import ToolbarContainer, {

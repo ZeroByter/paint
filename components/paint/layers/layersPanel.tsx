@@ -1,10 +1,10 @@
-import Layer, { ActiveLayersState } from "@shared/types/layer";
+import Layer from "@shared/types/layer";
 import { PaintFetcher } from "components/contexts/paint";
 import { FC, MouseEvent } from "react";
 import LayerContainer from "./layerContainer";
-import css from "./layersPanelContainer.module.scss";
+import css from "./layersPanel.module.scss";
 
-const LayersPanelContainer: FC = () => {
+const LayersPanel: FC = () => {
   const { width, height, layers, setLayers, activeLayers, setActiveLayers } =
     PaintFetcher();
 
@@ -34,4 +34,4 @@ const LayersPanelContainer: FC = () => {
   );
 };
 
-export default LayersPanelContainer;
+export default LayersPanel;
