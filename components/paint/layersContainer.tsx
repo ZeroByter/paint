@@ -18,15 +18,6 @@ type Props = {
 
 const LayersContainer: FC<Props> = ({ children, containerRef }) => {
   const [isMouseDown, setIsMouseDown] = useState(false);
-  const [mouseDragStart, setMouseDragStart] = useState<Location>({
-    x: 0,
-    y: 0,
-  });
-  const [mouseDragContainerPosStart, setMouseDragContainerPosStart] =
-    useState<Location>({
-      x: 0,
-      y: 0,
-    });
 
   const {
     offset,
@@ -38,12 +29,12 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
     getRealScale,
     width,
     height,
+    primaryColor,
+    secondaryColor,
   } = PaintFetcher();
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
     setIsMouseDown(true);
-    setMouseDragStart({ x: e.clientX, y: e.clientY });
-    setMouseDragContainerPosStart({ ...offset });
   };
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
@@ -77,11 +68,20 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
     setMouseScaledLoc({ x: mouseLoc.x * realScale, y: mouseLoc.y * realScale });
 
     if (isMouseDown) {
-      if (e.buttons == 1) {
+      if (e.buttons == 1 || e.buttons == 2) {
         for (const layer of layers) {
           if (!(layer.id in activeLayers)) continue;
 
-          layer.setPixelData(mouseLoc.x, mouseLoc.y, 255, 0, 0, 255);
+          const useColor = e.buttons == 1 ? primaryColor : secondaryColor;
+
+          layer.setPixelData(
+            mouseLoc.x,
+            mouseLoc.y,
+            useColor.r,
+            useColor.g,
+            useColor.b,
+            useColor.a
+          );
           layer.updatePixels();
         }
       }

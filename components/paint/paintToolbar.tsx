@@ -26,7 +26,7 @@ const PaintToolbar: FC = () => {
 
   const toolbarMenuItems: MenuItem[] = [
     {
-      text: "meme",
+      text: "File",
       subItems: [
         { text: "Load (URL)", onClick: handleLoadUrl },
         { text: "Load (local)", onClick: () => {} },

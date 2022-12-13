@@ -1,5 +1,5 @@
 import Layer from "@shared/types/layer";
-import { FC, useEffect, useMemo, useRef } from "react";
+import { FC, MouseEvent, useEffect, useMemo, useRef } from "react";
 import css from "./canvas.module.scss";
 
 type Props = {
@@ -40,7 +40,19 @@ const Canvas: FC<Props> = ({ layer }) => {
     );
   }, [layer.id, layer.pixels, layer.pixelsId, layer.width, layer.height]);
 
-  return <canvas ref={canvasRef} className={css.root}></canvas>;
+  const handleContextMenu = (e: MouseEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  };
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className={css.root}
+      onContextMenu={handleContextMenu}
+    ></canvas>
+  );
 };
 
 export default Canvas;

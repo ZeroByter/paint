@@ -1,4 +1,5 @@
 import { ilerp, lerp } from "@client/utils";
+import Color from "@shared/types/color";
 import Layer, { ActiveLayersState } from "@shared/types/layer";
 import Location from "@shared/types/location";
 import { xor } from "lodash";
@@ -25,6 +26,11 @@ type PaintContextType = {
   setLayers: (newScale: Layer[]) => void;
   activeLayers: ActiveLayersState;
   setActiveLayers: (newScale: ActiveLayersState) => void;
+
+  primaryColor: Color;
+  setPrimaryColor: (newColor: Color) => void;
+  secondaryColor: Color;
+  setSecondaryColor: (newColor: Color) => void;
 
   loadFromImage: (image: HTMLImageElement) => void;
 
@@ -53,6 +59,11 @@ const defaultValue: PaintContextType = {
   activeLayers: {},
   setActiveLayers: () => {},
 
+  primaryColor: { r: 0, g: 0, b: 0, a: 0 },
+  setPrimaryColor: () => {},
+  secondaryColor: { r: 0, g: 0, b: 0, a: 0 },
+  setSecondaryColor: () => {},
+
   loadFromImage: () => {},
 
   getRealScale: () => 0,
@@ -80,6 +91,13 @@ const PaintProvider: FC<Props> = ({ children }) => {
 
   const [layers, setLayers] = useState<Layer[]>([]);
   const [activeLayers, setActiveLayers] = useState<ActiveLayersState>({});
+
+  const [primaryColor, setPrimaryColor] = useState<Color>(
+    new Color(0, 0, 0, 255)
+  );
+  const [secondaryColor, setSecondaryColor] = useState<Color>(
+    new Color(255, 255, 255, 255)
+  );
 
   const loadFromImage = (image: HTMLImageElement) => {
     setWidth(image.width);
@@ -121,6 +139,10 @@ const PaintProvider: FC<Props> = ({ children }) => {
         setLayers,
         activeLayers,
         setActiveLayers,
+        primaryColor,
+        setPrimaryColor,
+        secondaryColor,
+        setSecondaryColor,
         loadFromImage,
         getRealScale,
       }}
