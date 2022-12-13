@@ -14,6 +14,7 @@ const ColorWheel: FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const [mouseLoc, setMouseLoc] = useState<Location>({ x: 0, y: 0 });
+  const [isMouseOver, setIsMouseOver] = useState(false);
   const [isMouseDown, setIsMouseDown] = useState(false);
 
   const { setPrimaryColor, setSecondaryColor } = PaintFetcher();
@@ -110,6 +111,20 @@ const ColorWheel: FC = () => {
     if (isMouseDown) {
       handlePickColor(e.clientX, e.clientY, e.buttons == 1);
     }
+
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const rect = canvas.getBoundingClientRect();
+      setIsMouseOver(
+        distance(
+          e.clientX - rect.x,
+          e.clientY - rect.y,
+          canvas.width / 2,
+          canvas.height / 2
+        ) <
+          canvas.width / 2
+      );
+    }
   };
 
   const handleMouseDown = (e: MouseEvent<HTMLCanvasElement>) => {
@@ -124,18 +139,27 @@ const ColorWheel: FC = () => {
 
   const handleMouseLeave = () => {
     setMouseDownFalse();
+    setIsMouseOver(false);
   };
 
   const handleContextMenu = (e: MouseEvent<HTMLCanvasElement>) => {
     e.preventDefault();
   };
 
-  const memoCursorStyle = useMemo(() => {
-    return {
+  const memoCanvasStyle = useMemo(
+    () => ({
+      cursor: isMouseOver ? "pointer" : "initial",
+    }),
+    [isMouseOver]
+  );
+
+  const memoCursorStyle = useMemo(
+    () => ({
       left: `${mouseLoc.x}px`,
       top: `${mouseLoc.y}px`,
-    };
-  }, [mouseLoc]);
+    }),
+    [mouseLoc]
+  );
 
   return (
     <div className={css.root}>
@@ -146,6 +170,7 @@ const ColorWheel: FC = () => {
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
         onContextMenu={handleContextMenu}
+        style={memoCanvasStyle}
       ></canvas>
       <div style={memoCursorStyle} className={css.cursor}></div>
     </div>
