@@ -1,5 +1,6 @@
 import { FC } from "react";
 import css from "./colorsPanel.module.scss";
+import ColorsPreview from "./colorsPreview";
 import ColorWheel from "./colorWheel";
 
 const ColorsPanel: FC = () => {
@@ -10,7 +11,9 @@ const ColorsPanel: FC = () => {
         <div>expand</div>
       </div>
       <div className={css.row}>
-        <div>colors preview</div>
+        <div>
+          <ColorsPreview />
+        </div>
         <div>
           <ColorWheel />
         </div>
