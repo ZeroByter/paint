@@ -9,21 +9,16 @@ type Props = {
 
 const RootContainer: FC<Props> = ({ children }) => {
   const [isMouseDown, setIsMouseDown] = useState(false);
-  const [mouseDragStart, setMouseDragStart] = useState<Location>({
-    x: 0,
-    y: 0,
-  });
-  const [mouseDragContainerPosStart, setMouseDragContainerPosStart] =
-    useState<Location>({
-      x: 0,
-      y: 0,
-    });
+  const [mouseDragStart, setMouseDragStart] = useState(new Location());
+  const [mouseDragContainerPosStart, setMouseDragContainerPosStart] = useState(
+    new Location()
+  );
 
   const { offset, setOffset, getRealScale } = PaintFetcher();
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
     setIsMouseDown(true);
-    setMouseDragStart({ x: e.clientX, y: e.clientY });
+    setMouseDragStart(new Location(e.clientX, e.clientY));
     setMouseDragContainerPosStart({ ...offset });
   };
 
@@ -32,14 +27,15 @@ const RootContainer: FC<Props> = ({ children }) => {
       if (e.buttons == 4) {
         const realScale = getRealScale();
 
-        setOffset({
-          x:
+        setOffset(
+          new Location(
             mouseDragContainerPosStart.x +
-            (e.clientX - mouseDragStart.x) / realScale,
-          y:
+              (e.clientX - mouseDragStart.x) / realScale,
+
             mouseDragContainerPosStart.y +
-            (e.clientY - mouseDragStart.y) / realScale,
-        });
+              (e.clientY - mouseDragStart.y) / realScale
+          )
+        );
       }
     }
   };

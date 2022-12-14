@@ -1,4 +1,4 @@
-import { ilerp, lerp } from "@client/utils";
+import { getDistance, ilerp, lerp } from "@client/utils";
 import Location from "@shared/types/location";
 import { PaintFetcher } from "components/contexts/paint";
 import {
@@ -8,6 +8,7 @@ import {
   ReactElement,
   ReactNode,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import css from "./layersContainer.module.scss";
@@ -18,12 +19,12 @@ type Props = {
 };
 
 const LayersContainer: FC<Props> = ({ children, containerRef }) => {
+  const lastPaintedLocRef = useRef(new Location(-1, -1));
+
   const [isMouseDown, setIsMouseDown] = useState(false);
 
   const {
     offset,
-    lastMouseLoc,
-    setLastMouseLoc,
     mouseLoc,
     setMouseLoc,
     setMouseScaledLoc,
@@ -65,66 +66,65 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
 
     const realScale = getRealScale();
 
-    setLastMouseLoc({ ...mouseLoc });
-
-    setMouseLoc({
-      x: Math.floor(
+    const newMouseLoc = new Location(
+      Math.floor(
         (e.clientX -
           containerOffset.x +
           (width * realScale) / 2 -
           offset.x * realScale) /
           realScale
       ),
-      y: Math.floor(
+      Math.floor(
         (e.clientY -
           containerOffset.y +
           (height * realScale) / 2 -
           offset.y * realScale) /
           realScale
-      ),
-    });
-    setMouseScaledLoc({ x: mouseLoc.x * realScale, y: mouseLoc.y * realScale });
+      )
+    );
+
+    setMouseLoc(newMouseLoc);
+    setMouseScaledLoc(
+      new Location(newMouseLoc.x * realScale, newMouseLoc.y * realScale)
+    );
+
+    if (lastPaintedLocRef.current.equals(new Location(-1, -1))) {
+      lastPaintedLocRef.current = newMouseLoc.copy();
+    }
 
     if (isMouseDown && (e.buttons == 1 || e.buttons == 2)) {
       const useColor = e.buttons == 1 ? primaryColor : secondaryColor;
 
-      const minX = Math.min(mouseLoc.x, lastMouseLoc.x);
-      const minY = Math.min(mouseLoc.y, lastMouseLoc.y);
-      const maxX = Math.max(mouseLoc.x, lastMouseLoc.x);
-      const maxY = Math.max(mouseLoc.y, lastMouseLoc.y);
+      const lastMouseLoc = lastPaintedLocRef.current.copy();
 
-      if (
-        (mouseLoc.x == lastMouseLoc.x && mouseLoc.y == lastMouseLoc.y) ||
-        true
-      ) {
+      const distance = Math.ceil(
+        getDistance(
+          newMouseLoc.x,
+          newMouseLoc.y,
+          lastMouseLoc.x,
+          lastMouseLoc.y
+        )
+      );
+      const direction = lastMouseLoc.minus(newMouseLoc).normalized();
+
+      for (let i = 0; i < distance; i++) {
+        const paintLocation = newMouseLoc.add(
+          direction.add(direction.multiply(i))
+        );
+
         setPixelColor(
-          mouseLoc.x,
-          mouseLoc.y,
+          Math.round(paintLocation.x),
+          Math.round(paintLocation.y),
           useColor.r,
           useColor.g,
           useColor.b,
           useColor.a,
           true
         );
-      } else {
-        for (let y = minY; y < maxY; y++) {
-          for (let x = minX; x < maxX; x++) {
-            const roundedX = minX + Math.round(ilerp(minX, maxX, x));
-            const roundedY = minY + Math.round(ilerp(minY, maxY, y));
-
-            setPixelColor(
-              roundedX,
-              roundedY,
-              useColor.r,
-              useColor.g,
-              useColor.b,
-              useColor.a,
-              false
-            );
-          }
-        }
       }
     }
+
+    lastPaintedLocRef.current = newMouseLoc.copy();
   };
 
   const handleMouseUp = (e: MouseEvent<HTMLDivElement>) => {

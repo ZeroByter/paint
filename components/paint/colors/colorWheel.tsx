@@ -1,4 +1,4 @@
-import { ilerp } from "@client/utils";
+import { getDistance, ilerp } from "@client/utils";
 import { hslToRgb } from "@client/colorUtils";
 import Location from "@shared/types/location";
 import { FC, MouseEvent, useEffect, useMemo, useRef, useState } from "react";
@@ -6,14 +6,10 @@ import css from "./colorWheel.module.scss";
 import Color from "@shared/types/color";
 import { PaintFetcher } from "components/contexts/paint";
 
-const distance = (x1: number, y1: number, x2: number, y2: number) => {
-  return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
-};
-
 const ColorWheel: FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const [mouseLoc, setMouseLoc] = useState<Location>({ x: 0, y: 0 });
+  const [mouseLoc, setMouseLoc] = useState<Location>(new Location());
   const [isMouseOver, setIsMouseOver] = useState(false);
   const [isMouseDown, setIsMouseDown] = useState(false);
 
@@ -28,7 +24,7 @@ const ColorWheel: FC = () => {
     canvas.width = 150;
     canvas.height = 150;
 
-    setMouseLoc({ x: canvas.width / 2, y: canvas.height / 2 });
+    setMouseLoc(new Location(canvas.width / 2, canvas.height / 2));
 
     renderPaintWheel(canvas, ctx);
   }, []);
@@ -37,7 +33,7 @@ const ColorWheel: FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return { deg: 0, sat: 0, lig: 0 };
 
-    const dist = distance(x, y, canvas.width / 2, canvas.height / 2);
+    const dist = getDistance(x, y, canvas.width / 2, canvas.height / 2);
     const direction =
       -Math.atan2(x - canvas.width / 2, y - canvas.width / 2) *
         (180 / Math.PI) +
@@ -60,7 +56,7 @@ const ColorWheel: FC = () => {
 
     for (let y = 0; y < canvas.height; y++) {
       for (let x = 0; x < canvas.width; x++) {
-        const dist = distance(x, y, halfSize, halfSize);
+        const dist = getDistance(x, y, halfSize, halfSize);
         const color = xyToColor(x, y);
 
         ctx.fillStyle = `hsla(${color.deg}deg ${color.sat}% ${
@@ -78,7 +74,7 @@ const ColorWheel: FC = () => {
     if (canvas) {
       const halfSize = canvas.width / 2;
 
-      setMouseLoc({ x: halfSize, y: halfSize });
+      setMouseLoc(new Location(halfSize, halfSize));
     }
   };
 
@@ -87,9 +83,9 @@ const ColorWheel: FC = () => {
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    let newLoc = { x: x - rect.x, y: y - rect.y };
+    let newLoc = new Location(x - rect.x, y - rect.y);
     if (
-      distance(newLoc.x, newLoc.y, canvas.width / 2, canvas.height / 2) <
+      getDistance(newLoc.x, newLoc.y, canvas.width / 2, canvas.height / 2) <
       canvas.width / 2
     ) {
       setMouseLoc(newLoc);
@@ -116,7 +112,7 @@ const ColorWheel: FC = () => {
     if (canvas) {
       const rect = canvas.getBoundingClientRect();
       setIsMouseOver(
-        distance(
+        getDistance(
           e.clientX - rect.x,
           e.clientY - rect.y,
           canvas.width / 2,
