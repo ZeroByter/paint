@@ -33,8 +33,8 @@ export type PaintContextType = {
   secondaryColor: Color;
   setSecondaryColor: (newColor: Color) => void;
 
-  activeTool: Tool;
-  setActiveTool: (newTool: Tool) => void;
+  activeToolId: string;
+  setActiveToolId: (newToolId: string) => void;
 
   loadFromImage: (image: HTMLImageElement) => void;
 
@@ -80,7 +80,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
     new Color(255, 255, 255, 255)
   );
 
-  const [activeTool, setActiveTool] = useState<Tool>(Tools.pencil);
+  const [activeToolId, setActiveToolId] = useState("pencil");
 
   const loadFromImage = (image: HTMLImageElement) => {
     setWidth(image.width);
@@ -148,8 +148,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
         setPrimaryColor,
         secondaryColor,
         setSecondaryColor,
-        activeTool,
-        setActiveTool,
+        activeToolId,
+        setActiveToolId,
         loadFromImage,
         getRealScale,
         setPixelColor,

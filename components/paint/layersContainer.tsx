@@ -27,23 +27,19 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
   const context = PaintFetcher();
   const {
     offset,
-    mouseLoc,
     setMouseLoc,
     setMouseScaledLoc,
     getRealScale,
     width,
     height,
-    primaryColor,
-    secondaryColor,
-    setPixelColor,
-    activeTool,
+    activeToolId,
   } = context;
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
     setIsMouseDown(true);
 
     if (e.button == 0 || e.button == 2) {
-      activeTool.onClick(context, { button: e.button });
+      Tools[activeToolId].onClick(context, { button: e.button });
     }
   };
 
@@ -86,7 +82,7 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
     }
 
     if (isMouseDown && (e.buttons == 1 || e.buttons == 2)) {
-      activeTool.onDrag(context, {
+      Tools[activeToolId].onDrag(context, {
         buttons: e.buttons,
         accurateMouseLoc: newMouseLoc,
         lastDragLocation: lastDraggedRef.current,
