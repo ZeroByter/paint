@@ -9,6 +9,7 @@ import { clamp } from "lodash";
 import RootContainer from "./rootContainer";
 import LayersContainer from "./layersContainer";
 import ColorsPanel from "./colors/colorsPanel";
+import ToolsPanel from "./tools/toolsPanel";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -97,6 +98,7 @@ const PaintContainer: FC = () => {
       </div>
       <LayersPanel />
       <ColorsPanel />
+      <ToolsPanel />
     </RootContainer>
   );
 };
