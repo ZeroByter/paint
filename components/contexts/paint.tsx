@@ -19,8 +19,6 @@ type PaintContextType = {
 
   mouseLoc: Location;
   setMouseLoc: (newLoc: Location) => void;
-  lastMouseLoc: Location;
-  setLastMouseLoc: (newLoc: Location) => void;
   mouseScaledLoc: Location;
   setMouseScaledLoc: (newLoc: Location) => void;
 
@@ -55,17 +53,15 @@ const defaultValue: PaintContextType = {
   height: 0,
   setHeight: () => {},
 
-  offset: { x: 0, y: 0 },
+  offset: new Location(),
   setOffset: () => {},
 
   scale: 1,
   setScale: () => {},
 
-  mouseLoc: { x: 0, y: 0 },
+  mouseLoc: new Location(),
   setMouseLoc: () => {},
-  lastMouseLoc: { x: 0, y: 0 },
-  setLastMouseLoc: () => {},
-  mouseScaledLoc: { x: 0, y: 0 },
+  mouseScaledLoc: new Location(),
   setMouseScaledLoc: () => {},
 
   layers: [],
@@ -97,16 +93,12 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const [width, setWidth] = useState(50);
   const [height, setHeight] = useState(50);
 
-  const [offset, setOffset] = useState<Location>({ x: 0, y: 0 });
+  const [offset, setOffset] = useState(new Location());
 
   const [scale, setScale] = useState(ilerp(0.25, 1600, 10));
 
-  const [lastMouseLoc, setLastMouseLoc] = useState<Location>({ x: 0, y: 0 });
-  const [mouseLoc, setMouseLoc] = useState<Location>({ x: 0, y: 0 });
-  const [mouseScaledLoc, setMouseScaledLoc] = useState<Location>({
-    x: 0,
-    y: 0,
-  });
+  const [mouseLoc, setMouseLoc] = useState(new Location());
+  const [mouseScaledLoc, setMouseScaledLoc] = useState(new Location());
 
   const [layers, setLayers] = useState<Layer[]>([]);
   const [activeLayers, setActiveLayers] = useState<ActiveLayersState>({});
@@ -128,7 +120,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setLayers([newLayer]);
     setActiveLayers({ [newLayer.id]: null });
 
-    setOffset({ x: 0, y: 0 });
+    setOffset(new Location());
 
     const a = window.innerWidth / image.width;
     const b = (window.innerHeight - 31) / image.height; //TODO: 31 is a bad hard-wired variable, need to make this actually dynamic based on canvas's available size!
@@ -172,8 +164,6 @@ const PaintProvider: FC<Props> = ({ children }) => {
         setOffset,
         scale,
         setScale,
-        lastMouseLoc,
-        setLastMouseLoc,
         mouseLoc,
         setMouseLoc,
         mouseScaledLoc,
