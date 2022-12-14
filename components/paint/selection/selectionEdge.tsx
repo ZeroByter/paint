@@ -9,7 +9,7 @@ type Props = {
 const SelectionEdge: FC<Props> = ({ direction }) => {
   return (
     <div className={css.root} data-direction={direction}>
-      <SelectionNode />
+      <SelectionNode direction={direction} />
     </div>
   );
 };

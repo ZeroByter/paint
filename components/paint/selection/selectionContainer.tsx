@@ -1,15 +1,12 @@
 import { PaintFetcher } from "components/contexts/paint";
+import { SelectionFetcher } from "components/contexts/selection";
 import { FC, useMemo } from "react";
 import css from "./selectionContainer.module.scss";
 import SelectionEdge from "./selectionEdge";
 
 const SelectionContainer: FC = () => {
   const { width, height, offset, getRealScale } = PaintFetcher();
-
-  const x = 10;
-  const y = 10;
-  const w = 20;
-  const h = 20;
+  const { x, y, w, h } = SelectionFetcher();
 
   const memoStyle = useMemo(() => {
     const scale = getRealScale();
