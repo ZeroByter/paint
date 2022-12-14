@@ -11,6 +11,7 @@ import LayersContainer from "./layersContainer";
 import ColorsPanel from "./colors/colorsPanel";
 import ToolsPanel from "./tools/toolsPanel";
 import SelectionContainer from "./selection/selectionContainer";
+import SelectionProvider from "components/contexts/selection";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -88,7 +89,9 @@ const PaintContainer: FC = () => {
           {renderLayers}
           <CursorHandle />
         </LayersContainer>
-        <SelectionContainer />
+        <SelectionProvider>
+          <SelectionContainer />
+        </SelectionProvider>
       </div>
       <LayersPanel />
       <ColorsPanel />
