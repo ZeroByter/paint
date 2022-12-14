@@ -10,6 +10,7 @@ import RootContainer from "./rootContainer";
 import LayersContainer from "./layersContainer";
 import ColorsPanel from "./colors/colorsPanel";
 import ToolsPanel from "./tools/toolsPanel";
+import SelectionContainer from "./selection/selectionContainer";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -76,25 +77,18 @@ const PaintContainer: FC = () => {
     }
   };
 
-  const styledMemo = useMemo(() => {
-    const realScale = getRealScale();
-
-    return {
-      transform: `scale(${realScale})`,
-    };
-  }, [getRealScale]);
-
   const renderLayers = layers.map((layer) => {
     return <Canvas key={layer.id} layer={layer} />;
   });
 
   return (
     <RootContainer>
-      <div className={css.root} style={styledMemo} ref={containerRef}>
+      <div className={css.root} ref={containerRef}>
         <LayersContainer containerRef={containerRef}>
           {renderLayers}
           <CursorHandle />
         </LayersContainer>
+        <SelectionContainer />
       </div>
       <LayersPanel />
       <ColorsPanel />

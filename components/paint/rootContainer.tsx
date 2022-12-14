@@ -29,11 +29,14 @@ const RootContainer: FC<Props> = ({ children }) => {
 
         setOffset(
           new Location(
-            mouseDragContainerPosStart.x +
-              (e.clientX - mouseDragStart.x) / realScale,
-
-            mouseDragContainerPosStart.y +
-              (e.clientY - mouseDragStart.y) / realScale
+            Math.round(
+              mouseDragContainerPosStart.x +
+                (e.clientX - mouseDragStart.x) / realScale
+            ),
+            Math.round(
+              mouseDragContainerPosStart.y +
+                (e.clientY - mouseDragStart.y) / realScale
+            )
           )
         );
       }

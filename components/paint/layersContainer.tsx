@@ -100,6 +100,12 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
     setIsMouseDown(false);
   };
 
+  const styledRootMemo = useMemo(() => {
+    return {
+      transform: `scale(${getRealScale()})`,
+    };
+  }, [getRealScale]);
+
   const styledContainerMemo = useMemo(() => {
     return {
       width: `${width}px`,
@@ -110,15 +116,17 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
   }, [width, height, offset]);
 
   return (
-    <div
-      className={css.root}
-      style={styledContainerMemo}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
-      {children}
+    <div style={styledRootMemo}>
+      <div
+        className={css.root}
+        style={styledContainerMemo}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        {children}
+      </div>
     </div>
   );
 };
