@@ -67,17 +67,6 @@ const ColorWheel: FC = () => {
     }
   };
 
-  const setMouseDownFalse = () => {
-    setIsMouseDown(false);
-
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const halfSize = canvas.width / 2;
-
-      setMouseLoc(new Location(halfSize, halfSize));
-    }
-  };
-
   const handlePickColor = (x: number, y: number, primary: boolean) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -99,7 +88,7 @@ const ColorWheel: FC = () => {
         setSecondaryColor(new Color(rgb[0], rgb[1], rgb[2], 255));
       }
     } else {
-      setMouseDownFalse();
+      setIsMouseDown(false);
     }
   };
 
@@ -130,11 +119,11 @@ const ColorWheel: FC = () => {
   };
 
   const handleMouseUp = () => {
-    setMouseDownFalse();
+    setIsMouseDown(false);
   };
 
   const handleMouseLeave = () => {
-    setMouseDownFalse();
+    setIsMouseDown(false);
     setIsMouseOver(false);
   };
 
