@@ -4,4 +4,8 @@
   left: 4px;
   padding: 4px;
   background: hsl(0deg 0% 20%);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: 70px;
 }

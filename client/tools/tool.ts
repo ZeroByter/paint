@@ -12,11 +12,8 @@ export type OnDragArgs = {
 };
 
 class Tool {
-  id: string; //has to be the same as index of tool in tools/index.ts!
-
-  constructor(id: string) {
-    this.id = id;
-  }
+  text = "";
+  tooltip = "";
 
   onClick(state: PaintContextType, args: OnClickArgs) {}
 

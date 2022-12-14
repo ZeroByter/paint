@@ -5,7 +5,10 @@ import Tool, { OnClickArgs, OnDragArgs } from "./tool";
 
 class PencilTool extends Tool {
   constructor() {
-    super("pencil");
+    super();
+
+    this.text = "P";
+    this.tooltip = "Pencil";
   }
 
   onClick(state: PaintContextType, args: OnClickArgs): void {
@@ -37,7 +40,6 @@ class PencilTool extends Tool {
     );
 
     const direction = lastMouseLoc.minus(mouseLoc).normalized();
-    console.log(distance);
 
     for (let i = 0; i < distance; i++) {
       const paintLocation = mouseLoc.add(direction.add(direction.multiply(i)));

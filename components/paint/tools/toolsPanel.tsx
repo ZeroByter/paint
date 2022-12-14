@@ -1,15 +1,14 @@
+import Tools from "@client/tools";
 import { FC } from "react";
 import ToolButton from "./toolButton";
 import css from "./toolsPanel.module.scss";
 
 const ToolsPanel: FC = () => {
-  return (
-    <div className={css.root}>
-      {/* <ToolButton text="P" onClick={handle} />
-      <ToolButton text="S" />
-      <ToolButton text="PS" /> */}
-    </div>
-  );
+  const renderTools = Object.entries(Tools).map(([id, tool]) => {
+    return <ToolButton key={id} id={id} tool={tool} />;
+  });
+
+  return <div className={css.root}>{renderTools}</div>;
 };
 
 export default ToolsPanel;

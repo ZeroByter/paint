@@ -1,0 +1,10 @@
+.root {
+  width: calc(100% / 2 - 2px);
+  aspect-ratio: 1;
+  cursor: pointer;
+  border: 1px solid gray;
+
+  &[data-active="true"] {
+    background: hsl(240, 100%, 70%);
+  }
+}
