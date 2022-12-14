@@ -1,3 +1,4 @@
+import Tools from "@client/tools";
 import { getDistance, ilerp, lerp } from "@client/utils";
 import Location from "@shared/types/location";
 import { PaintFetcher } from "components/contexts/paint";
@@ -19,10 +20,11 @@ type Props = {
 };
 
 const LayersContainer: FC<Props> = ({ children, containerRef }) => {
-  const lastPaintedLocRef = useRef(new Location(-1, -1));
+  const lastDraggedRef = useRef(new Location(-1, -1));
 
   const [isMouseDown, setIsMouseDown] = useState(false);
 
+  const context = PaintFetcher();
   const {
     offset,
     mouseLoc,
@@ -34,23 +36,14 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
     primaryColor,
     secondaryColor,
     setPixelColor,
-  } = PaintFetcher();
+    activeTool,
+  } = context;
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
     setIsMouseDown(true);
 
     if (e.button == 0 || e.button == 2) {
-      const useColor = e.button == 0 ? primaryColor : secondaryColor;
-
-      setPixelColor(
-        mouseLoc.x,
-        mouseLoc.y,
-        useColor.r,
-        useColor.g,
-        useColor.b,
-        useColor.a,
-        true
-      );
+      activeTool.onClick(context, { button: e.button });
     }
   };
 
@@ -88,43 +81,19 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
       new Location(newMouseLoc.x * realScale, newMouseLoc.y * realScale)
     );
 
-    if (lastPaintedLocRef.current.equals(new Location(-1, -1))) {
-      lastPaintedLocRef.current = newMouseLoc.copy();
+    if (lastDraggedRef.current.equals(new Location(-1, -1))) {
+      lastDraggedRef.current = newMouseLoc.copy();
     }
 
     if (isMouseDown && (e.buttons == 1 || e.buttons == 2)) {
-      const useColor = e.buttons == 1 ? primaryColor : secondaryColor;
-
-      const lastMouseLoc = lastPaintedLocRef.current.copy();
-
-      const distance = Math.ceil(
-        getDistance(
-          newMouseLoc.x,
-          newMouseLoc.y,
-          lastMouseLoc.x,
-          lastMouseLoc.y
-        )
-      );
-      const direction = lastMouseLoc.minus(newMouseLoc).normalized();
-
-      for (let i = 0; i < distance; i++) {
-        const paintLocation = newMouseLoc.add(
-          direction.add(direction.multiply(i))
-        );
-
-        setPixelColor(
-          Math.round(paintLocation.x),
-          Math.round(paintLocation.y),
-          useColor.r,
-          useColor.g,
-          useColor.b,
-          useColor.a,
-          true
-        );
-      }
+      activeTool.onDrag(context, {
+        buttons: e.buttons,
+        accurateMouseLoc: newMouseLoc,
+        lastDragLocation: lastDraggedRef.current,
+      });
     }
 
-    lastPaintedLocRef.current = newMouseLoc.copy();
+    lastDraggedRef.current = newMouseLoc.copy();
   };
 
   const handleMouseUp = (e: MouseEvent<HTMLDivElement>) => {

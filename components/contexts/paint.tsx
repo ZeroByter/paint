@@ -1,11 +1,12 @@
+import Tools from "@client/tools";
+import Tool from "@client/tools/tool";
 import { ilerp, lerp } from "@client/utils";
 import Color from "@shared/types/color";
 import Layer, { ActiveLayersState } from "@shared/types/layer";
 import Location from "@shared/types/location";
-import { xor } from "lodash";
 import { createContext, FC, ReactNode, useContext, useState } from "react";
 
-type PaintContextType = {
+export type PaintContextType = {
   width: number;
   setWidth: (newWidth: number) => void;
   height: number;
@@ -32,6 +33,9 @@ type PaintContextType = {
   secondaryColor: Color;
   setSecondaryColor: (newColor: Color) => void;
 
+  activeTool: Tool;
+  setActiveTool: (newTool: Tool) => void;
+
   loadFromImage: (image: HTMLImageElement) => void;
 
   getRealScale: () => number;
@@ -47,43 +51,9 @@ type PaintContextType = {
   ) => Layer[];
 };
 
-const defaultValue: PaintContextType = {
-  width: 0,
-  setWidth: () => {},
-  height: 0,
-  setHeight: () => {},
-
-  offset: new Location(),
-  setOffset: () => {},
-
-  scale: 1,
-  setScale: () => {},
-
-  mouseLoc: new Location(),
-  setMouseLoc: () => {},
-  mouseScaledLoc: new Location(),
-  setMouseScaledLoc: () => {},
-
-  layers: [],
-  setLayers: () => {},
-  activeLayers: {},
-  setActiveLayers: () => {},
-
-  primaryColor: { r: 0, g: 0, b: 0, a: 0 },
-  setPrimaryColor: () => {},
-  secondaryColor: { r: 0, g: 0, b: 0, a: 0 },
-  setSecondaryColor: () => {},
-
-  loadFromImage: () => {},
-
-  getRealScale: () => 0,
-
-  setPixelColor: () => {
-    return [];
-  },
-};
-
-export const PaintContext = createContext<PaintContextType>(defaultValue);
+export const PaintContext = createContext<PaintContextType>(
+  {} as PaintContextType
+);
 
 type Props = {
   children: ReactNode;
@@ -109,6 +79,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const [secondaryColor, setSecondaryColor] = useState<Color>(
     new Color(255, 255, 255, 255)
   );
+
+  const [activeTool, setActiveTool] = useState<Tool>(Tools.pencil);
 
   const loadFromImage = (image: HTMLImageElement) => {
     setWidth(image.width);
@@ -176,6 +148,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
         setPrimaryColor,
         secondaryColor,
         setSecondaryColor,
+        activeTool,
+        setActiveTool,
         loadFromImage,
         getRealScale,
         setPixelColor,
