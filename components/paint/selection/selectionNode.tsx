@@ -15,9 +15,10 @@ import css from "./selectionNode.module.scss";
 
 type Props = {
   direction: "up" | "down" | "left" | "right";
+  isHover: (hover: boolean) => void;
 };
 
-const SelectionNode: FC<Props> = ({ direction }) => {
+const SelectionNode: FC<Props> = ({ direction, isHover }) => {
   const isMouseDownRef = useRef(false);
   const mouseStartDragMousePos = useRef(new Location());
   const mouseStartDragSelection = useRef(new Selection());
@@ -27,6 +28,12 @@ const SelectionNode: FC<Props> = ({ direction }) => {
 
   const { getRealScale, width, height, offset, selection, setSelection } =
     PaintFetcher();
+
+  const _setNodeDistance = (newDistance: number) => {
+    isHover(newDistance < 5);
+
+    setNodeDistance(newDistance);
+  };
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
@@ -123,7 +130,7 @@ const SelectionNode: FC<Props> = ({ direction }) => {
           0
         );
 
-        setNodeDistance(
+        _setNodeDistance(
           getDistance(
             e.pageX,
             e.pageY,
@@ -152,7 +159,7 @@ const SelectionNode: FC<Props> = ({ direction }) => {
           )
         );
 
-        setNodeDistance(
+        _setNodeDistance(
           getDistance(
             e.pageX,
             e.pageY,
@@ -199,7 +206,7 @@ const SelectionNode: FC<Props> = ({ direction }) => {
     () => ({
       left: `${pos.x}px`,
       top: `${pos.y}px`,
-      opacity: `${ilerp(10, 0, nodeDistance)}`,
+      opacity: `${clamp(ilerp(10, 0, nodeDistance), 0.1, 1)}`,
     }),
     [pos, nodeDistance]
   );
