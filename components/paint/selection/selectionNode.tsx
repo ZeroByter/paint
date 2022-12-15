@@ -1,9 +1,6 @@
 import { clamp, getDistance, ilerp, lerp } from "@client/utils";
 import Location from "@shared/types/location";
 import { PaintFetcher } from "components/contexts/paint";
-import SelectionProvider, {
-  SelectionFetcher,
-} from "components/contexts/selection";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import css from "./selectionNode.module.scss";
 
@@ -15,8 +12,7 @@ const SelectionNode: FC<Props> = ({ direction }) => {
   const [pos, setPos] = useState(new Location());
   const [nodeDistance, setNodeDistance] = useState(99);
 
-  const { x, y, w, h } = SelectionFetcher();
-  const { getRealScale, width, height, offset } = PaintFetcher();
+  const { getRealScale, width, height, offset, selection } = PaintFetcher();
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
@@ -29,14 +25,14 @@ const SelectionNode: FC<Props> = ({ direction }) => {
           window.innerHeight / 2 -
           (height * scale) / 2 +
           31 / 2 +
-          (direction == "down" ? h * scale : 0);
+          (direction == "down" ? selection.height * scale : 0);
 
         //take position of node and offset it by physical position inside window space
         const nodePosition = new Location(
           clamp(
-            e.pageX - (x + offset.x) * scale - windowHorSpace,
+            e.pageX - (selection.x + offset.x) * scale - windowHorSpace,
             0,
-            w * scale
+            selection.width * scale
           ),
           0
         );
@@ -45,8 +41,8 @@ const SelectionNode: FC<Props> = ({ direction }) => {
           getDistance(
             e.pageX,
             e.pageY,
-            nodePosition.x + (x + offset.x) * scale + windowHorSpace,
-            nodePosition.y + (y + offset.y) * scale + windowVerSpace
+            nodePosition.x + (selection.x + offset.x) * scale + windowHorSpace,
+            nodePosition.y + (selection.y + offset.y) * scale + windowVerSpace
           )
         );
 
@@ -56,29 +52,33 @@ const SelectionNode: FC<Props> = ({ direction }) => {
         const windowHorSpace =
           window.innerWidth / 2 -
           (width * scale) / 2 +
-          (direction == "right" ? w * scale : 0);
+          (direction == "right" ? selection.width * scale : 0);
         const windowVerSpace =
           window.innerHeight / 2 - (height * scale) / 2 + 31 / 2;
 
         //take position of node and offset it by physical position inside window space
         const nodePosition = new Location(
           0,
-          clamp(e.pageY - (y + offset.y) * scale - windowVerSpace, 0, h * scale)
+          clamp(
+            e.pageY - (selection.y + offset.y) * scale - windowVerSpace,
+            0,
+            selection.height * scale
+          )
         );
 
         setNodeDistance(
           getDistance(
             e.pageX,
             e.pageY,
-            nodePosition.x + (x + offset.x) * scale + windowHorSpace,
-            nodePosition.y + (y + offset.y) * scale + windowVerSpace
+            nodePosition.x + (selection.x + offset.x) * scale + windowHorSpace,
+            nodePosition.y + (selection.y + offset.y) * scale + windowVerSpace
           )
         );
 
         setPos(nodePosition);
       }
     },
-    [direction, getRealScale, height, offset.x, offset.y, w, h, width, x, y]
+    [direction, getRealScale, height, offset, selection, width]
   );
 
   useEffect(() => {

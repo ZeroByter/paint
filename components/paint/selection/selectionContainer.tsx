@@ -1,26 +1,96 @@
+import { clamp } from "@client/utils";
+import Location from "@shared/types/location";
 import { PaintFetcher } from "components/contexts/paint";
-import { SelectionFetcher } from "components/contexts/selection";
-import { FC, useMemo } from "react";
+import {
+  FC,
+  MouseEvent as ReactMouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import css from "./selectionContainer.module.scss";
 import SelectionEdge from "./selectionEdge";
 
 const SelectionContainer: FC = () => {
-  const { width, height, offset, getRealScale } = PaintFetcher();
-  const { x, y, w, h } = SelectionFetcher();
+  const isMouseDownRef = useRef(false);
+  const mouseStartDragMousePos = useRef(new Location());
+  const mouseStartDragSelectionPos = useRef(new Location());
+
+  const { width, height, offset, getRealScale, selection, setSelection } =
+    PaintFetcher();
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (isMouseDownRef.current) {
+        const offset = new Location(e.clientX, e.clientY).minus(
+          mouseStartDragMousePos.current
+        );
+        const scale = getRealScale();
+        const selectionStartPos = mouseStartDragSelectionPos.current;
+
+        setSelection(
+          selection.newLocation(
+            new Location(
+              clamp(
+                selectionStartPos.x + Math.floor(offset.x / scale),
+                0,
+                width - selection.width
+              ),
+              clamp(
+                selectionStartPos.y + Math.floor(offset.y / scale),
+                0,
+                height - selection.height
+              )
+            )
+          )
+        );
+      }
+    },
+    [getRealScale, selection, setSelection, width, height]
+  );
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [handleMouseMove]);
+
+  useEffect(() => {
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, []);
+
+  const handleMouseDown = (e: ReactMouseEvent<HTMLDivElement>) => {
+    if (e.target != e.currentTarget) return;
+
+    isMouseDownRef.current = true;
+    mouseStartDragMousePos.current = new Location(e.clientX, e.clientY);
+    mouseStartDragSelectionPos.current = new Location(selection.x, selection.y);
+  };
+
+  const handleMouseUp = () => {
+    isMouseDownRef.current = false;
+  };
 
   const memoStyle = useMemo(() => {
     const scale = getRealScale();
 
     return {
-      left: `${(width / -2 + offset.x + x) * scale}px`,
-      top: `${(height / -2 + offset.y + y) * scale}px`,
-      width: `${w * scale}px`,
-      height: `${h * scale}px`,
+      left: `${(width / -2 + offset.x + selection.x) * scale}px`,
+      top: `${(height / -2 + offset.y + selection.y) * scale}px`,
+      width: `${selection.width * scale}px`,
+      height: `${selection.height * scale}px`,
     };
-  }, [getRealScale, height, offset.x, offset.y, width]);
+  }, [getRealScale, width, offset, selection, height]);
 
   return (
-    <div className={css.root} style={memoStyle}>
+    <div className={css.root} style={memoStyle} onMouseDown={handleMouseDown}>
       <SelectionEdge direction="up" />
       <SelectionEdge direction="down" />
       <SelectionEdge direction="left" />

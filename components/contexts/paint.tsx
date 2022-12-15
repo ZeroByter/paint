@@ -4,6 +4,7 @@ import { ilerp, lerp } from "@client/utils";
 import Color from "@shared/types/color";
 import Layer, { ActiveLayersState } from "@shared/types/layer";
 import Location from "@shared/types/location";
+import Selection from "@shared/types/selection";
 import { createContext, FC, ReactNode, useContext, useState } from "react";
 
 export type PaintContextType = {
@@ -32,6 +33,9 @@ export type PaintContextType = {
   setPrimaryColor: (newColor: Color) => void;
   secondaryColor: Color;
   setSecondaryColor: (newColor: Color) => void;
+
+  selection: Selection;
+  setSelection: (newSelection: Selection) => void;
 
   activeToolId: string;
   setActiveToolId: (newToolId: string) => void;
@@ -79,6 +83,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const [secondaryColor, setSecondaryColor] = useState<Color>(
     new Color(255, 255, 255, 255)
   );
+
+  const [selection, setSelection] = useState(new Selection(10, 10, 10, 10));
 
   const [activeToolId, setActiveToolId] = useState("pencil");
 
@@ -148,6 +154,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
         setPrimaryColor,
         secondaryColor,
         setSecondaryColor,
+        selection,
+        setSelection,
         activeToolId,
         setActiveToolId,
         loadFromImage,
