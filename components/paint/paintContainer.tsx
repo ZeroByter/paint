@@ -25,7 +25,7 @@ const PaintContainer: FC = () => {
     setActiveLayers,
     layers,
     loadFromImage,
-    getRealScale,
+    selection,
   } = PaintFetcher();
 
   useEffect(() => {
@@ -86,9 +86,9 @@ const PaintContainer: FC = () => {
       <div className={css.root} ref={containerRef}>
         <LayersContainer containerRef={containerRef}>
           {renderLayers}
-          <CursorHandle />
+          {/* <CursorHandle /> */}
         </LayersContainer>
-        <SelectionContainer />
+        {selection.isValid() && <SelectionContainer />}
       </div>
       <LayersPanel />
       <ColorsPanel />

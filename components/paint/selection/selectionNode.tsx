@@ -29,11 +29,14 @@ const SelectionNode: FC<Props> = ({ direction, isHover }) => {
   const { getRealScale, width, height, offset, selection, setSelection } =
     PaintFetcher();
 
-  const _setNodeDistance = (newDistance: number) => {
-    isHover(newDistance < 5);
+  const _setNodeDistance = useCallback(
+    (newDistance: number) => {
+      isHover(newDistance < 5);
 
-    setNodeDistance(newDistance);
-  };
+      setNodeDistance(newDistance);
+    },
+    [isHover]
+  );
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
@@ -171,7 +174,16 @@ const SelectionNode: FC<Props> = ({ direction, isHover }) => {
         setPos(nodePosition);
       }
     },
-    [getRealScale, direction, setSelection, selection, width, height, offset]
+    [
+      getRealScale,
+      direction,
+      setSelection,
+      selection,
+      width,
+      height,
+      offset,
+      _setNodeDistance,
+    ]
   );
 
   useEffect(() => {

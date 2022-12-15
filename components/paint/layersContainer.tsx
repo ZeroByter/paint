@@ -4,10 +4,12 @@ import Location from "@shared/types/location";
 import { PaintFetcher } from "components/contexts/paint";
 import {
   FC,
-  MouseEvent,
+  MouseEvent as ReactMouseEvent,
   MutableRefObject,
   ReactElement,
   ReactNode,
+  useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -35,15 +37,15 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
     activeToolId,
   } = context;
 
-  const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
+  const handleMouseDown = (e: ReactMouseEvent<HTMLDivElement>) => {
     setIsMouseDown(true);
 
     if (e.button == 0 || e.button == 2) {
-      Tools[activeToolId].onClick(context, { button: e.button });
+      Tools[activeToolId].onMouseDown(context, { button: e.button });
     }
   };
 
-  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+  const handleMouseMove = (e: ReactMouseEvent<HTMLDivElement>) => {
     const containerOffset = { x: 0, y: 0 };
 
     if (containerRef.current) {
@@ -92,11 +94,26 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
     lastDraggedRef.current = newMouseLoc.copy();
   };
 
-  const handleMouseUp = (e: MouseEvent<HTMLDivElement>) => {
-    setIsMouseDown(false);
-  };
+  const handleMouseUp = useCallback(
+    (e: MouseEvent) => {
+      setIsMouseDown(false);
 
-  const handleMouseLeave = (e: MouseEvent<HTMLDivElement>) => {
+      if (e.button == 0 || e.button == 2) {
+        Tools[activeToolId].onMouseUp(context, { button: e.button });
+      }
+    },
+    [activeToolId, context]
+  );
+
+  useEffect(() => {
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [handleMouseUp]);
+
+  const handleMouseLeave = (e: ReactMouseEvent<HTMLDivElement>) => {
     setIsMouseDown(false);
   };
 
@@ -121,7 +138,6 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
         className={css.root}
         style={styledContainerMemo}
         onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >

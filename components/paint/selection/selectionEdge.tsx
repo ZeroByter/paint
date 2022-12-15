@@ -1,3 +1,4 @@
+import { PaintFetcher } from "components/contexts/paint";
 import { FC } from "react";
 import css from "./selectionEdge.module.scss";
 import SelectionNode from "./selectionNode";
@@ -9,12 +10,16 @@ type Props = {
 };
 
 const SelectionEdge: FC<Props> = ({ direction, index, isHover }) => {
+  const { selectionClickability } = PaintFetcher();
+
   return (
     <div className={css.root} data-direction={direction}>
-      <SelectionNode
-        direction={direction}
-        isHover={(hover: boolean) => isHover(index, hover)}
-      />
+      {selectionClickability > 0 && (
+        <SelectionNode
+          direction={direction}
+          isHover={(hover: boolean) => isHover(index, hover)}
+        />
+      )}
     </div>
   );
 };

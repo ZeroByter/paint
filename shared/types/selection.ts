@@ -14,7 +14,7 @@ class Selection {
   }
 
   isValid() {
-    return this.width != 0 && this.height != 0;
+    return this.width > 0 && this.height > 0;
   }
 
   newLocation(newLocation: Location) {

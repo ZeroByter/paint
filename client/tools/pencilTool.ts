@@ -11,7 +11,7 @@ class PencilTool extends Tool {
     this.tooltip = "Pencil";
   }
 
-  onClick(state: PaintContextType, args: OnClickArgs): void {
+  onMouseDown(state: PaintContextType, args: OnClickArgs): void {
     const { setPixelColor, primaryColor, secondaryColor, mouseLoc } = state;
 
     const useColor = args.button == 0 ? primaryColor : secondaryColor;
