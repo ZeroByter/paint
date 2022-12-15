@@ -20,6 +20,10 @@ class Selection {
   newLocation(newLocation: Location) {
     return new Selection(newLocation.x, newLocation.y, this.width, this.height);
   }
+
+  copy() {
+    return new Selection(this.x, this.y, this.width, this.height);
+  }
 }
 
 export default Selection;
