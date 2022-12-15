@@ -1,7 +1,16 @@
 import { clamp, getDistance, ilerp, lerp } from "@client/utils";
 import Location from "@shared/types/location";
+import Selection from "@shared/types/selection";
 import { PaintFetcher } from "components/contexts/paint";
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  MouseEvent as ReactMouseEvent,
+} from "react";
 import css from "./selectionNode.module.scss";
 
 type Props = {
@@ -9,6 +18,10 @@ type Props = {
 };
 
 const SelectionNode: FC<Props> = ({ direction }) => {
+  const isMouseDownRef = useRef(false);
+  const mouseStartDragMousePos = useRef(new Location());
+  const mouseStartDragSelection = useRef(new Selection());
+
   const [pos, setPos] = useState(new Location());
   const [nodeDistance, setNodeDistance] = useState(99);
 
@@ -17,6 +30,12 @@ const SelectionNode: FC<Props> = ({ direction }) => {
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
       const scale = getRealScale();
+
+      if (isMouseDownRef.current) {
+        if (direction == "right") {
+          console.log("meme");
+        }
+      }
 
       if (direction == "up" || direction == "down") {
         //calculating offsets of node from left and top of whole screen
@@ -78,7 +97,7 @@ const SelectionNode: FC<Props> = ({ direction }) => {
         setPos(nodePosition);
       }
     },
-    [direction, getRealScale, height, offset, selection, width]
+    [direction, getRealScale, height, offset, selection, width, isMouseDownRef]
   );
 
   useEffect(() => {
@@ -89,6 +108,27 @@ const SelectionNode: FC<Props> = ({ direction }) => {
     };
   }, [handleMouseMove]);
 
+  useEffect(() => {
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, []);
+
+  const handleMouseDown = (e: ReactMouseEvent<HTMLDivElement>) => {
+    console.log("down");
+
+    isMouseDownRef.current = true;
+    mouseStartDragMousePos.current = new Location(e.clientX, e.clientY);
+    mouseStartDragSelection.current = selection.copy();
+  };
+
+  const handleMouseUp = () => {
+    console.log("up");
+    isMouseDownRef.current = false;
+  };
+
   const memoStyle = useMemo(
     () => ({
       left: `${pos.x}px`,
@@ -98,7 +138,9 @@ const SelectionNode: FC<Props> = ({ direction }) => {
     [pos, nodeDistance]
   );
 
-  return <div className={css.root} style={memoStyle}></div>;
+  return (
+    <div className={css.root} style={memoStyle} onClick={handleMouseDown}></div>
+  );
 };
 
 export default SelectionNode;
