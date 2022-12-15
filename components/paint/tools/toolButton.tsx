@@ -1,3 +1,4 @@
+import Tools from "@client/tools";
 import Tool from "@client/tools/tool";
 import { PaintFetcher } from "components/contexts/paint";
 import { FC } from "react";
@@ -9,14 +10,22 @@ type Props = {
 };
 
 const ToolButton: FC<Props> = ({ id, tool }) => {
-  const { activeToolId, setActiveToolId } = PaintFetcher();
+  const contextState = PaintFetcher();
+
+  const handleClick = () => {
+    Tools[contextState.activeToolId].onUnselect(contextState);
+
+    contextState.setActiveToolId(id);
+
+    Tools[id].onSelect(contextState);
+  };
 
   return (
     <button
-      data-active={activeToolId == id}
+      data-active={contextState.activeToolId == id}
       title={tool.tooltip}
       className={css.root}
-      onClick={() => setActiveToolId(id)}
+      onClick={handleClick}
     >
       {tool.text}
     </button>

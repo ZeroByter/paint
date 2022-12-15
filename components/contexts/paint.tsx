@@ -36,6 +36,8 @@ export type PaintContextType = {
 
   selection: Selection;
   setSelection: (newSelection: Selection) => void;
+  selectionClickability: number;
+  setSelectionClickability: (newClickability: number) => void;
 
   activeToolId: string;
   setActiveToolId: (newToolId: string) => void;
@@ -84,7 +86,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
     new Color(255, 255, 255, 255)
   );
 
-  const [selection, setSelection] = useState(new Selection(10, 10, 10, 10));
+  const [selection, setSelection] = useState(new Selection(0, 0, 0, 0));
+  const [selectionClickability, setSelectionClickability] = useState(0);
 
   const [activeToolId, setActiveToolId] = useState("pencil");
 
@@ -118,6 +121,17 @@ const PaintProvider: FC<Props> = ({ children }) => {
     a: number,
     update = false
   ) => {
+    if (selection.isValid()) {
+      if (
+        x < selection.x ||
+        y < selection.y ||
+        x > selection.x + selection.width - 1 ||
+        y > selection.y + selection.height - 1
+      ) {
+        return [];
+      }
+    }
+
     const affectedLayers = [];
 
     for (const layer of layers) {
@@ -156,6 +170,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
         setSecondaryColor,
         selection,
         setSelection,
+        selectionClickability,
+        setSelectionClickability,
         activeToolId,
         setActiveToolId,
         loadFromImage,

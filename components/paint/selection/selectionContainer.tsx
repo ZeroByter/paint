@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
 } from "react";
+import SelectionAdjust from "./selectionAdjust";
 import css from "./selectionContainer.module.scss";
 import SelectionEdge from "./selectionEdge";
 
@@ -36,8 +37,15 @@ const SelectionContainer: FC = () => {
   const [upHover, setUpHover] = useState(false);
   const [downHover, setDownHover] = useState(false);
 
-  const { width, height, offset, getRealScale, selection, setSelection } =
-    PaintFetcher();
+  const {
+    width,
+    height,
+    offset,
+    getRealScale,
+    selection,
+    setSelection,
+    selectionClickability,
+  } = PaintFetcher();
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
@@ -130,6 +138,9 @@ const SelectionContainer: FC = () => {
       width: `${selection.width * scale}px`,
       height: `${selection.height * scale}px`,
       cursor: cursorHoverMap[cursorIndex],
+      background: selectionClickability == 0 ? "none" : "",
+      pointerEvents:
+        selectionClickability <= 1 ? ("none" as "none") : ("all" as "all"),
     };
   }, [
     getRealScale,
@@ -141,15 +152,18 @@ const SelectionContainer: FC = () => {
     downHover,
     leftHover,
     rightHover,
+    selectionClickability,
   ]);
 
   return (
-    <div className={css.root} style={memoStyle} onMouseDown={handleMouseDown}>
-      <SelectionEdge direction="up" index={1} isHover={handleNodeHover} />
-      <SelectionEdge direction="down" index={2} isHover={handleNodeHover} />
-      <SelectionEdge direction="left" index={3} isHover={handleNodeHover} />
-      <SelectionEdge direction="right" index={4} isHover={handleNodeHover} />
-    </div>
+    <SelectionAdjust>
+      <div className={css.root} style={memoStyle} onMouseDown={handleMouseDown}>
+        <SelectionEdge direction="up" index={1} isHover={handleNodeHover} />
+        <SelectionEdge direction="down" index={2} isHover={handleNodeHover} />
+        <SelectionEdge direction="left" index={3} isHover={handleNodeHover} />
+        <SelectionEdge direction="right" index={4} isHover={handleNodeHover} />
+      </div>
+    </SelectionAdjust>
   );
 };
 

@@ -15,7 +15,11 @@ class Tool {
   text = "";
   tooltip = "";
 
-  onClick(state: PaintContextType, args: OnClickArgs) {}
+  onSelect(state: PaintContextType) {}
+  onUnselect(state: PaintContextType) {}
+
+  onMouseDown(state: PaintContextType, args: OnClickArgs) {}
+  onMouseUp(state: PaintContextType, args: OnClickArgs) {}
 
   onDrag(state: PaintContextType, args: OnDragArgs) {}
 }
