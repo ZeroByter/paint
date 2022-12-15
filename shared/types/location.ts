@@ -33,6 +33,9 @@ export default class Location {
   multiply = (factor: number) => {
     return new Location(this.x * factor, this.y * factor);
   };
+  divide = (factor: number) => {
+    return new Location(this.x / factor, this.y / factor);
+  };
   magnitude = () => {
     return Math.sqrt(this.x * this.x + this.y * this.y);
   };

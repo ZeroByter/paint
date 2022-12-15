@@ -25,15 +25,82 @@ const SelectionNode: FC<Props> = ({ direction }) => {
   const [pos, setPos] = useState(new Location());
   const [nodeDistance, setNodeDistance] = useState(99);
 
-  const { getRealScale, width, height, offset, selection } = PaintFetcher();
+  const { getRealScale, width, height, offset, selection, setSelection } =
+    PaintFetcher();
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
       const scale = getRealScale();
 
       if (isMouseDownRef.current) {
-        if (direction == "right") {
-          console.log("meme");
+        const scale = getRealScale();
+        const offset = new Location(e.clientX, e.clientY)
+          .minus(mouseStartDragMousePos.current)
+          .divide(scale);
+        const selectionStart = mouseStartDragSelection.current;
+
+        if (direction == "left") {
+          setSelection(
+            new Selection(
+              selectionStart.x +
+                clamp(
+                  Math.round(offset.x),
+                  -selectionStart.x,
+                  selectionStart.width
+                ),
+              selection.y,
+              clamp(
+                selectionStart.width - Math.round(offset.x),
+                0,
+                selectionStart.width + selectionStart.x
+              ),
+              selection.height
+            )
+          );
+        } else if (direction == "right") {
+          setSelection(
+            new Selection(
+              selection.x,
+              selection.y,
+              clamp(
+                selectionStart.width + Math.round(offset.x),
+                0,
+                width - selection.x
+              ),
+              selection.height
+            )
+          );
+        } else if (direction == "up") {
+          setSelection(
+            new Selection(
+              selection.x,
+              selectionStart.y +
+                clamp(
+                  Math.round(offset.y),
+                  -selectionStart.y,
+                  selectionStart.height
+                ),
+              selection.width,
+              clamp(
+                selectionStart.height - Math.round(offset.y),
+                0,
+                selectionStart.height + selectionStart.y
+              )
+            )
+          );
+        } else if (direction == "down") {
+          setSelection(
+            new Selection(
+              selection.x,
+              selection.y,
+              selection.width,
+              clamp(
+                selectionStart.height + Math.round(offset.y),
+                0,
+                height - selection.y
+              )
+            )
+          );
         }
       }
 
@@ -97,7 +164,7 @@ const SelectionNode: FC<Props> = ({ direction }) => {
         setPos(nodePosition);
       }
     },
-    [direction, getRealScale, height, offset, selection, width, isMouseDownRef]
+    [getRealScale, direction, setSelection, selection, width, height, offset]
   );
 
   useEffect(() => {
@@ -117,7 +184,7 @@ const SelectionNode: FC<Props> = ({ direction }) => {
   }, []);
 
   const handleMouseDown = (e: ReactMouseEvent<HTMLDivElement>) => {
-    console.log("down");
+    if (e.button != 0) return;
 
     isMouseDownRef.current = true;
     mouseStartDragMousePos.current = new Location(e.clientX, e.clientY);
@@ -125,7 +192,6 @@ const SelectionNode: FC<Props> = ({ direction }) => {
   };
 
   const handleMouseUp = () => {
-    console.log("up");
     isMouseDownRef.current = false;
   };
 
@@ -139,7 +205,11 @@ const SelectionNode: FC<Props> = ({ direction }) => {
   );
 
   return (
-    <div className={css.root} style={memoStyle} onClick={handleMouseDown}></div>
+    <div
+      className={css.root}
+      style={memoStyle}
+      onMouseDown={handleMouseDown}
+    ></div>
   );
 };
 

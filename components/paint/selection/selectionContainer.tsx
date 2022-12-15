@@ -33,12 +33,12 @@ const SelectionContainer: FC = () => {
           selection.newLocation(
             new Location(
               clamp(
-                selectionStartPos.x + Math.floor(offset.x / scale),
+                selectionStartPos.x + Math.round(offset.x / scale),
                 0,
                 width - selection.width
               ),
               clamp(
-                selectionStartPos.y + Math.floor(offset.y / scale),
+                selectionStartPos.y + Math.round(offset.y / scale),
                 0,
                 height - selection.height
               )
@@ -68,6 +68,7 @@ const SelectionContainer: FC = () => {
 
   const handleMouseDown = (e: ReactMouseEvent<HTMLDivElement>) => {
     if (e.target != e.currentTarget) return;
+    if (e.button != 0) return;
 
     isMouseDownRef.current = true;
     mouseStartDragMousePos.current = new Location(e.clientX, e.clientY);
