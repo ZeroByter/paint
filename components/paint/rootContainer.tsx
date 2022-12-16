@@ -58,6 +58,7 @@ const RootContainer: FC<Props> = ({ children }) => {
       onMouseUp={handleMouseUp}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      data-interactable={true}
     >
       {children}
     </div>
