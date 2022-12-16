@@ -13,8 +13,16 @@ class ColorPickerTool extends Tool {
   }
 
   selectColor(state: PaintContextType, primary: boolean) {
-    const { layers, mouseLoc, width, setPrimaryColor, setSecondaryColor } =
-      state;
+    const {
+      layers,
+      mouseLoc,
+      width,
+      setPrimaryColor,
+      setSecondaryColor,
+      isMouseInsideImage,
+    } = state;
+
+    if (!isMouseInsideImage()) return;
 
     for (const layer of layers) {
       if (layer.active) {
