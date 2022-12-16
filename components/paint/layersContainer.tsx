@@ -1,12 +1,11 @@
+import useWindowEvent from "@client/hooks/useWindowEvent";
 import Tools from "@client/tools";
 import { getDistance, ilerp, lerp } from "@client/utils";
 import Location from "@shared/types/location";
 import { PaintFetcher } from "components/contexts/paint";
 import {
   FC,
-  MouseEvent as ReactMouseEvent,
   MutableRefObject,
-  ReactElement,
   ReactNode,
   useCallback,
   useEffect,
@@ -37,62 +36,89 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
     activeToolId,
   } = context;
 
-  const handleMouseDown = (e: ReactMouseEvent<HTMLDivElement>) => {
-    setIsMouseDown(true);
+  useWindowEvent(
+    "mousedown",
+    useCallback(
+      (e: MouseEvent) => {
+        if ((e.target as any).getAttribute("data-interactable") != "true")
+          return;
 
-    if (e.button == 0 || e.button == 2) {
-      Tools[activeToolId].onMouseDown(context, { button: e.button });
-    }
-  };
+        setIsMouseDown(true);
 
-  const handleMouseMove = (e: ReactMouseEvent<HTMLDivElement>) => {
-    const containerOffset = { x: 0, y: 0 };
+        if (e.button == 0 || e.button == 2) {
+          Tools[activeToolId].onMouseDown(context, { button: e.button });
+        }
+      },
+      [activeToolId, context]
+    )
+  );
 
-    if (containerRef.current) {
-      const container = containerRef.current;
-      const rect = container.getBoundingClientRect();
-      containerOffset.x = rect.x;
-      containerOffset.y = rect.y;
-    }
+  useWindowEvent(
+    "mousemove",
+    useCallback(
+      (e: MouseEvent) => {
+        const containerOffset = { x: 0, y: 0 };
 
-    const realScale = getRealScale();
+        if (containerRef.current) {
+          const container = containerRef.current;
+          const rect = container.getBoundingClientRect();
+          containerOffset.x = rect.x;
+          containerOffset.y = rect.y;
+        }
 
-    const newMouseLoc = new Location(
-      Math.floor(
-        (e.clientX -
-          containerOffset.x +
-          (width * realScale) / 2 -
-          offset.x * realScale) /
-          realScale
-      ),
-      Math.floor(
-        (e.clientY -
-          containerOffset.y +
-          (height * realScale) / 2 -
-          offset.y * realScale) /
-          realScale
-      )
-    );
+        const realScale = getRealScale();
 
-    setMouseLoc(newMouseLoc);
-    setMouseScaledLoc(
-      new Location(newMouseLoc.x * realScale, newMouseLoc.y * realScale)
-    );
+        const newMouseLoc = new Location(
+          Math.floor(
+            (e.clientX -
+              containerOffset.x +
+              (width * realScale) / 2 -
+              offset.x * realScale) /
+              realScale
+          ),
+          Math.floor(
+            (e.clientY -
+              containerOffset.y +
+              (height * realScale) / 2 -
+              offset.y * realScale) /
+              realScale
+          )
+        );
 
-    if (lastDraggedRef.current.equals(new Location(-1, -1))) {
-      lastDraggedRef.current = newMouseLoc.copy();
-    }
+        setMouseLoc(newMouseLoc);
+        setMouseScaledLoc(
+          new Location(newMouseLoc.x * realScale, newMouseLoc.y * realScale)
+        );
 
-    if (isMouseDown && (e.buttons == 1 || e.buttons == 2)) {
-      Tools[activeToolId].onDrag(context, {
-        buttons: e.buttons,
-        accurateMouseLoc: newMouseLoc,
-        lastDragLocation: lastDraggedRef.current,
-      });
-    }
+        if (lastDraggedRef.current.equals(new Location(-1, -1))) {
+          lastDraggedRef.current = newMouseLoc.copy();
+        }
 
-    lastDraggedRef.current = newMouseLoc.copy();
-  };
+        if (isMouseDown && (e.buttons == 1 || e.buttons == 2)) {
+          Tools[activeToolId].onDrag(context, {
+            buttons: e.buttons,
+            accurateMouseLoc: newMouseLoc,
+            lastDragLocation: lastDraggedRef.current,
+          });
+        }
+
+        lastDraggedRef.current = newMouseLoc.copy();
+      },
+      [
+        activeToolId,
+        containerRef,
+        context,
+        getRealScale,
+        height,
+        isMouseDown,
+        offset.x,
+        offset.y,
+        setMouseLoc,
+        setMouseScaledLoc,
+        width,
+      ]
+    )
+  );
 
   const handleMouseUp = useCallback(
     (e: MouseEvent) => {
@@ -113,10 +139,6 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
     };
   }, [handleMouseUp]);
 
-  const handleMouseLeave = (e: ReactMouseEvent<HTMLDivElement>) => {
-    setIsMouseDown(false);
-  };
-
   const styledRootMemo = useMemo(() => {
     return {
       transform: `scale(${getRealScale()})`,
@@ -134,13 +156,7 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
 
   return (
     <div style={styledRootMemo}>
-      <div
-        className={css.root}
-        style={styledContainerMemo}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-      >
+      <div className={css.root} style={styledContainerMemo}>
         {children}
       </div>
     </div>

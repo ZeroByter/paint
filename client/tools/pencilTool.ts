@@ -28,7 +28,9 @@ class PencilTool extends Tool {
   }
 
   onDrag(state: PaintContextType, args: OnDragArgs): void {
-    const { primaryColor, secondaryColor, setPixelColor } = state;
+    const { primaryColor, secondaryColor, setPixelColor, updateActiveLayers } =
+      state;
+
     const mouseLoc = args.accurateMouseLoc;
 
     const useColor = args.buttons == 1 ? primaryColor : secondaryColor;
@@ -50,9 +52,11 @@ class PencilTool extends Tool {
         useColor.g,
         useColor.b,
         useColor.a,
-        true
+        false
       );
     }
+
+    updateActiveLayers();
   }
 }
 

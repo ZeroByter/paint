@@ -39,7 +39,6 @@ class SelectTool extends Tool {
 
   onMouseUp(state: PaintContextType, args: OnClickArgs): void {
     const { setSelectionClickability } = state;
-
     setSelectionClickability(2);
   }
 

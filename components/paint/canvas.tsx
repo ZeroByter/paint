@@ -59,6 +59,7 @@ const Canvas: FC<Props> = ({ layer }) => {
       style={memoStyle}
       className={css.root}
       onContextMenu={handleContextMenu}
+      data-interactable={true}
     ></canvas>
   );
 };

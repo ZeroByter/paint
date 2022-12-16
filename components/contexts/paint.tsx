@@ -55,7 +55,11 @@ export type PaintContextType = {
     b: number,
     a: number,
     update: boolean
-  ) => Layer[];
+  ) => void;
+
+  updateActiveLayers: () => void;
+
+  isMouseInsideImage: () => boolean;
 };
 
 export const PaintContext = createContext<PaintContextType>(
@@ -134,6 +138,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
     a: number,
     update = false
   ) => {
+    if (x < 0 || y < 0 || x > width - 1 || y > height - 1) return;
+
     if (selection.isValid()) {
       if (
         x < selection.x ||
@@ -145,17 +151,29 @@ const PaintProvider: FC<Props> = ({ children }) => {
       }
     }
 
-    const affectedLayers = [];
-
     for (const layer of layers) {
       if (!layer.active) continue;
 
       layer.setPixelData(x, y, r, g, b, a);
-      affectedLayers.push(layer);
       if (update) layer.updatePixels();
     }
+  };
 
-    return affectedLayers;
+  const updateActiveLayers = () => {
+    for (const layer of layers) {
+      if (!layer.active) continue;
+
+      layer.updatePixels();
+    }
+  };
+
+  const isMouseInsideImage = () => {
+    return (
+      mouseLoc.x >= 0 &&
+      mouseLoc.y >= 0 &&
+      mouseLoc.x < width &&
+      mouseLoc.y < height
+    );
   };
 
   return (
@@ -190,6 +208,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
         loadFromImage,
         getRealScale,
         setPixelColor,
+        updateActiveLayers,
+        isMouseInsideImage,
       }}
     >
       {children}
