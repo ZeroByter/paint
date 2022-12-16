@@ -5,7 +5,7 @@ import Tool from "./tool";
 const Tools: { [id: string]: Tool } = {
   pencil: new PencilTool(),
   select: new SelectTool(),
-  colorPicker: new PencilTool(),
+  // colorPicker: new PencilTool(),
 };
 
 export default Tools;
