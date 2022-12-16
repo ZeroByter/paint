@@ -19,10 +19,6 @@ type Props = {
 };
 
 const SelectionNode: FC<Props> = ({ direction, isHover }) => {
-  const isMouseDownRef = useRef(false);
-  const mouseStartDragMousePos = useRef(new Location());
-  const mouseStartDragSelection = useRef(new Selection());
-
   const [pos, setPos] = useState(new Location());
   const [nodeDistance, setNodeDistance] = useState(99);
 
@@ -41,78 +37,6 @@ const SelectionNode: FC<Props> = ({ direction, isHover }) => {
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
       const scale = getRealScale();
-
-      if (isMouseDownRef.current) {
-        const scale = getRealScale();
-        const offset = new Location(e.clientX, e.clientY)
-          .minus(mouseStartDragMousePos.current)
-          .divide(scale);
-        const selectionStart = mouseStartDragSelection.current;
-
-        if (direction == "left") {
-          setSelection(
-            new Selection(
-              selectionStart.x +
-                clamp(
-                  Math.round(offset.x),
-                  -selectionStart.x,
-                  selectionStart.width
-                ),
-              selection.y,
-              clamp(
-                selectionStart.width - Math.round(offset.x),
-                0,
-                selectionStart.width + selectionStart.x
-              ),
-              selection.height
-            )
-          );
-        } else if (direction == "right") {
-          setSelection(
-            new Selection(
-              selection.x,
-              selection.y,
-              clamp(
-                selectionStart.width + Math.round(offset.x),
-                0,
-                width - selection.x
-              ),
-              selection.height
-            )
-          );
-        } else if (direction == "up") {
-          setSelection(
-            new Selection(
-              selection.x,
-              selectionStart.y +
-                clamp(
-                  Math.round(offset.y),
-                  -selectionStart.y,
-                  selectionStart.height
-                ),
-              selection.width,
-              clamp(
-                selectionStart.height - Math.round(offset.y),
-                0,
-                selectionStart.height + selectionStart.y
-              )
-            )
-          );
-        } else if (direction == "down") {
-          setSelection(
-            new Selection(
-              selection.x,
-              selection.y,
-              selection.width,
-              clamp(
-                selectionStart.height + Math.round(offset.y),
-                0,
-                height - selection.y
-              )
-            )
-          );
-        }
-      }
 
       if (direction == "up" || direction == "down") {
         //calculating offsets of node from left and top of whole screen
@@ -177,7 +101,6 @@ const SelectionNode: FC<Props> = ({ direction, isHover }) => {
     [
       getRealScale,
       direction,
-      setSelection,
       selection,
       width,
       height,
@@ -194,26 +117,6 @@ const SelectionNode: FC<Props> = ({ direction, isHover }) => {
     };
   }, [handleMouseMove]);
 
-  useEffect(() => {
-    window.addEventListener("mouseup", handleMouseUp);
-
-    return () => {
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, []);
-
-  const handleMouseDown = (e: ReactMouseEvent<HTMLDivElement>) => {
-    if (e.button != 0) return;
-
-    isMouseDownRef.current = true;
-    mouseStartDragMousePos.current = new Location(e.clientX, e.clientY);
-    mouseStartDragSelection.current = selection.copy();
-  };
-
-  const handleMouseUp = () => {
-    isMouseDownRef.current = false;
-  };
-
   const memoStyle = useMemo(
     () => ({
       left: `${pos.x}px`,
@@ -223,13 +126,7 @@ const SelectionNode: FC<Props> = ({ direction, isHover }) => {
     [pos, nodeDistance]
   );
 
-  return (
-    <div
-      className={css.root}
-      style={memoStyle}
-      onMouseDown={handleMouseDown}
-    ></div>
-  );
+  return <div className={css.root} style={memoStyle}></div>;
 };
 
 export default SelectionNode;

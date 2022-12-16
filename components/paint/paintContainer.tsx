@@ -19,7 +19,6 @@ const PaintContainer: FC = () => {
     width,
     height,
     scale,
-    offset,
     setScale,
     setLayers,
     setActiveLayers,
@@ -88,7 +87,7 @@ const PaintContainer: FC = () => {
           {renderLayers}
           {/* <CursorHandle /> */}
         </LayersContainer>
-        {selection.isValid() && <SelectionContainer />}
+        <SelectionContainer />
       </div>
       <LayersPanel />
       <ColorsPanel />

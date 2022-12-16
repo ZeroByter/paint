@@ -27,6 +27,20 @@ const cursorHoverMap: { [index: number]: string } = {
   10: "nw-resize",
 };
 
+const cursorHoverToIndex = (
+  leftHover: boolean,
+  rightHover: boolean,
+  upHover: boolean,
+  downHover: boolean
+) => {
+  let cursorIndex = 0;
+  if (upHover) cursorIndex |= 1;
+  if (downHover) cursorIndex |= 2;
+  if (leftHover) cursorIndex |= 4;
+  if (rightHover) cursorIndex |= 8;
+  return cursorIndex;
+};
+
 const SelectionContainer: FC = () => {
   const isMouseDownRef = useRef(false);
   const mouseStartDragMousePos = useRef(new Location());
@@ -126,11 +140,12 @@ const SelectionContainer: FC = () => {
   const memoStyle = useMemo(() => {
     const scale = getRealScale();
 
-    let cursorIndex = 0;
-    if (upHover) cursorIndex |= 1;
-    if (downHover) cursorIndex |= 2;
-    if (leftHover) cursorIndex |= 4;
-    if (rightHover) cursorIndex |= 8;
+    const cursorIndex = cursorHoverToIndex(
+      leftHover,
+      rightHover,
+      upHover,
+      downHover
+    );
 
     return {
       left: `${(width / -2 + offset.x + selection.x) * scale}px`,
@@ -140,7 +155,10 @@ const SelectionContainer: FC = () => {
       cursor: cursorHoverMap[cursorIndex],
       background: selectionClickability == 0 ? "none" : "",
       pointerEvents:
-        selectionClickability <= 1 ? ("none" as "none") : ("all" as "all"),
+        selectionClickability <= 1 || !selection.isValid()
+          ? ("none" as "none")
+          : ("all" as "all"),
+      opacity: selection.isValid() ? "1" : "0",
     };
   }, [
     getRealScale,
@@ -156,7 +174,9 @@ const SelectionContainer: FC = () => {
   ]);
 
   return (
-    <SelectionAdjust>
+    <SelectionAdjust
+      hoverIndex={cursorHoverToIndex(leftHover, rightHover, upHover, downHover)}
+    >
       <div className={css.root} style={memoStyle} onMouseDown={handleMouseDown}>
         <SelectionEdge direction="up" index={1} isHover={handleNodeHover} />
         <SelectionEdge direction="down" index={2} isHover={handleNodeHover} />
