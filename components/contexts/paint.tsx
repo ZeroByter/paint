@@ -26,8 +26,9 @@ export type PaintContextType = {
 
   layers: Layer[];
   setLayers: (newScale: Layer[]) => void;
-  activeLayers: ActiveLayersState;
-  setActiveLayers: (newScale: ActiveLayersState) => void;
+
+  setActiveLayers: (ids: string[]) => void;
+  setVisibleLayers: (ids: string[]) => void;
 
   primaryColor: Color;
   setPrimaryColor: (newColor: Color) => void;
@@ -77,7 +78,6 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const [mouseScaledLoc, setMouseScaledLoc] = useState(new Location());
 
   const [layers, setLayers] = useState<Layer[]>([]);
-  const [activeLayers, setActiveLayers] = useState<ActiveLayersState>({});
 
   const [primaryColor, setPrimaryColor] = useState<Color>(
     new Color(0, 0, 0, 255)
@@ -99,7 +99,6 @@ const PaintProvider: FC<Props> = ({ children }) => {
     newLayer.setPixelDataFromImage(image);
 
     setLayers([newLayer]);
-    setActiveLayers({ [newLayer.id]: null });
 
     setOffset(new Location());
 
@@ -110,6 +109,20 @@ const PaintProvider: FC<Props> = ({ children }) => {
 
   const getRealScale = () => {
     return lerp(0.25, 1600, scale);
+  };
+
+  const setActiveLayers = (ids: string[]) => {
+    const newLayers = [...layers];
+    for (const layer of newLayers) {
+      layer.active = ids.includes(layer.id);
+    }
+    setLayers(newLayers);
+  };
+
+  const setVisibleLayers = (ids: string[]) => {
+    for (const layer of layers) {
+      layer.visible = ids.includes(layer.id);
+    }
   };
 
   const setPixelColor = (
@@ -135,7 +148,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
     const affectedLayers = [];
 
     for (const layer of layers) {
-      if (!(layer.id in activeLayers)) continue;
+      if (!layer.active) continue;
 
       layer.setPixelData(x, y, r, g, b, a);
       affectedLayers.push(layer);
@@ -162,8 +175,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
         setMouseScaledLoc,
         layers,
         setLayers,
-        activeLayers,
         setActiveLayers,
+        setVisibleLayers,
         primaryColor,
         setPrimaryColor,
         secondaryColor,

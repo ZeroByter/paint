@@ -9,7 +9,7 @@ import { isEmpty } from "lodash/fp";
 import { FC } from "react";
 
 const PaintToolbar: FC = () => {
-  const { loadFromImage, width, height, activeLayers, layers } = PaintFetcher();
+  const { loadFromImage, width, height, layers } = PaintFetcher();
 
   const handleLoadUrl = () => {
     const url = prompt(

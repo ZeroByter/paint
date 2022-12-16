@@ -1,35 +1,27 @@
 import Layer, { ActiveLayersState } from "@shared/types/layer";
 import { ChangeEvent, FC } from "react";
 import css from "./layerContainer.module.scss";
-import _ from "lodash/fp";
+import _, { set } from "lodash/fp";
+import { PaintFetcher } from "components/contexts/paint";
 
 type Props = {
   layer: Layer;
-  activeLayer: boolean;
-  activeLayers: ActiveLayersState;
-  setActiveLayers: (activeLayers: ActiveLayersState) => void;
   shiftKey: boolean;
 };
 
-const LayerContainer: FC<Props> = ({
-  layer,
-  activeLayer,
-  activeLayers,
-  setActiveLayers,
-  shiftKey,
-}) => {
+const LayerContainer: FC<Props> = ({ layer, shiftKey }) => {
+  const { setLayers, layers, setActiveLayers } = PaintFetcher();
+
   const handleActiveLayerChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (shiftKey) {
+      const index = layers.indexOf(layer);
       if (e.target.checked) {
-        const newActiveLayers = _.flow([_.clone, _.set([layer.id], null)])(
-          activeLayers
-        );
-        setActiveLayers(newActiveLayers);
+        setLayers(set([index, "active"], true, layers));
       } else {
-        setActiveLayers(_.omit([layer.id], activeLayers));
+        setLayers(set([index, "active"], false, layers));
       }
     } else {
-      setActiveLayers({ [layer.id]: null });
+      setActiveLayers([layer.id]);
     }
   };
 
@@ -37,7 +29,7 @@ const LayerContainer: FC<Props> = ({
     <div className={css.root}>
       <input
         type="checkbox"
-        checked={activeLayer}
+        checked={layer.active}
         onChange={handleActiveLayerChange}
       />
       {layer.name}

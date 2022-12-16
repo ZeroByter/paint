@@ -5,6 +5,8 @@ class Layer {
 
   name: string;
   order: number;
+  active: boolean;
+  visible: boolean;
 
   width: number;
   height: number;
@@ -22,6 +24,8 @@ class Layer {
 
     this.name = initial ? "Background" : "Layer #";
     this.order = newOrder;
+    this.active = initial;
+    this.visible = true;
 
     this.width = width;
     this.height = height;

@@ -15,28 +15,14 @@ import SelectionContainer from "./selection/selectionContainer";
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const {
-    width,
-    height,
-    scale,
-    setScale,
-    setLayers,
-    setActiveLayers,
-    layers,
-    loadFromImage,
-    selection,
-  } = PaintFetcher();
+  const { width, height, scale, setScale, setLayers, layers, loadFromImage } =
+    PaintFetcher();
 
   useEffect(() => {
     const newLayers: Layer[] = [];
 
     newLayers.push(new Layer(width, height, true));
-
     setLayers(newLayers);
-
-    const newSelectedLayers: ActiveLayersState = {};
-    newSelectedLayers[newLayers[0].id] = null;
-    setActiveLayers(newSelectedLayers);
 
     document.addEventListener("paste", handlePaste);
 
