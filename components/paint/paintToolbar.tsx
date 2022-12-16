@@ -1,3 +1,4 @@
+import layersToImageData from "@client/layersToImageData";
 import { clamp } from "@client/utils";
 import Color from "@shared/types/color";
 import { PaintFetcher } from "components/contexts/paint";
@@ -50,27 +51,6 @@ const PaintToolbar: FC = () => {
     input.click();
   };
 
-  const addColors = (
-    r1: number,
-    g1: number,
-    b1: number,
-    a1: number,
-    r2: number,
-    g2: number,
-    b2: number,
-    a2: number
-  ) => {
-    const r = new Color(0, 0, 0, 0);
-
-    r.a = 255 - (255 - a1) * (255 - a2);
-    if (r.a <= 0) return r;
-    r.r = (r1 * a1) / r.a + (r2 * a2 * (255 - a1)) / r.a;
-    r.g = (g1 * a1) / r.a + (g2 * a2 * (255 - a1)) / r.a;
-    r.b = (b1 * a1) / r.a + (b2 * a2 * (255 - a1)) / r.a;
-
-    return r;
-  };
-
   const handleSave = () => {
     const canvas = document.createElement("canvas");
     canvas.width = width;
@@ -79,32 +59,11 @@ const PaintToolbar: FC = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const pixels = new Uint8ClampedArray(width * height * 4);
-
-    for (const layer of layers) {
-      // if (!(layer.id in visibleLayers)) continue;
-
-      for (let i = 0; i < layer.pixels.length / 4; i++) {
-        const r1 = layer.pixels[i * 4];
-        const g1 = layer.pixels[i * 4 + 1];
-        const b1 = layer.pixels[i * 4 + 2];
-        const a1 = layer.pixels[i * 4 + 3];
-
-        const r2 = pixels[i * 4];
-        const g2 = pixels[i * 4 + 1];
-        const b2 = pixels[i * 4 + 2];
-        const a2 = pixels[i * 4 + 3];
-
-        const combined = addColors(r1, g1, b1, a1, r2, g2, b2, a2);
-
-        pixels[i * 4] = combined.r;
-        pixels[i * 4 + 1] = combined.g;
-        pixels[i * 4 + 2] = combined.b;
-        pixels[i * 4 + 3] = combined.a;
-      }
-    }
-
-    ctx.putImageData(new ImageData(pixels, width, height), 0, 0);
+    ctx.putImageData(
+      layersToImageData(0, 0, width, height, width, layers),
+      0,
+      0
+    );
 
     const downloadLink = document.createElement("a");
     downloadLink.setAttribute("download", "CanvasAsImage.png");
