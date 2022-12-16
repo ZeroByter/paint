@@ -7,8 +7,7 @@ import css from "./layersPanel.module.scss";
 const LayersPanel: FC = () => {
   const [shift, setShift] = useState(false);
 
-  const { width, height, layers, setLayers, activeLayers, setActiveLayers } =
-    PaintFetcher();
+  const { width, height, layers, setLayers } = PaintFetcher();
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -28,16 +27,7 @@ const LayersPanel: FC = () => {
   };
 
   const renderLayers = layers.map((layer) => {
-    return (
-      <LayerContainer
-        key={layer.id}
-        layer={layer}
-        activeLayer={layer.id in activeLayers}
-        activeLayers={activeLayers}
-        setActiveLayers={setActiveLayers}
-        shiftKey={shift}
-      />
-    );
+    return <LayerContainer key={layer.id} layer={layer} shiftKey={shift} />;
   });
 
   const handleAddLayerClick = (e: MouseEvent<HTMLButtonElement>) => {
