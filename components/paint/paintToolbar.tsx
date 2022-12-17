@@ -1,3 +1,4 @@
+import useWindowEvent from "@client/hooks/useWindowEvent";
 import layersToImageData from "@client/layersToImageData";
 import { clamp } from "@client/utils";
 import Color from "@shared/types/color";
@@ -7,7 +8,7 @@ import ToolbarContainer, {
   MenuItem,
 } from "components/toolbar/toolbarContainer";
 import { isEmpty } from "lodash/fp";
-import { FC } from "react";
+import { FC, useCallback } from "react";
 
 const PaintToolbar: FC = () => {
   const { loadFromImage, width, height, layers } = PaintFetcher();
@@ -27,7 +28,7 @@ const PaintToolbar: FC = () => {
     };
   };
 
-  const handleLoadLocal = () => {
+  const handleLoadLocal = useCallback(() => {
     const input = document.createElement("input");
     input.type = "file";
 
@@ -49,9 +50,9 @@ const PaintToolbar: FC = () => {
     };
 
     input.click();
-  };
+  }, [loadFromImage]);
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
@@ -73,13 +74,34 @@ const PaintToolbar: FC = () => {
     );
 
     const downloadLink = document.createElement("a");
-    downloadLink.setAttribute("download", "CanvasAsImage.png");
+    downloadLink.setAttribute("download", "DownloadedImage.png");
     const url = canvas
       .toDataURL()
       .replace(/^data:image\/png/, "data:application/octet-stream");
     downloadLink.setAttribute("href", url);
     downloadLink.click();
-  };
+  }, [height, layers, width]);
+
+  useWindowEvent(
+    "keydown",
+    useCallback(
+      (e: KeyboardEvent) => {
+        if (e.ctrlKey) {
+          if (e.key == "s") {
+            e.preventDefault();
+
+            handleSave();
+          }
+          if (e.key == "o") {
+            e.preventDefault();
+
+            handleLoadLocal();
+          }
+        }
+      },
+      [handleLoadLocal, handleSave]
+    )
+  );
 
   const toolbarMenuItems: MenuItem[] = [
     {
