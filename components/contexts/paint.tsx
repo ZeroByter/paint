@@ -1,5 +1,6 @@
 import Tools from "@client/tools";
 import Tool from "@client/tools/tool";
+import CropAction, { CroppedLayer } from "@client/undo/cropAction";
 import UndoAction from "@client/undo/undoAction";
 import { ilerp, lerp } from "@client/utils";
 import Color from "@shared/types/color";
@@ -73,7 +74,10 @@ export type PaintContextType = {
   undoAction: () => void;
   redoAction: () => void;
 
-  cropToSelection: () => void;
+  cropToSelection: (
+    selection: Selection,
+    shouldAddUndoAction?: boolean
+  ) => void;
 };
 
 export const PaintContext = createContext<PaintContextType>(
@@ -216,8 +220,22 @@ const PaintProvider: FC<Props> = ({ children }) => {
     undoActions.current.push(redoAction);
   };
 
-  const cropToSelection = () => {
+  const cropToSelection = (
+    selection: Selection,
+    shouldAddUndoAction = true
+  ) => {
     if (!selection.isValid()) return;
+
+    if (shouldAddUndoAction) {
+      addUndoAction(
+        new CropAction(
+          layers.map((layer) => ({ id: layer.id, pixels: layer.pixels })),
+          width,
+          height,
+          selection
+        )
+      );
+    }
 
     for (const layer of layers) {
       const newPixels = new Uint8ClampedArray(
