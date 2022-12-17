@@ -72,6 +72,8 @@ export type PaintContextType = {
   addUndoAction: (action: UndoAction) => void;
   undoAction: () => void;
   redoAction: () => void;
+
+  cropToSelection: () => void;
 };
 
 export const PaintContext = createContext<PaintContextType>(
@@ -214,6 +216,38 @@ const PaintProvider: FC<Props> = ({ children }) => {
     undoActions.current.push(redoAction);
   };
 
+  const cropToSelection = () => {
+    if (!selection.isValid()) return;
+
+    for (const layer of layers) {
+      const newPixels = new Uint8ClampedArray(
+        selection.width * selection.height * 4
+      );
+
+      for (let y = 0; y < selection.height; y++) {
+        for (let x = 0; x < selection.width; x++) {
+          const oldIndex = (selection.x + x + (selection.y + y) * width) * 4;
+          const newIndex = (x + y * selection.width) * 4;
+
+          newPixels[newIndex] = layer.pixels[oldIndex];
+          newPixels[newIndex + 1] = layer.pixels[oldIndex + 1];
+          newPixels[newIndex + 2] = layer.pixels[oldIndex + 2];
+          newPixels[newIndex + 3] = layer.pixels[oldIndex + 3];
+        }
+      }
+
+      layer.pixels = newPixels;
+
+      layer.width = selection.width;
+      layer.height = selection.height;
+    }
+
+    setWidth(selection.width);
+    setHeight(selection.height);
+
+    setSelection(new Selection());
+  };
+
   const stateValue = {
     width,
     setWidth,
@@ -249,6 +283,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
     addUndoAction,
     undoAction,
     redoAction,
+    cropToSelection,
   };
 
   return (

@@ -60,7 +60,14 @@ const PaintToolbar: FC = () => {
     if (!ctx) return;
 
     ctx.putImageData(
-      layersToImageData(0, 0, width, height, width, layers),
+      layersToImageData(
+        0,
+        0,
+        width,
+        height,
+        width,
+        layers.filter((layer) => layer.visible)
+      ),
       0,
       0
     );

@@ -27,6 +27,7 @@ const PaintContainer: FC = () => {
     selection,
     undoAction,
     redoAction,
+    cropToSelection,
   } = PaintFetcher();
 
   useEffect(() => {
@@ -67,7 +68,7 @@ const PaintContainer: FC = () => {
               finalWidth,
               finalHeight,
               width,
-              layers
+              layers.filter((layer) => layer.active && layer.visible)
             ),
             0,
             0
@@ -81,16 +82,20 @@ const PaintContainer: FC = () => {
           });
         }
 
-        if (e.ctrlKey && e.key == "z") {
+        if (e.key == "z") {
           undoAction();
         }
 
-        if (e.ctrlKey && e.key == "y") {
+        if (e.key == "y") {
           redoAction();
+        }
+
+        if (e.shiftKey && e.key == "X") {
+          cropToSelection();
         }
       }
     },
-    [height, layers, selection, width, undoAction, redoAction]
+    [selection, width, height, layers, undoAction, redoAction, cropToSelection]
   );
 
   useEffect(() => {

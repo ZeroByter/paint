@@ -33,8 +33,6 @@ const layersToImageData = (
   const pixels = new Uint8ClampedArray(width * height * 4);
 
   for (const layer of layers) {
-    if (!layer.visible) continue;
-
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const sourceIndex = offsetX + x + (offsetY + y) * realWidth;
