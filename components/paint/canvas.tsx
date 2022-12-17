@@ -25,7 +25,7 @@ const Canvas: FC<Props> = ({ layer }) => {
       0,
       0
     );
-  }, []);
+  }, [layer.height, layer.pixels, layer.width]);
 
   useEffect(() => {
     if (layer.pixelsId == layer.id) return;
