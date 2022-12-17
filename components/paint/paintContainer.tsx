@@ -25,6 +25,8 @@ const PaintContainer: FC = () => {
     layers,
     loadFromImage,
     selection,
+    undoAction,
+    redoAction,
   } = PaintFetcher();
 
   useEffect(() => {
@@ -42,43 +44,53 @@ const PaintContainer: FC = () => {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key == "c") {
-        const isSelectionValid = selection && selection.isValid();
+      if (e.ctrlKey) {
+        if (e.key == "c") {
+          const isSelectionValid = selection && selection.isValid();
 
-        const finalX = isSelectionValid ? selection.x : 0;
-        const finalY = isSelectionValid ? selection.y : 0;
-        const finalWidth = isSelectionValid ? selection.width : width;
-        const finalHeight = isSelectionValid ? selection.height : height;
+          const finalX = isSelectionValid ? selection.x : 0;
+          const finalY = isSelectionValid ? selection.y : 0;
+          const finalWidth = isSelectionValid ? selection.width : width;
+          const finalHeight = isSelectionValid ? selection.height : height;
 
-        const canvas = document.createElement("canvas");
-        canvas.width = finalWidth;
-        canvas.height = finalHeight;
+          const canvas = document.createElement("canvas");
+          canvas.width = finalWidth;
+          canvas.height = finalHeight;
 
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return;
 
-        ctx.putImageData(
-          layersToImageData(
-            finalX,
-            finalY,
-            finalWidth,
-            finalHeight,
-            width,
-            layers
-          ),
-          0,
-          0
-        );
+          ctx.putImageData(
+            layersToImageData(
+              finalX,
+              finalY,
+              finalWidth,
+              finalHeight,
+              width,
+              layers
+            ),
+            0,
+            0
+          );
 
-        canvas.toBlob((blob) => {
-          if (!blob) return;
+          canvas.toBlob((blob) => {
+            if (!blob) return;
 
-          const item = new ClipboardItem({ "image/png": blob });
-          navigator.clipboard.write([item]);
-        });
+            const item = new ClipboardItem({ "image/png": blob });
+            navigator.clipboard.write([item]);
+          });
+        }
+
+        if (e.ctrlKey && e.key == "z") {
+          undoAction();
+        }
+
+        if (e.ctrlKey && e.key == "y") {
+          redoAction();
+        }
       }
     },
-    [height, layers, selection, width]
+    [height, layers, selection, width, undoAction, redoAction]
   );
 
   useEffect(() => {
