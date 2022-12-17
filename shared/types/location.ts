@@ -72,4 +72,7 @@ export default class Location {
   toString = () => {
     return `Location(${this.x},${this.y})`;
   };
+  round = () => {
+    return new Location(Math.round(this.x), Math.round(this.y));
+  };
 }

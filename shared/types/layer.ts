@@ -1,4 +1,5 @@
 import { randomString } from "@shared/utils";
+import Color from "./color";
 
 class Layer {
   id: string;
@@ -41,6 +42,18 @@ class Layer {
     if (index < 0 || index > this.pixels.length) return -1;
 
     return index * 4;
+  }
+
+  getPixelColor(x: number, y: number) {
+    const index = this.getPixelIndex(x, y);
+    if (index == -1) return new Color();
+
+    return new Color(
+      this.pixels[index],
+      this.pixels[index + 1],
+      this.pixels[index + 2],
+      this.pixels[index + 3]
+    );
   }
 
   setPixelData(

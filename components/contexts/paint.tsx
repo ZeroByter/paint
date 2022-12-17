@@ -1,11 +1,19 @@
 import Tools from "@client/tools";
 import Tool from "@client/tools/tool";
+import UndoAction from "@client/undo/undoAction";
 import { ilerp, lerp } from "@client/utils";
 import Color from "@shared/types/color";
 import Layer, { ActiveLayersState } from "@shared/types/layer";
 import Location from "@shared/types/location";
 import Selection from "@shared/types/selection";
-import { createContext, FC, ReactNode, useContext, useState } from "react";
+import {
+  createContext,
+  FC,
+  ReactNode,
+  useContext,
+  useRef,
+  useState,
+} from "react";
 
 export type PaintContextType = {
   width: number;
@@ -60,6 +68,10 @@ export type PaintContextType = {
   updateActiveLayers: () => void;
 
   isMouseInsideImage: () => boolean;
+
+  addUndoAction: (action: UndoAction) => void;
+  undoAction: () => void;
+  redoAction: () => void;
 };
 
 export const PaintContext = createContext<PaintContextType>(
@@ -71,6 +83,9 @@ type Props = {
 };
 
 const PaintProvider: FC<Props> = ({ children }) => {
+  const undoActions = useRef<UndoAction[]>([]);
+  const redoActions = useRef<UndoAction[]>([]);
+
   const [width, setWidth] = useState(50);
   const [height, setHeight] = useState(50);
 
@@ -176,44 +191,68 @@ const PaintProvider: FC<Props> = ({ children }) => {
     );
   };
 
+  const addUndoAction = (action: UndoAction) => {
+    redoActions.current = [];
+    undoActions.current.push(action);
+  };
+
+  const undoAction = () => {
+    const undoAction = undoActions.current.pop();
+    if (!undoAction) return;
+
+    undoAction.undo(stateValue);
+
+    redoActions.current.push(undoAction);
+  };
+
+  const redoAction = () => {
+    const redoAction = redoActions.current.pop();
+    if (!redoAction) return;
+
+    redoAction.redo(stateValue);
+
+    undoActions.current.push(redoAction);
+  };
+
+  const stateValue = {
+    width,
+    setWidth,
+    height,
+    setHeight,
+    offset,
+    setOffset,
+    scale,
+    setScale,
+    mouseLoc,
+    setMouseLoc,
+    mouseScaledLoc,
+    setMouseScaledLoc,
+    layers,
+    setLayers,
+    setActiveLayers,
+    setVisibleLayers,
+    primaryColor,
+    setPrimaryColor,
+    secondaryColor,
+    setSecondaryColor,
+    selection,
+    setSelection,
+    selectionClickability,
+    setSelectionClickability,
+    activeToolId,
+    setActiveToolId,
+    loadFromImage,
+    getRealScale,
+    setPixelColor,
+    updateActiveLayers,
+    isMouseInsideImage,
+    addUndoAction,
+    undoAction,
+    redoAction,
+  };
+
   return (
-    <PaintContext.Provider
-      value={{
-        width,
-        setWidth,
-        height,
-        setHeight,
-        offset,
-        setOffset,
-        scale,
-        setScale,
-        mouseLoc,
-        setMouseLoc,
-        mouseScaledLoc,
-        setMouseScaledLoc,
-        layers,
-        setLayers,
-        setActiveLayers,
-        setVisibleLayers,
-        primaryColor,
-        setPrimaryColor,
-        secondaryColor,
-        setSecondaryColor,
-        selection,
-        setSelection,
-        selectionClickability,
-        setSelectionClickability,
-        activeToolId,
-        setActiveToolId,
-        loadFromImage,
-        getRealScale,
-        setPixelColor,
-        updateActiveLayers,
-        isMouseInsideImage,
-      }}
-    >
-      {children}
-    </PaintContext.Provider>
+    <PaintContext.Provider value={stateValue}>{children}</PaintContext.Provider>
   );
 };
 export default PaintProvider;
