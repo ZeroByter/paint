@@ -4,7 +4,7 @@ import Location from "@shared/types/location";
 import { PaintContextType } from "components/contexts/paint";
 import UndoAction from "./undoAction";
 
-export type Pixel = {
+export type UndoPixel = {
   location: Location;
   colorBefore: Color;
   colorAfter: Color;
@@ -12,9 +12,9 @@ export type Pixel = {
 };
 
 export default class PencilAction extends UndoAction {
-  pixels: Pixel[];
+  pixels: UndoPixel[];
 
-  constructor(pixels: Pixel[]) {
+  constructor(pixels: UndoPixel[]) {
     super();
 
     this.pixels = pixels;

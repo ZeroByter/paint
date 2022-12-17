@@ -1,4 +1,4 @@
-import PencilAction, { Pixel } from "@client/undo/pencilAction";
+import PencilAction, { UndoPixel } from "@client/undo/pencilAction";
 import { getDistance } from "@client/utils";
 import Color from "@shared/types/color";
 import Location from "@shared/types/location";
@@ -6,7 +6,7 @@ import { PaintContextType, PaintFetcher } from "components/contexts/paint";
 import Tool, { OnClickArgs, OnDragArgs } from "./tool";
 
 class PencilTool extends Tool {
-  pixels: Pixel[] = [];
+  pixels: UndoPixel[] = [];
   drawnLocations: { [index: number]: undefined } = {};
 
   constructor() {

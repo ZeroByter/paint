@@ -91,7 +91,7 @@ const PaintContainer: FC = () => {
         }
 
         if (e.shiftKey && e.key == "X") {
-          cropToSelection();
+          cropToSelection(selection);
         }
       }
     },
