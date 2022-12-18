@@ -43,6 +43,8 @@ export type PaintContextType = {
   setPrimaryColor: (newColor: Color) => void;
   secondaryColor: Color;
   setSecondaryColor: (newColor: Color) => void;
+  lastColorChanged: 0 | 1;
+  setLastColorChanged: (newIndex: 0 | 1) => void;
 
   selection: Selection;
   setSelection: (newSelection: Selection) => void;
@@ -112,6 +114,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const [secondaryColor, setSecondaryColor] = useState<Color>(
     new Color(255, 255, 255, 255)
   );
+  const [lastColorChanged, setLastColorChanged] = useState<0 | 1>(0);
 
   const [selection, setSelection] = useState(new Selection(0, 0, 0, 0));
   const [selectionClickability, setSelectionClickability] = useState(0);
@@ -324,6 +327,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setPrimaryColor,
     secondaryColor,
     setSecondaryColor,
+    lastColorChanged,
+    setLastColorChanged,
     selection,
     setSelection,
     selectionClickability,
