@@ -12,6 +12,7 @@ import ColorsPanel from "./colors/colorsPanel";
 import ToolsPanel from "./tools/toolsPanel";
 import SelectionContainer from "./selection/selectionContainer";
 import layersToImageData from "@client/layersToImageData";
+import Selection from "@shared/types/selection";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -28,6 +29,7 @@ const PaintContainer: FC = () => {
     undoAction,
     redoAction,
     cropToSelection,
+    setSelection,
   } = PaintFetcher();
 
   useEffect(() => {
@@ -46,7 +48,7 @@ const PaintContainer: FC = () => {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.ctrlKey) {
-        if (e.key == "c") {
+        if (e.code == "KeyC") {
           const isSelectionValid = selection && selection.isValid();
 
           const finalX = isSelectionValid ? selection.x : 0;
@@ -82,15 +84,15 @@ const PaintContainer: FC = () => {
           });
         }
 
-        if (e.key == "z") {
+        if (e.code == "KeyZ") {
           undoAction();
         }
 
-        if (e.key == "y") {
+        if (e.code == "KeyY") {
           redoAction();
         }
 
-        if (e.shiftKey && e.key == "X") {
+        if (e.shiftKey && e.code == "KeyX") {
           cropToSelection(selection);
         }
       }
@@ -132,6 +134,7 @@ const PaintContainer: FC = () => {
       const image = new Image();
       image.onload = () => {
         loadFromImage(image);
+        setSelection(new Selection());
       };
       image.src = window.URL.createObjectURL(file);
     }
