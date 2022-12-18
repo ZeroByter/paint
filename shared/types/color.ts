@@ -1,3 +1,5 @@
+import { lerp } from "@client/utils";
+
 export default class Color {
   r: number;
   g: number;
@@ -34,6 +36,15 @@ export default class Color {
     }
 
     return clone;
+  }
+
+  lerp(otherColor: Color, t: number) {
+    return new Color(
+      lerp(this.r, otherColor.r, t),
+      lerp(this.g, otherColor.g, t),
+      lerp(this.b, otherColor.b, t),
+      lerp(this.a, otherColor.r, t)
+    );
   }
 
   toString() {

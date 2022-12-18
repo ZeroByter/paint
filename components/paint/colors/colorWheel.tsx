@@ -1,10 +1,10 @@
 import { getDistance, ilerp } from "@client/utils";
-import { hslToRgb } from "@client/colorUtils";
 import Location from "@shared/types/location";
 import { FC, MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import css from "./colorWheel.module.scss";
 import Color from "@shared/types/color";
 import { PaintFetcher } from "components/contexts/paint";
+import colorsys from "colorsys";
 
 const ColorWheel: FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -81,13 +81,13 @@ const ColorWheel: FC = () => {
       setMouseLoc(newLoc);
 
       const hsl = xyToColor(newLoc.x, newLoc.y);
-      const rgb = hslToRgb(hsl.deg / 360, hsl.sat / 100, hsl.lig / 100);
+      const rgb = colorsys.hslToRgb(hsl.deg, hsl.sat, hsl.lig);
 
       if (primary) {
-        setPrimaryColor(new Color(rgb[0], rgb[1], rgb[2], 255));
+        setPrimaryColor(new Color(rgb.r, rgb.g, rgb.b, 255));
         setLastColorChanged(0);
       } else {
-        setSecondaryColor(new Color(rgb[0], rgb[1], rgb[2], 255));
+        setSecondaryColor(new Color(rgb.r, rgb.g, rgb.b, 255));
         setLastColorChanged(1);
       }
     } else {
