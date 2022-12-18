@@ -13,8 +13,14 @@ const ColorWheel: FC = () => {
   const [isMouseOver, setIsMouseOver] = useState(false);
   const [isMouseDown, setIsMouseDown] = useState(false);
 
-  const { setPrimaryColor, setSecondaryColor, setLastColorChanged } =
-    PaintFetcher();
+  const {
+    setPrimaryColor,
+    setSecondaryColor,
+    setLastColorChanged,
+    lastColorChanged,
+    primaryColor,
+    secondaryColor,
+  } = PaintFetcher();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -46,6 +52,20 @@ const ColorWheel: FC = () => {
       lig: Math.round((1 - dist / canvas.width) * 100),
     };
   };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const lastColor = lastColorChanged == 0 ? primaryColor : secondaryColor;
+    const hsv = colorsys.rgbToHsv(lastColor);
+
+    setMouseLoc(
+      Location.fromAngle(-hsv.h + 90)
+        .multiply(((hsv.s / 100) * canvas.width) / 2)
+        .add(canvas.width / 2, canvas.width / 2)
+    );
+  }, [primaryColor, secondaryColor, lastColorChanged]);
 
   const renderPaintWheel = (
     canvas: HTMLCanvasElement,
