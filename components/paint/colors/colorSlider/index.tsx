@@ -1,9 +1,9 @@
-import { rgbToHsl } from "@client/colorUtils";
 import { clamp } from "@client/utils";
 import { PaintFetcher } from "components/contexts/paint";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 import Canvas from "./canvas";
 import css from "./index.module.scss";
+import colorsys from "colorsys";
 
 export type SliderType = "r" | "g" | "b" | "h" | "s" | "v" | "a";
 
@@ -35,14 +35,14 @@ const ColorSlider: FC<Props> = ({ type }) => {
     } else if (type == "a") {
       setValue(lastColor.a);
     } else {
-      const hsl = rgbToHsl(lastColor.r, lastColor.g, lastColor.b);
+      const hsl = colorsys.rgbToHsv(lastColor.r, lastColor.g, lastColor.b);
 
       if (type == "h") {
-        setValue(Math.round(hsl[0] * 360));
+        setValue(Math.round(hsl.h));
       } else if (type == "s") {
-        setValue(Math.round(hsl[1] * 100));
+        setValue(Math.round(hsl.s));
       } else if (type == "v") {
-        setValue(Math.round(hsl[2] * 100));
+        setValue(Math.round(hsl.v));
       }
     }
   }, [primaryColor, secondaryColor, lastColorChanged, type]);

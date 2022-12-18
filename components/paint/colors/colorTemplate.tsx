@@ -1,8 +1,8 @@
-import { hslToRgb } from "@client/colorUtils";
 import Color from "@shared/types/color";
 import { PaintFetcher } from "components/contexts/paint";
 import { FC, MouseEvent, useMemo } from "react";
 import css from "./colorTemplate.module.scss";
+import colorsys from "colorsys";
 
 type Props = {
   deg: number;
@@ -15,16 +15,16 @@ const ColorTemplate: FC<Props> = ({ deg, sat, lig = 50 }) => {
     PaintFetcher();
 
   const handleClick = (e: MouseEvent<HTMLDivElement>) => {
-    const rgb = hslToRgb(deg / 360, sat / 100, lig / 100);
+    const rgb = colorsys.hslToRgb(deg, sat, lig);
     if (e.button == 0) {
-      setPrimaryColor(new Color(rgb[0], rgb[1], rgb[2], 255));
+      setPrimaryColor(new Color(rgb.r, rgb.g, rgb.b, 255));
       setLastColorChanged(0);
     }
   };
 
   const handleContextMenu = (e: MouseEvent<HTMLDivElement>) => {
-    const rgb = hslToRgb(deg / 360, sat / 100, lig / 100);
-    setSecondaryColor(new Color(rgb[0], rgb[1], rgb[2], 255));
+    const rgb = colorsys.hslToRgb(deg, sat, lig);
+    setSecondaryColor(new Color(rgb.r, rgb.g, rgb.b, 255));
     setLastColorChanged(1);
     e.preventDefault();
   };
