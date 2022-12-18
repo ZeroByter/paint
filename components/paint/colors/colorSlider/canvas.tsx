@@ -1,7 +1,7 @@
 import { hslToRgb } from "@client/colorUtils";
 import Color from "@shared/types/color";
 import { FC, useEffect, useRef } from "react";
-import { SliderType } from ".";
+import { SliderType, specialMaxValue } from ".";
 import ArrowCanvas from "./arrowCanvas";
 import css from "./canvas.module.scss";
 
@@ -21,14 +21,20 @@ const typeColorMap = {
     return new Color(rgb[0], rgb[1], rgb[2], 255);
   },
   s: (i: number) => new Color(0, 0, 0, 255),
-  v: (i: number) => new Color(0, 0, 0, 255),
-  a: (i: number) => new Color(0, 0, 0, 255),
-};
-
-const specialMaxValue: any = {
-  h: 360,
-  s: 100,
-  v: 100,
+  v: (i: number) =>
+    new Color(
+      (i / sliderLength) * 255,
+      (i / sliderLength) * 255,
+      (i / sliderLength) * 255,
+      255
+    ),
+  a: (i: number) =>
+    new Color(
+      ((sliderLength - i) / sliderLength) * 255,
+      ((sliderLength - i) / sliderLength) * 255,
+      ((sliderLength - i) / sliderLength) * 255,
+      255
+    ),
 };
 
 const Canvas: FC<Props> = ({ type, value }) => {
