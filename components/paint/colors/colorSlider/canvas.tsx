@@ -96,9 +96,6 @@ const Canvas: FC<Props> = ({ type, value }) => {
         } else {
           const hsv = colorsys.rgbToHsv(primaryColor);
           hsv[type] = Math.round(value * specialMaxValue[type]);
-          // if(type == "h"){
-          //   hsv.h = Math.round(value * 360);
-          // }
           const rgb = colorsys.hsvToRgb(hsv);
           setPrimaryColor(new Color(rgb.r, rgb.g, rgb.b, primaryColor.a));
         }
