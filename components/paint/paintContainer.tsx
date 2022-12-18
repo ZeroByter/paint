@@ -110,6 +110,7 @@ const PaintContainer: FC = () => {
 
   const handleScroll = useCallback(
     (e: WheelEvent) => {
+      if (!(e.target as any).getAttribute("data-interactable")) return;
       setScale(clamp(scale + e.deltaY / -100000, 0, 100));
     },
     [scale, setScale]
