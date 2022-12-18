@@ -1,7 +1,12 @@
-import { FC, useEffect, useRef } from "react";
+import { ilerp } from "@client/utils";
+import { FC, useEffect, useMemo, useRef } from "react";
 import css from "./arrowCanvas.module.scss";
 
-const ArrowCanvas: FC = () => {
+type Props = {
+  value: number;
+};
+
+const ArrowCanvas: FC<Props> = ({ value }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -11,8 +16,8 @@ const ArrowCanvas: FC = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const size = 20;
-    const padding = size / 20;
+    const size = 10;
+    const padding = size / 10;
     canvas.width = size;
     canvas.height = size;
     const half = canvas.width / 2;
@@ -21,21 +26,31 @@ const ArrowCanvas: FC = () => {
       for (let x = 0; x < canvas.width; x++) {
         const distanceToCenter = Math.abs(x - half) - y / 2;
 
-        if (
-          y >= canvas.height - 1 - padding ||
-          (distanceToCenter >= 0 && distanceToCenter <= padding)
-        ) {
-          ctx.fillStyle = "white";
-          ctx.fillRect(x, y, 1, 1);
-        } else if (distanceToCenter < 1) {
+        if (distanceToCenter <= 0) {
           ctx.fillStyle = "black";
           ctx.fillRect(x, y, 1, 1);
         }
+
+        let whiteAlpha = ilerp(
+          0,
+          padding,
+          padding - Math.abs(distanceToCenter)
+        );
+        if (y >= size - padding) whiteAlpha = 1;
+        ctx.fillStyle = `rgba(255,255,255,${whiteAlpha})`;
+        ctx.fillRect(x, y, 1, 1);
       }
     }
   }, []);
 
-  return <canvas className={css.root} ref={canvasRef} />;
+  const styleMemo = useMemo(
+    () => ({
+      left: `${value}%`,
+    }),
+    [value]
+  );
+
+  return <canvas style={styleMemo} className={css.root} ref={canvasRef} />;
 };
 
 export default ArrowCanvas;

@@ -19,6 +19,7 @@ class ColorPickerTool extends Tool {
       width,
       setPrimaryColor,
       setSecondaryColor,
+      setLastColorChanged,
       isMouseInsideImage,
     } = state;
 
@@ -35,8 +36,10 @@ class ColorPickerTool extends Tool {
 
         if (primary) {
           setPrimaryColor(new Color(r, g, b, a));
+          setLastColorChanged(0);
         } else {
           setSecondaryColor(new Color(r, g, b, a));
+          setLastColorChanged(1);
         }
 
         break;

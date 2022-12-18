@@ -1,4 +1,4 @@
-import { hslToRgb, rgbToHsl } from "@client/colorUtils";
+import { hslToRgb } from "@client/colorUtils";
 import Color from "@shared/types/color";
 import { FC, useEffect, useRef } from "react";
 import { SliderType } from ".";
@@ -7,6 +7,7 @@ import css from "./canvas.module.scss";
 
 type Props = {
   type: SliderType;
+  value: number;
 };
 
 const sliderLength = 255;
@@ -24,7 +25,13 @@ const typeColorMap = {
   a: (i: number) => new Color(0, 0, 0, 255),
 };
 
-const Canvas: FC<Props> = ({ type }) => {
+const specialMaxValue: any = {
+  h: 360,
+  s: 100,
+  v: 100,
+};
+
+const Canvas: FC<Props> = ({ type, value }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -41,12 +48,12 @@ const Canvas: FC<Props> = ({ type }) => {
       ctx.fillStyle = typeColorMap[type](i).toString();
       ctx.fillRect(i, 0, 1, 1);
     }
-  }, []);
+  }, [type]);
 
   return (
     <div className={css.root}>
       <canvas ref={canvasRef} />
-      <ArrowCanvas />
+      <ArrowCanvas value={(value / (specialMaxValue[type] ?? 255)) * 100} />
     </div>
   );
 };

@@ -13,7 +13,8 @@ const ColorWheel: FC = () => {
   const [isMouseOver, setIsMouseOver] = useState(false);
   const [isMouseDown, setIsMouseDown] = useState(false);
 
-  const { setPrimaryColor, setSecondaryColor } = PaintFetcher();
+  const { setPrimaryColor, setSecondaryColor, setLastColorChanged } =
+    PaintFetcher();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -40,8 +41,8 @@ const ColorWheel: FC = () => {
       90;
 
     return {
-      deg: direction,
-      sat: Math.round((1 + dist / (canvas.width / 2)) * 100),
+      deg: (direction + 360) % 360,
+      sat: 100,
       lig: Math.round((1 - dist / canvas.width) * 100),
     };
   };
@@ -84,8 +85,10 @@ const ColorWheel: FC = () => {
 
       if (primary) {
         setPrimaryColor(new Color(rgb[0], rgb[1], rgb[2], 255));
+        setLastColorChanged(0);
       } else {
         setSecondaryColor(new Color(rgb[0], rgb[1], rgb[2], 255));
+        setLastColorChanged(1);
       }
     } else {
       setIsMouseDown(false);
