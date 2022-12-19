@@ -87,12 +87,12 @@ const PaintToolbar: FC = () => {
     useCallback(
       (e: KeyboardEvent) => {
         if (e.ctrlKey) {
-          if (e.key == "s") {
+          if (e.code == "KeyS") {
             e.preventDefault();
 
             handleSave();
           }
-          if (e.key == "o") {
+          if (e.code == "KeyO") {
             e.preventDefault();
 
             handleLoadLocal();

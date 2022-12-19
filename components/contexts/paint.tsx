@@ -43,6 +43,8 @@ export type PaintContextType = {
   setPrimaryColor: (newColor: Color) => void;
   secondaryColor: Color;
   setSecondaryColor: (newColor: Color) => void;
+  lastColorChanged: 0 | 1;
+  setLastColorChanged: (newIndex: 0 | 1) => void;
 
   selection: Selection;
   setSelection: (newSelection: Selection) => void;
@@ -65,6 +67,8 @@ export type PaintContextType = {
     a: number,
     update: boolean
   ) => void;
+
+  erasePixel: (x: number, y: number, opacity: number, update: boolean) => void;
 
   updateActiveLayers: () => void;
 
@@ -110,6 +114,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const [secondaryColor, setSecondaryColor] = useState<Color>(
     new Color(255, 255, 255, 255)
   );
+  const [lastColorChanged, setLastColorChanged] = useState<0 | 1>(0);
 
   const [selection, setSelection] = useState(new Selection(0, 0, 0, 0));
   const [selectionClickability, setSelectionClickability] = useState(0);
@@ -168,7 +173,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
         x > selection.x + selection.width - 1 ||
         y > selection.y + selection.height - 1
       ) {
-        return [];
+        return;
       }
     }
 
@@ -176,6 +181,41 @@ const PaintProvider: FC<Props> = ({ children }) => {
       if (!layer.active) continue;
 
       layer.setPixelData(x, y, r, g, b, a);
+      if (update) layer.updatePixels();
+    }
+  };
+
+  const erasePixel = (
+    x: number,
+    y: number,
+    opacity: number,
+    update = false
+  ) => {
+    if (x < 0 || y < 0 || x > width - 1 || y > height - 1) return;
+
+    if (selection.isValid()) {
+      if (
+        x < selection.x ||
+        y < selection.y ||
+        x > selection.x + selection.width - 1 ||
+        y > selection.y + selection.height - 1
+      ) {
+        return;
+      }
+    }
+
+    for (const layer of layers) {
+      if (!layer.active) continue;
+
+      const color = layer.getPixelColor(x, y);
+      layer.setPixelData(
+        x,
+        y,
+        color.r,
+        color.g,
+        color.b,
+        Math.min(0, opacity - color.a)
+      );
       if (update) layer.updatePixels();
     }
   };
@@ -287,6 +327,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setPrimaryColor,
     secondaryColor,
     setSecondaryColor,
+    lastColorChanged,
+    setLastColorChanged,
     selection,
     setSelection,
     selectionClickability,
@@ -296,6 +338,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
     loadFromImage,
     getRealScale,
     setPixelColor,
+    erasePixel,
     updateActiveLayers,
     isMouseInsideImage,
     addUndoAction,

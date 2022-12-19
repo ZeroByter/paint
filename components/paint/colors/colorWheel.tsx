@@ -1,10 +1,10 @@
 import { getDistance, ilerp } from "@client/utils";
-import { hslToRgb } from "@client/colorUtils";
 import Location from "@shared/types/location";
 import { FC, MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import css from "./colorWheel.module.scss";
 import Color from "@shared/types/color";
 import { PaintFetcher } from "components/contexts/paint";
+import colorsys from "colorsys";
 
 const ColorWheel: FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -13,7 +13,14 @@ const ColorWheel: FC = () => {
   const [isMouseOver, setIsMouseOver] = useState(false);
   const [isMouseDown, setIsMouseDown] = useState(false);
 
-  const { setPrimaryColor, setSecondaryColor } = PaintFetcher();
+  const {
+    setPrimaryColor,
+    setSecondaryColor,
+    setLastColorChanged,
+    lastColorChanged,
+    primaryColor,
+    secondaryColor,
+  } = PaintFetcher();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -40,11 +47,25 @@ const ColorWheel: FC = () => {
       90;
 
     return {
-      deg: direction,
-      sat: Math.round((1 + dist / (canvas.width / 2)) * 100),
+      deg: (direction + 360) % 360,
+      sat: 100,
       lig: Math.round((1 - dist / canvas.width) * 100),
     };
   };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const lastColor = lastColorChanged == 0 ? primaryColor : secondaryColor;
+    const hsv = colorsys.rgbToHsv(lastColor);
+
+    setMouseLoc(
+      Location.fromAngle(-hsv.h + 90)
+        .multiply(((hsv.s / 100) * canvas.width) / 2)
+        .add(canvas.width / 2, canvas.width / 2)
+    );
+  }, [primaryColor, secondaryColor, lastColorChanged]);
 
   const renderPaintWheel = (
     canvas: HTMLCanvasElement,
@@ -80,12 +101,14 @@ const ColorWheel: FC = () => {
       setMouseLoc(newLoc);
 
       const hsl = xyToColor(newLoc.x, newLoc.y);
-      const rgb = hslToRgb(hsl.deg / 360, hsl.sat / 100, hsl.lig / 100);
+      const rgb = colorsys.hslToRgb(hsl.deg, hsl.sat, hsl.lig);
 
       if (primary) {
-        setPrimaryColor(new Color(rgb[0], rgb[1], rgb[2], 255));
+        setPrimaryColor(new Color(rgb.r, rgb.g, rgb.b, 255));
+        setLastColorChanged(0);
       } else {
-        setSecondaryColor(new Color(rgb[0], rgb[1], rgb[2], 255));
+        setSecondaryColor(new Color(rgb.r, rgb.g, rgb.b, 255));
+        setLastColorChanged(1);
       }
     } else {
       setIsMouseDown(false);
