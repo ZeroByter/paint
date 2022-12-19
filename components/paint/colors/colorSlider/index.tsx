@@ -4,6 +4,7 @@ import { ChangeEvent, FC, useEffect, useState } from "react";
 import Canvas from "./canvas";
 import css from "./index.module.scss";
 import colorsys from "colorsys";
+import Color from "@shared/types/color";
 
 export type SliderType = "r" | "g" | "b" | "h" | "s" | "v" | "a";
 
@@ -54,19 +55,19 @@ const ColorSlider: FC<Props> = ({ type }) => {
       specialMaxValue[type] ?? 255
     );
 
-    switch (type) {
-      case "r":
-        setPrimaryColor(primaryColor.set(0, value));
-        break;
-      case "g":
-        setPrimaryColor(primaryColor.set(1, value));
-        break;
-      case "b":
-        setPrimaryColor(primaryColor.set(2, value));
-        break;
-      case "a":
-        setPrimaryColor(primaryColor.set(3, value));
-        break;
+    if (type == "r") {
+      setPrimaryColor(primaryColor.set(0, value));
+    } else if (type == "g") {
+      setPrimaryColor(primaryColor.set(1, value));
+    } else if (type == "b") {
+      setPrimaryColor(primaryColor.set(2, value));
+    } else if (type == "a") {
+      setPrimaryColor(primaryColor.set(3, value));
+    } else {
+      const hsv = colorsys.rgbToHsv(primaryColor);
+      hsv[type] = Math.round(value);
+      const rgb = colorsys.hsvToRgb(hsv);
+      setPrimaryColor(new Color(rgb.r, rgb.g, rgb.b, primaryColor.a));
     }
   };
 
