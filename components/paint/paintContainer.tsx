@@ -14,6 +14,8 @@ import layersToImageData from "@client/layersToImageData";
 import Selection from "@shared/types/selection";
 import TransparencyBackground from "./transparencyBackground";
 import Notification from "./notification";
+import Location from "@shared/types/location";
+import useWindowEvent from "@client/hooks/useWindowEvent";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -32,6 +34,9 @@ const PaintContainer: FC = () => {
     cropToSelection,
     setSelection,
     setNotification,
+    offset,
+    getRealScale,
+    setOffset,
   } = PaintFetcher();
 
   useEffect(() => {
@@ -125,9 +130,60 @@ const PaintContainer: FC = () => {
   const handleScroll = useCallback(
     (e: WheelEvent) => {
       if (!(e.target as any).getAttribute("data-interactable")) return;
-      setScale(clamp(scale + e.deltaY / -100000, 0, 100));
+      const containerOffset = { x: 0, y: 0 };
+
+      if (containerRef.current) {
+        const container = containerRef.current;
+        const rect = container.getBoundingClientRect();
+        containerOffset.x = rect.x;
+        containerOffset.y = rect.y;
+      }
+
+      const realScale = getRealScale();
+
+      const preMouseLoc = new Location(
+        Math.floor(
+          (e.clientX -
+            containerOffset.x +
+            (width * realScale) / 2 -
+            offset.x * realScale) /
+            realScale
+        ),
+        Math.floor(
+          (e.clientY -
+            containerOffset.y +
+            (height * realScale) / 2 -
+            offset.y * realScale) /
+            realScale
+        )
+      );
+
+      const newScale = clamp(scale + e.deltaY / -100000, 0, 100);
+      const newRealScale = getRealScale(newScale);
+
+      const postMouseLoc = new Location(
+        Math.floor(
+          (e.clientX -
+            containerOffset.x +
+            (width * newRealScale) / 2 -
+            offset.x * newRealScale) /
+            newRealScale
+        ),
+        Math.floor(
+          (e.clientY -
+            containerOffset.y +
+            (height * newRealScale) / 2 -
+            offset.y * newRealScale) /
+            newRealScale
+        )
+      );
+
+      const difference = postMouseLoc.minus(preMouseLoc);
+
+      setScale(newScale);
+      setOffset(offset.add(difference));
     },
-    [scale, setScale]
+    [getRealScale, height, offset, scale, setOffset, setScale, width]
   );
 
   useEffect(() => {
