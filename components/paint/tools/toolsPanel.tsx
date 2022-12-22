@@ -6,7 +6,7 @@ import ToolButton from "./toolButton";
 import css from "./toolsPanel.module.scss";
 
 const ToolsPanel: FC = () => {
-  const { setActiveToolId } = PaintFetcher();
+  const { setActiveToolId, setNotification } = PaintFetcher();
 
   const renderTools = Object.entries(Tools).map(([id, tool]) => {
     return <ToolButton key={id} id={id} tool={tool} />;
@@ -19,9 +19,10 @@ const ToolsPanel: FC = () => {
         const tool = ToolKeyShortcuts[e.code];
         if (tool) {
           setActiveToolId(tool);
+          setNotification(`Selected tool '${Tools[tool].tooltip}'`);
         }
       },
-      [setActiveToolId]
+      [setActiveToolId, setNotification]
     )
   );
 

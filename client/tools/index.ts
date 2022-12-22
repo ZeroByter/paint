@@ -8,7 +8,7 @@ export const ToolKeyShortcuts: { [id: string]: string } = {
   KeyE: "eraser",
   KeyS: "select",
   KeyP: "pencil",
-  KeyC: "colorpicker",
+  KeyK: "colorpicker",
 };
 
 const Tools: { [id: string]: Tool } = {
