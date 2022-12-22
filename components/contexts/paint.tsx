@@ -57,7 +57,7 @@ export type PaintContextType = {
 
   loadFromImage: (image: HTMLImageElement) => void;
 
-  getRealScale: () => number;
+  getRealScale: (number?: number) => number;
 
   setPixelColor: (
     x: number,
@@ -149,8 +149,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setScale(ilerp(0.25, 1600, Math.min(b, a)));
   };
 
-  const getRealScale = () => {
-    return lerp(0.25, 1600, scale);
+  const getRealScale = (scaleOverride?: number) => {
+    return lerp(0.25, 1600, scaleOverride ?? scale);
   };
 
   const setActiveLayers = (ids: string[]) => {

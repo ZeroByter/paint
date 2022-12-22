@@ -72,7 +72,7 @@ class PencilTool extends Tool {
 
     const lastMouseLoc = args.lastDragLocation.copy();
 
-    const distance = Math.round(
+    const distance = Math.ceil(
       getDistance(mouseLoc.x, mouseLoc.y, lastMouseLoc.x, lastMouseLoc.y)
     );
 
