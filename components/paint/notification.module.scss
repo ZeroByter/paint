@@ -1,0 +1,27 @@
+@keyframes opacity {
+  0% {
+    opacity: 100%;
+  }
+  100% {
+    opacity: 0%;
+  }
+}
+
+.root {
+  position: fixed;
+  bottom: 25px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: hsl(0deg 0% 20%);
+  padding: 6px;
+  border-radius: 4px;
+  animation: opacity 1s 1s both;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .image {
+    max-width: 200px;
+  }
+}

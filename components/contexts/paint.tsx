@@ -7,6 +7,7 @@ import Color from "@shared/types/color";
 import Layer, { ActiveLayersState } from "@shared/types/layer";
 import Location from "@shared/types/location";
 import Selection from "@shared/types/selection";
+import { randomString } from "@shared/utils";
 import {
   createContext,
   FC,
@@ -82,6 +83,9 @@ export type PaintContextType = {
     selection: Selection,
     shouldAddUndoAction?: boolean
   ) => void;
+
+  notificationData?: NotificationData;
+  setNotification: (text: string, image?: ImageData) => void;
 };
 
 export const PaintContext = createContext<PaintContextType>(
@@ -90,6 +94,12 @@ export const PaintContext = createContext<PaintContextType>(
 
 type Props = {
   children: ReactNode;
+};
+
+type NotificationData = {
+  id: string;
+  text: string;
+  image?: ImageData;
 };
 
 const PaintProvider: FC<Props> = ({ children }) => {
@@ -120,6 +130,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const [selectionClickability, setSelectionClickability] = useState(0);
 
   const [activeToolId, setActiveToolId] = useState("pencil");
+
+  const [notificationData, setNotificationData] = useState<NotificationData>();
 
   const loadFromImage = (image: HTMLImageElement) => {
     setWidth(image.width);
@@ -306,6 +318,14 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setSelection(new Selection());
   };
 
+  const setNotification = (text: string, image?: ImageData) => {
+    setNotificationData({
+      id: randomString(),
+      text,
+      image,
+    });
+  };
+
   const stateValue = {
     width,
     setWidth,
@@ -345,6 +365,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
     undoAction,
     redoAction,
     cropToSelection,
+    notificationData,
+    setNotification,
   };
 
   return (

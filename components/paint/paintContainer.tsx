@@ -13,6 +13,7 @@ import SelectionContainer from "./selection/selectionContainer";
 import layersToImageData from "@client/layersToImageData";
 import Selection from "@shared/types/selection";
 import TransparencyBackground from "./transparencyBackground";
+import Notification from "./notification";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -30,6 +31,7 @@ const PaintContainer: FC = () => {
     redoAction,
     cropToSelection,
     setSelection,
+    setNotification,
   } = PaintFetcher();
 
   useEffect(() => {
@@ -63,18 +65,18 @@ const PaintContainer: FC = () => {
           const ctx = canvas.getContext("2d");
           if (!ctx) return;
 
-          ctx.putImageData(
-            layersToImageData(
-              finalX,
-              finalY,
-              finalWidth,
-              finalHeight,
-              width,
-              layers.filter((layer) => layer.active && layer.visible)
-            ),
-            0,
-            0
+          const newImageData = layersToImageData(
+            finalX,
+            finalY,
+            finalWidth,
+            finalHeight,
+            width,
+            layers.filter((layer) => layer.active && layer.visible)
           );
+
+          ctx.putImageData(newImageData, 0, 0);
+
+          setNotification(`Copied image`, newImageData);
 
           canvas.toBlob((blob) => {
             if (!blob) return;
@@ -86,18 +88,30 @@ const PaintContainer: FC = () => {
 
         if (e.code == "KeyZ") {
           undoAction();
+          setNotification(`Undo`);
         }
 
         if (e.code == "KeyY") {
           redoAction();
+          setNotification(`Redo`);
         }
 
         if (e.shiftKey && e.code == "KeyX") {
           cropToSelection(selection);
+          setNotification(`Cropped to selection`);
         }
       }
     },
-    [selection, width, height, layers, undoAction, redoAction, cropToSelection]
+    [
+      selection,
+      width,
+      height,
+      layers,
+      undoAction,
+      redoAction,
+      cropToSelection,
+      setNotification,
+    ]
   );
 
   useEffect(() => {
@@ -158,6 +172,7 @@ const PaintContainer: FC = () => {
       <LayersPanel />
       <ColorsPanel />
       <ToolsPanel />
+      <Notification />
     </RootContainer>
   );
 };
