@@ -39,7 +39,7 @@ class Layer {
 
   getPixelIndex(x: number, y: number) {
     const index = x + y * this.width;
-    if (index < 0 || index > this.pixels.length) return -1;
+    if (x < 0 || y < 0 || x > this.width - 1 || y > this.height - 1) return -1;
 
     return index * 4;
   }

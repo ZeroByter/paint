@@ -64,6 +64,7 @@ class EraserTool extends Tool {
       erasePixel,
       layers,
       width,
+      height,
     } = state;
 
     const mouseLoc = args.accurateMouseLoc;
@@ -89,25 +90,32 @@ class EraserTool extends Tool {
 
       this.drawnLocations[paintLocationIndex] = undefined;
 
-      for (const layer of layers) {
-        if (!layer.active) continue;
+      if (
+        paintLocation.x >= 0 &&
+        paintLocation.y >= 0 &&
+        paintLocation.x < width &&
+        paintLocation.y < height
+      ) {
+        for (const layer of layers) {
+          if (!layer.active) continue;
 
-        const colorBefore = layer.getPixelColor(
-          paintLocation.x,
-          paintLocation.y
-        );
+          const colorBefore = layer.getPixelColor(
+            paintLocation.x,
+            paintLocation.y
+          );
 
-        this.pixels.push({
-          location: paintLocation,
-          colorBefore,
-          colorAfter: new Color(
-            colorBefore.r,
-            colorBefore.g,
-            colorBefore.b,
-            255 - useColor.a
-          ),
-          layer: layer.id,
-        });
+          this.pixels.push({
+            location: paintLocation,
+            colorBefore,
+            colorAfter: new Color(
+              colorBefore.r,
+              colorBefore.g,
+              colorBefore.b,
+              255 - useColor.a
+            ),
+            layer: layer.id,
+          });
+        }
       }
 
       erasePixel(paintLocation.x, paintLocation.y, useColor.a, false);
