@@ -21,8 +21,13 @@ type Props = {
 const ColorSlider: FC<Props> = ({ type }) => {
   const [value, setValue] = useState(0);
 
-  const { primaryColor, setPrimaryColor, secondaryColor, lastColorChanged } =
-    PaintFetcher();
+  const {
+    primaryColor,
+    setPrimaryColor,
+    setSecondaryColor,
+    secondaryColor,
+    lastColorChanged,
+  } = PaintFetcher();
 
   useEffect(() => {
     const lastColor = lastColorChanged == 0 ? primaryColor : secondaryColor;
@@ -55,19 +60,23 @@ const ColorSlider: FC<Props> = ({ type }) => {
       specialMaxValue[type] ?? 255
     );
 
+    const lastColor = lastColorChanged == 0 ? primaryColor : secondaryColor;
+    const setColor =
+      lastColorChanged == 0 ? setPrimaryColor : setSecondaryColor;
+
     if (type == "r") {
-      setPrimaryColor(primaryColor.set(0, value));
+      setColor(lastColor.set(0, value));
     } else if (type == "g") {
-      setPrimaryColor(primaryColor.set(1, value));
+      setColor(lastColor.set(1, value));
     } else if (type == "b") {
-      setPrimaryColor(primaryColor.set(2, value));
+      setColor(lastColor.set(2, value));
     } else if (type == "a") {
-      setPrimaryColor(primaryColor.set(3, value));
+      setColor(lastColor.set(3, value));
     } else {
-      const hsv = colorsys.rgbToHsv(primaryColor);
+      const hsv = colorsys.rgbToHsv(lastColor);
       hsv[type] = Math.round(value);
       const rgb = colorsys.hsvToRgb(hsv);
-      setPrimaryColor(new Color(rgb.r, rgb.g, rgb.b, primaryColor.a));
+      setColor(new Color(rgb.r, rgb.g, rgb.b, lastColor.a));
     }
   };
 

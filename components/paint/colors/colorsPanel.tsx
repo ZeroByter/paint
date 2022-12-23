@@ -26,9 +26,9 @@ const ColorsPanel: FC = () => {
       <div className={css.basicInfo}>
         <div className={css.row}>
           <div>pri or sec</div>
-          <div>
+          <div className={css.toggleExpandButton}>
             <button onClick={() => setExpanded(!expanded)}>
-              {expanded ? "< <" : "> >"}
+              {expanded ? "Less < <" : "More > >"}
             </button>
           </div>
         </div>
