@@ -22,3 +22,7 @@ a {
 canvas {
   image-rendering: pixelated;
 }
+
+button {
+  cursor: pointer;
+}
