@@ -16,6 +16,9 @@ import TransparencyBackground from "./transparencyBackground";
 import Notification from "./notification";
 import Location from "@shared/types/location";
 import useWindowEvent from "@client/hooks/useWindowEvent";
+import PasteAction from "@client/undo/pasteAction";
+import { clone, cloneDeep } from "lodash/fp";
+import useDocumentEvent from "@client/hooks/useDocumentEvent";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -37,179 +40,171 @@ const PaintContainer: FC = () => {
     offset,
     getRealScale,
     setOffset,
+    addUndoAction,
   } = PaintFetcher();
+
+  useDocumentEvent(
+    "paste",
+    useCallback(
+      (e: ClipboardEvent) => {
+        if (!e.clipboardData || e.clipboardData.files.length != 1) return; //TODO: Support multiple images? Each image to it's own layer, canvas size is of the biggest image
+
+        for (let i = 0; i < e.clipboardData.files.length; i++) {
+          const file = e.clipboardData.files[i];
+
+          if (!file.type.startsWith("image")) continue;
+
+          const image = new Image();
+          image.onload = () => {
+            addUndoAction(new PasteAction(layers, width, height, image));
+            loadFromImage(image);
+            setSelection(new Selection());
+          };
+          image.src = window.URL.createObjectURL(file);
+        }
+      },
+      [addUndoAction, height, layers, loadFromImage, setSelection, width]
+    )
+  );
 
   useEffect(() => {
     const newLayers: Layer[] = [];
 
     newLayers.push(new Layer(width, height, true));
     setLayers(newLayers);
-
-    document.addEventListener("paste", handlePaste);
-
-    return () => {
-      document.removeEventListener("paste", handlePaste);
-    };
   }, []);
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.ctrlKey) {
-        if (e.code == "KeyC") {
-          const isSelectionValid = selection && selection.isValid();
+  useDocumentEvent(
+    "keydown",
+    useCallback(
+      (e: KeyboardEvent) => {
+        if (e.ctrlKey) {
+          if (e.code == "KeyC") {
+            const isSelectionValid = selection && selection.isValid();
 
-          const finalX = isSelectionValid ? selection.x : 0;
-          const finalY = isSelectionValid ? selection.y : 0;
-          const finalWidth = isSelectionValid ? selection.width : width;
-          const finalHeight = isSelectionValid ? selection.height : height;
+            const finalX = isSelectionValid ? selection.x : 0;
+            const finalY = isSelectionValid ? selection.y : 0;
+            const finalWidth = isSelectionValid ? selection.width : width;
+            const finalHeight = isSelectionValid ? selection.height : height;
 
-          const canvas = document.createElement("canvas");
-          canvas.width = finalWidth;
-          canvas.height = finalHeight;
+            const canvas = document.createElement("canvas");
+            canvas.width = finalWidth;
+            canvas.height = finalHeight;
 
-          const ctx = canvas.getContext("2d");
-          if (!ctx) return;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return;
 
-          const newImageData = layersToImageData(
-            finalX,
-            finalY,
-            finalWidth,
-            finalHeight,
-            width,
-            layers.filter((layer) => layer.active && layer.visible)
-          );
+            const newImageData = layersToImageData(
+              finalX,
+              finalY,
+              finalWidth,
+              finalHeight,
+              width,
+              layers.filter((layer) => layer.active && layer.visible)
+            );
 
-          ctx.putImageData(newImageData, 0, 0);
+            ctx.putImageData(newImageData, 0, 0);
 
-          setNotification(`Copied image`, newImageData);
+            setNotification(`Copied image`, newImageData);
 
-          canvas.toBlob((blob) => {
-            if (!blob) return;
+            canvas.toBlob((blob) => {
+              if (!blob) return;
 
-            const item = new ClipboardItem({ "image/png": blob });
-            navigator.clipboard.write([item]);
-          });
+              const item = new ClipboardItem({ "image/png": blob });
+              navigator.clipboard.write([item]);
+            });
+          }
+
+          if (e.code == "KeyZ") {
+            undoAction();
+            setNotification(`Undo`);
+          }
+
+          if (e.code == "KeyY") {
+            redoAction();
+            setNotification(`Redo`);
+          }
+
+          if (e.shiftKey && e.code == "KeyX") {
+            cropToSelection(selection);
+            setNotification(`Cropped to selection`);
+          }
         }
-
-        if (e.code == "KeyZ") {
-          undoAction();
-          setNotification(`Undo`);
-        }
-
-        if (e.code == "KeyY") {
-          redoAction();
-          setNotification(`Redo`);
-        }
-
-        if (e.shiftKey && e.code == "KeyX") {
-          cropToSelection(selection);
-          setNotification(`Cropped to selection`);
-        }
-      }
-    },
-    [
-      selection,
-      width,
-      height,
-      layers,
-      undoAction,
-      redoAction,
-      cropToSelection,
-      setNotification,
-    ]
+      },
+      [
+        selection,
+        width,
+        height,
+        layers,
+        undoAction,
+        redoAction,
+        cropToSelection,
+        setNotification,
+      ]
+    )
   );
 
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
+  useDocumentEvent(
+    "wheel",
+    useCallback(
+      (e: WheelEvent) => {
+        if (!(e.target as any).getAttribute("data-interactable")) return;
+        const containerOffset = { x: 0, y: 0 };
 
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [handleKeyDown]);
+        if (containerRef.current) {
+          const container = containerRef.current;
+          const rect = container.getBoundingClientRect();
+          containerOffset.x = rect.x;
+          containerOffset.y = rect.y;
+        }
 
-  const handleScroll = useCallback(
-    (e: WheelEvent) => {
-      if (!(e.target as any).getAttribute("data-interactable")) return;
-      const containerOffset = { x: 0, y: 0 };
+        const realScale = getRealScale();
 
-      if (containerRef.current) {
-        const container = containerRef.current;
-        const rect = container.getBoundingClientRect();
-        containerOffset.x = rect.x;
-        containerOffset.y = rect.y;
-      }
+        const preMouseLoc = new Location(
+          Math.floor(
+            (e.clientX -
+              containerOffset.x +
+              (width * realScale) / 2 -
+              offset.x * realScale) /
+              realScale
+          ),
+          Math.floor(
+            (e.clientY -
+              containerOffset.y +
+              (height * realScale) / 2 -
+              offset.y * realScale) /
+              realScale
+          )
+        );
 
-      const realScale = getRealScale();
+        const newScale = clamp(scale + e.deltaY / -100000, 0, 100);
+        const newRealScale = getRealScale(newScale);
 
-      const preMouseLoc = new Location(
-        Math.floor(
-          (e.clientX -
-            containerOffset.x +
-            (width * realScale) / 2 -
-            offset.x * realScale) /
-            realScale
-        ),
-        Math.floor(
-          (e.clientY -
-            containerOffset.y +
-            (height * realScale) / 2 -
-            offset.y * realScale) /
-            realScale
-        )
-      );
+        const postMouseLoc = new Location(
+          Math.floor(
+            (e.clientX -
+              containerOffset.x +
+              (width * newRealScale) / 2 -
+              offset.x * newRealScale) /
+              newRealScale
+          ),
+          Math.floor(
+            (e.clientY -
+              containerOffset.y +
+              (height * newRealScale) / 2 -
+              offset.y * newRealScale) /
+              newRealScale
+          )
+        );
 
-      const newScale = clamp(scale + e.deltaY / -100000, 0, 100);
-      const newRealScale = getRealScale(newScale);
+        const difference = postMouseLoc.minus(preMouseLoc);
 
-      const postMouseLoc = new Location(
-        Math.floor(
-          (e.clientX -
-            containerOffset.x +
-            (width * newRealScale) / 2 -
-            offset.x * newRealScale) /
-            newRealScale
-        ),
-        Math.floor(
-          (e.clientY -
-            containerOffset.y +
-            (height * newRealScale) / 2 -
-            offset.y * newRealScale) /
-            newRealScale
-        )
-      );
-
-      const difference = postMouseLoc.minus(preMouseLoc);
-
-      setScale(newScale);
-      setOffset(offset.add(difference));
-    },
-    [getRealScale, height, offset, scale, setOffset, setScale, width]
+        setScale(newScale);
+        setOffset(offset.add(difference));
+      },
+      [getRealScale, height, offset, scale, setOffset, setScale, width]
+    )
   );
-
-  useEffect(() => {
-    document.addEventListener("wheel", handleScroll);
-
-    return () => {
-      document.removeEventListener("wheel", handleScroll);
-    };
-  }, [handleScroll]);
-
-  const handlePaste = (e: ClipboardEvent) => {
-    if (!e.clipboardData || e.clipboardData.files.length != 1) return; //TODO: Support multiple images? Each image to it's own layer, canvas size is of the biggest image
-
-    for (let i = 0; i < e.clipboardData.files.length; i++) {
-      const file = e.clipboardData.files[i];
-
-      if (!file.type.startsWith("image")) continue;
-
-      const image = new Image();
-      image.onload = () => {
-        loadFromImage(image);
-        setSelection(new Selection());
-      };
-      image.src = window.URL.createObjectURL(file);
-    }
-  };
 
   const renderLayers = layers.map((layer) => {
     return <Canvas key={layer.id} layer={layer} />;

@@ -64,6 +64,7 @@ class PencilTool extends Tool {
       updateActiveLayers,
       layers,
       width,
+      height,
     } = state;
 
     const mouseLoc = args.accurateMouseLoc;
@@ -89,15 +90,22 @@ class PencilTool extends Tool {
 
       this.drawnLocations[paintLocationIndex] = undefined;
 
-      for (const layer of layers) {
-        if (!layer.active) continue;
+      if (
+        paintLocation.x >= 0 &&
+        paintLocation.y >= 0 &&
+        paintLocation.x < width &&
+        paintLocation.y < height
+      ) {
+        for (const layer of layers) {
+          if (!layer.active) continue;
 
-        this.pixels.push({
-          location: paintLocation,
-          colorBefore: layer.getPixelColor(paintLocation.x, paintLocation.y),
-          colorAfter: useColor,
-          layer: layer.id,
-        });
+          this.pixels.push({
+            location: paintLocation,
+            colorBefore: layer.getPixelColor(paintLocation.x, paintLocation.y),
+            colorAfter: useColor,
+            layer: layer.id,
+          });
+        }
       }
 
       setPixelColor(
