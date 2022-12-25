@@ -1,10 +1,19 @@
 import { getDistance, ilerp } from "@client/utils";
 import Location from "@shared/types/location";
-import { FC, MouseEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FC,
+  MouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import css from "./colorWheel.module.scss";
 import Color from "@shared/types/color";
 import { PaintFetcher } from "components/contexts/paint";
 import colorsys from "colorsys";
+import useWindowEvent from "@client/hooks/useWindowEvent";
 
 const ColorWheel: FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -88,19 +97,24 @@ const ColorWheel: FC = () => {
     }
   };
 
-  const handlePickColor = (x: number, y: number, primary: boolean) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  const handlePickColor = useCallback(
+    (x: number, y: number, primary: boolean) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-    const rect = canvas.getBoundingClientRect();
-    let newLoc = new Location(x - rect.x, y - rect.y);
-    if (
-      getDistance(newLoc.x, newLoc.y, canvas.width / 2, canvas.height / 2) <
-      canvas.width / 2
-    ) {
-      setMouseLoc(newLoc);
+      const rect = canvas.getBoundingClientRect();
+      let newLoc = new Location(x - rect.x, y - rect.y);
 
-      const hsl = xyToColor(newLoc.x, newLoc.y);
+      let direction = newLoc.minus(canvas.width / 2, canvas.height / 2);
+      if (direction.magnitude() > canvas.width / 2) {
+        direction = direction.normalized().multiply(canvas.width / 2);
+      }
+
+      const finalNewLoc = direction.add(canvas.width / 2, canvas.height / 2);
+
+      setMouseLoc(finalNewLoc);
+
+      const hsl = xyToColor(finalNewLoc.x, finalNewLoc.y);
       const rgb = colorsys.hslToRgb(hsl.deg, hsl.sat, hsl.lig);
 
       if (primary) {
@@ -110,16 +124,30 @@ const ColorWheel: FC = () => {
         setSecondaryColor(new Color(rgb.r, rgb.g, rgb.b, 255));
         setLastColorChanged(1);
       }
-    } else {
+    },
+    [setLastColorChanged, setPrimaryColor, setSecondaryColor]
+  );
+
+  useWindowEvent(
+    "mousemove",
+    useCallback(
+      (e: MouseEvent) => {
+        if (isMouseDown) {
+          handlePickColor(e.clientX, e.clientY, e.buttons == 1);
+        }
+      },
+      [handlePickColor, isMouseDown]
+    )
+  );
+
+  useWindowEvent(
+    "mouseup",
+    useCallback(() => {
       setIsMouseDown(false);
-    }
-  };
+    }, [])
+  );
 
   const handleMouseMove = (e: MouseEvent<HTMLCanvasElement>) => {
-    if (isMouseDown) {
-      handlePickColor(e.clientX, e.clientY, e.buttons == 1);
-    }
-
     const canvas = canvasRef.current;
     if (canvas) {
       const rect = canvas.getBoundingClientRect();
@@ -146,7 +174,6 @@ const ColorWheel: FC = () => {
   };
 
   const handleMouseLeave = () => {
-    setIsMouseDown(false);
     setIsMouseOver(false);
   };
 
