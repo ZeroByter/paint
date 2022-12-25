@@ -305,8 +305,6 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const addUndoAction = (action: UndoAction) => {
     redoActions.current = [];
     undoActions.current.push(action);
-
-    console.log(undoActions.current);
   };
 
   const undoAction = () => {
