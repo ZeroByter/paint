@@ -24,25 +24,32 @@ class PencilTool extends Tool {
       mouseLoc,
       layers,
       width,
+      height,
     } = state;
 
     const useColor = args.button == 0 ? primaryColor : secondaryColor;
 
     this.pixels = [];
-    const mouseLocCopy = mouseLoc.copy();
     this.drawnLocations = {
-      [mouseLocCopy.x + mouseLocCopy.y * width]: undefined,
+      [mouseLoc.x + mouseLoc.y * width]: undefined,
     };
 
-    for (const layer of layers) {
-      if (!layer.active) continue;
+    if (
+      mouseLoc.x >= 0 &&
+      mouseLoc.y >= 0 &&
+      mouseLoc.x < width &&
+      mouseLoc.y < height
+    ) {
+      for (const layer of layers) {
+        if (!layer.active) continue;
 
-      this.pixels.push({
-        location: mouseLocCopy,
-        colorBefore: layer.getPixelColor(mouseLocCopy.x, mouseLocCopy.y),
-        colorAfter: useColor,
-        layer: layer.id,
-      });
+        this.pixels.push({
+          location: mouseLoc,
+          colorBefore: layer.getPixelColor(mouseLoc.x, mouseLoc.y),
+          colorAfter: useColor,
+          layer: layer.id,
+        });
+      }
     }
 
     setPixelColor(
@@ -64,6 +71,7 @@ class PencilTool extends Tool {
       updateActiveLayers,
       layers,
       width,
+      height,
     } = state;
 
     const mouseLoc = args.accurateMouseLoc;
@@ -72,7 +80,7 @@ class PencilTool extends Tool {
 
     const lastMouseLoc = args.lastDragLocation.copy();
 
-    const distance = Math.round(
+    const distance = Math.ceil(
       getDistance(mouseLoc.x, mouseLoc.y, lastMouseLoc.x, lastMouseLoc.y)
     );
 
@@ -89,15 +97,22 @@ class PencilTool extends Tool {
 
       this.drawnLocations[paintLocationIndex] = undefined;
 
-      for (const layer of layers) {
-        if (!layer.active) continue;
+      if (
+        paintLocation.x >= 0 &&
+        paintLocation.y >= 0 &&
+        paintLocation.x < width &&
+        paintLocation.y < height
+      ) {
+        for (const layer of layers) {
+          if (!layer.active) continue;
 
-        this.pixels.push({
-          location: paintLocation,
-          colorBefore: layer.getPixelColor(paintLocation.x, paintLocation.y),
-          colorAfter: useColor,
-          layer: layer.id,
-        });
+          this.pixels.push({
+            location: paintLocation,
+            colorBefore: layer.getPixelColor(paintLocation.x, paintLocation.y),
+            colorAfter: useColor,
+            layer: layer.id,
+          });
+        }
       }
 
       setPixelColor(
@@ -115,6 +130,7 @@ class PencilTool extends Tool {
   }
 
   onMouseUp(state: PaintContextType, args: OnClickArgs): void {
+    if (this.pixels.length == 0) return;
     state.addUndoAction(new PencilAction(this.pixels));
   }
 }

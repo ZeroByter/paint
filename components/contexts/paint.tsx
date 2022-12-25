@@ -1,3 +1,4 @@
+import { addColors } from "@client/layersToImageData";
 import Tools from "@client/tools";
 import Tool from "@client/tools/tool";
 import CropAction, { CroppedLayer } from "@client/undo/cropAction";
@@ -57,8 +58,17 @@ export type PaintContextType = {
 
   loadFromImage: (image: HTMLImageElement) => void;
 
-  getRealScale: () => number;
+  getRealScale: (number?: number) => number;
 
+  addPixelColor: (
+    x: number,
+    y: number,
+    r: number,
+    g: number,
+    b: number,
+    a: number,
+    update: boolean
+  ) => void;
   setPixelColor: (
     x: number,
     y: number,
@@ -129,7 +139,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const [selection, setSelection] = useState(new Selection(0, 0, 0, 0));
   const [selectionClickability, setSelectionClickability] = useState(0);
 
-  const [activeToolId, setActiveToolId] = useState("pencil");
+  const [activeToolId, setActiveToolId] = useState("brush");
 
   const [notificationData, setNotificationData] = useState<NotificationData>();
 
@@ -149,8 +159,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setScale(ilerp(0.25, 1600, Math.min(b, a)));
   };
 
-  const getRealScale = () => {
-    return lerp(0.25, 1600, scale);
+  const getRealScale = (scaleOverride?: number) => {
+    return lerp(0.25, 1600, scaleOverride ?? scale);
   };
 
   const setActiveLayers = (ids: string[]) => {
@@ -165,6 +175,53 @@ const PaintProvider: FC<Props> = ({ children }) => {
     for (const layer of layers) {
       layer.visible = ids.includes(layer.id);
     }
+  };
+
+  const addPixelColor = (
+    x: number,
+    y: number,
+    r: number,
+    g: number,
+    b: number,
+    a: number,
+    update = false
+  ) => {
+    if (x < 0 || y < 0 || x > width - 1 || y > height - 1) return;
+
+    if (selection.isValid()) {
+      if (
+        x < selection.x ||
+        y < selection.y ||
+        x > selection.x + selection.width - 1 ||
+        y > selection.y + selection.height - 1
+      ) {
+        return;
+      }
+    }
+
+    const layersCopy = [...layers];
+
+    for (const layer of layersCopy) {
+      if (!layer.active) continue;
+
+      const currentColor = layer.getPixelColor(x, y);
+
+      const combined = addColors(
+        r,
+        g,
+        b,
+        a,
+        currentColor.r,
+        currentColor.g,
+        currentColor.b,
+        currentColor.a
+      );
+
+      layer.setPixelData(x, y, combined.r, combined.g, combined.b, combined.a);
+      if (update) layer.updatePixels();
+    }
+
+    setLayers(layersCopy);
   };
 
   const setPixelColor = (
@@ -189,12 +246,16 @@ const PaintProvider: FC<Props> = ({ children }) => {
       }
     }
 
-    for (const layer of layers) {
+    const layersCopy = [...layers];
+
+    for (const layer of layersCopy) {
       if (!layer.active) continue;
 
       layer.setPixelData(x, y, r, g, b, a);
       if (update) layer.updatePixels();
     }
+
+    setLayers(layersCopy);
   };
 
   const erasePixel = (
@@ -357,6 +418,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setActiveToolId,
     loadFromImage,
     getRealScale,
+    addPixelColor,
     setPixelColor,
     erasePixel,
     updateActiveLayers,

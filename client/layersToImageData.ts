@@ -1,7 +1,7 @@
 import Color from "@shared/types/color";
 import Layer from "@shared/types/layer";
 
-const addColors = (
+export const addColors = (
   r1: number,
   g1: number,
   b1: number,
@@ -11,13 +11,27 @@ const addColors = (
   b2: number,
   a2: number
 ) => {
+  r1 /= 255;
+  g1 /= 255;
+  b1 /= 255;
+  a1 /= 255;
+  r2 /= 255;
+  g2 /= 255;
+  b2 /= 255;
+  a2 /= 255;
+
   const r = new Color(0, 0, 0, 0);
 
-  r.a = 255 - (255 - a1) * (255 - a2);
-  if (r.a <= 0) return r;
-  r.r = (r1 * a1) / r.a + (r2 * a2 * (255 - a1)) / r.a;
-  r.g = (g1 * a1) / r.a + (g2 * a2 * (255 - a1)) / r.a;
-  r.b = (b1 * a1) / r.a + (b2 * a2 * (255 - a1)) / r.a;
+  r.a = 1 - (1 - a1) * (1 - a2);
+  if (r.a <= 1.0e-6) return r;
+  r.r = (r1 * a1) / r.a + (r2 * a2 * (1 - a1)) / r.a;
+  r.g = (g1 * a1) / r.a + (g2 * a2 * (1 - a1)) / r.a;
+  r.b = (b1 * a1) / r.a + (b2 * a2 * (1 - a1)) / r.a;
+
+  r.r *= 255;
+  r.g *= 255;
+  r.b *= 255;
+  r.a *= 255;
 
   return r;
 };

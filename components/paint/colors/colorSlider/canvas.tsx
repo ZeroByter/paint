@@ -48,8 +48,13 @@ const Canvas: FC<Props> = ({ type, value }) => {
 
   const [isMouseDown, setIsMouseDown] = useState(false);
 
-  const { primaryColor, setPrimaryColor, secondaryColor, lastColorChanged } =
-    PaintFetcher();
+  const {
+    primaryColor,
+    setPrimaryColor,
+    setSecondaryColor,
+    secondaryColor,
+    lastColorChanged,
+  } = PaintFetcher();
 
   const getLastColor = useCallback(() => {
     return lastColorChanged == 0 ? primaryColor : secondaryColor;
@@ -83,24 +88,35 @@ const Canvas: FC<Props> = ({ type, value }) => {
 
         const rect = root.getBoundingClientRect();
 
+        const lastColor = lastColorChanged == 0 ? primaryColor : secondaryColor;
+        const setColor =
+          lastColorChanged == 0 ? setPrimaryColor : setSecondaryColor;
+
         const value = clamp01((e.clientX - rect.x) / rect.width);
 
         if (type == "r") {
-          setPrimaryColor(primaryColor.set(0, Math.round(value * 255)));
+          setColor(lastColor.set(0, Math.round(value * 255)));
         } else if (type == "g") {
-          setPrimaryColor(primaryColor.set(1, Math.round(value * 255)));
+          setColor(lastColor.set(1, Math.round(value * 255)));
         } else if (type == "b") {
-          setPrimaryColor(primaryColor.set(2, Math.round(value * 255)));
+          setColor(lastColor.set(2, Math.round(value * 255)));
         } else if (type == "a") {
-          setPrimaryColor(primaryColor.set(3, Math.round(value * 255)));
+          setColor(lastColor.set(3, Math.round(value * 255)));
         } else {
-          const hsv = colorsys.rgbToHsv(primaryColor);
+          const hsv = colorsys.rgbToHsv(lastColor);
           hsv[type] = Math.round(value * specialMaxValue[type]);
           const rgb = colorsys.hsvToRgb(hsv);
-          setPrimaryColor(new Color(rgb.r, rgb.g, rgb.b, primaryColor.a));
+          setColor(new Color(rgb.r, rgb.g, rgb.b, lastColor.a));
         }
       },
-      [isMouseDown, primaryColor, setPrimaryColor, type]
+      [
+        isMouseDown,
+        lastColorChanged,
+        primaryColor,
+        setPrimaryColor,
+        setSecondaryColor,
+        type,
+      ]
     )
   );
 
