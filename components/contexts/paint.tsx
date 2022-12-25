@@ -139,7 +139,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const [selection, setSelection] = useState(new Selection(0, 0, 0, 0));
   const [selectionClickability, setSelectionClickability] = useState(0);
 
-  const [activeToolId, setActiveToolId] = useState("pencil");
+  const [activeToolId, setActiveToolId] = useState("brush");
 
   const [notificationData, setNotificationData] = useState<NotificationData>();
 
@@ -199,7 +199,9 @@ const PaintProvider: FC<Props> = ({ children }) => {
       }
     }
 
-    for (const layer of layers) {
+    const layersCopy = [...layers];
+
+    for (const layer of layersCopy) {
       if (!layer.active) continue;
 
       const currentColor = layer.getPixelColor(x, y);
@@ -218,6 +220,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
       layer.setPixelData(x, y, combined.r, combined.g, combined.b, combined.a);
       if (update) layer.updatePixels();
     }
+
+    setLayers(layersCopy);
   };
 
   const setPixelColor = (
@@ -242,12 +246,16 @@ const PaintProvider: FC<Props> = ({ children }) => {
       }
     }
 
-    for (const layer of layers) {
+    const layersCopy = [...layers];
+
+    for (const layer of layersCopy) {
       if (!layer.active) continue;
 
       layer.setPixelData(x, y, r, g, b, a);
       if (update) layer.updatePixels();
     }
+
+    setLayers(layersCopy);
   };
 
   const erasePixel = (
