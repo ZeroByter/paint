@@ -1,3 +1,4 @@
+import BrushTool from "./brushTool";
 import ColorPickerTool from "./colorPickerTool";
 import EraserTool from "./eraserTool";
 import PencilTool from "./pencilTool";
@@ -8,14 +9,16 @@ export const ToolKeyShortcuts: { [id: string]: string } = {
   KeyE: "eraser",
   KeyS: "select",
   KeyP: "pencil",
+  KeyB: "brush",
   KeyK: "colorpicker",
 };
 
 const Tools: { [id: string]: Tool } = {
-  pencil: new PencilTool(),
   select: new SelectTool(),
-  colorpicker: new ColorPickerTool(),
   eraser: new EraserTool(),
+  pencil: new PencilTool(),
+  brush: new BrushTool(),
+  colorpicker: new ColorPickerTool(),
 };
 
 export default Tools;

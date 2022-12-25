@@ -1,3 +1,4 @@
+import { addColors } from "@client/layersToImageData";
 import Tools from "@client/tools";
 import Tool from "@client/tools/tool";
 import CropAction, { CroppedLayer } from "@client/undo/cropAction";
@@ -59,6 +60,15 @@ export type PaintContextType = {
 
   getRealScale: (number?: number) => number;
 
+  addPixelColor: (
+    x: number,
+    y: number,
+    r: number,
+    g: number,
+    b: number,
+    a: number,
+    update: boolean
+  ) => void;
   setPixelColor: (
     x: number,
     y: number,
@@ -164,6 +174,49 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const setVisibleLayers = (ids: string[]) => {
     for (const layer of layers) {
       layer.visible = ids.includes(layer.id);
+    }
+  };
+
+  const addPixelColor = (
+    x: number,
+    y: number,
+    r: number,
+    g: number,
+    b: number,
+    a: number,
+    update = false
+  ) => {
+    if (x < 0 || y < 0 || x > width - 1 || y > height - 1) return;
+
+    if (selection.isValid()) {
+      if (
+        x < selection.x ||
+        y < selection.y ||
+        x > selection.x + selection.width - 1 ||
+        y > selection.y + selection.height - 1
+      ) {
+        return;
+      }
+    }
+
+    for (const layer of layers) {
+      if (!layer.active) continue;
+
+      const currentColor = layer.getPixelColor(x, y);
+
+      const combined = addColors(
+        r,
+        g,
+        b,
+        a,
+        currentColor.r,
+        currentColor.g,
+        currentColor.b,
+        currentColor.a
+      );
+
+      layer.setPixelData(x, y, combined.r, combined.g, combined.b, combined.a);
+      if (update) layer.updatePixels();
     }
   };
 
@@ -357,6 +410,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setActiveToolId,
     loadFromImage,
     getRealScale,
+    addPixelColor,
     setPixelColor,
     erasePixel,
     updateActiveLayers,

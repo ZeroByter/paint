@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useRef } from "react";
+import { FC, useCallback, useEffect, useRef } from "react";
 import Canvas from "./canvas";
 import css from "./paintContainer.module.scss";
 import Layer from "@shared/types/layer";
@@ -15,10 +15,9 @@ import Selection from "@shared/types/selection";
 import TransparencyBackground from "./transparencyBackground";
 import Notification from "./notification";
 import Location from "@shared/types/location";
-import useWindowEvent from "@client/hooks/useWindowEvent";
 import PasteAction from "@client/undo/pasteAction";
-import { clone, cloneDeep } from "lodash/fp";
 import useDocumentEvent from "@client/hooks/useDocumentEvent";
+import { lerp } from "@client/utils";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -177,7 +176,11 @@ const PaintContainer: FC = () => {
           )
         );
 
-        const newScale = clamp(scale + e.deltaY / -100000, 0, 100);
+        const newScale = clamp(
+          scale + e.deltaY / -100000 / lerp(3, 0.01, scale / 0.04),
+          0,
+          100
+        );
         const newRealScale = getRealScale(newScale);
 
         const postMouseLoc = new Location(
