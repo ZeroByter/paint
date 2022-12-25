@@ -3,8 +3,8 @@ import { clamp01, getDistance } from "@client/utils";
 import Color from "@shared/types/color";
 import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
-import { PaintContextType, PaintFetcher } from "components/contexts/paint";
-import { clone, cloneDeep } from "lodash/fp";
+import { PaintContextType } from "components/contexts/paint";
+import { cloneDeep } from "lodash/fp";
 import Tool, { OnClickArgs, OnDragArgs } from "./tool";
 
 class BrushTool extends Tool {
@@ -123,6 +123,7 @@ class BrushTool extends Tool {
   }
 
   onMouseUp(state: PaintContextType, args: OnClickArgs): void {
+    if (this.pixels.length == 0) return;
     state.addUndoAction(new PencilAction(this.pixels));
   }
 }
