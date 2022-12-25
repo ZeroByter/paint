@@ -17,7 +17,7 @@ import Notification from "./notification";
 import Location from "@shared/types/location";
 import PasteAction from "@client/undo/pasteAction";
 import useDocumentEvent from "@client/hooks/useDocumentEvent";
-import { lerp } from "@client/utils";
+import { ilerp, lerp } from "@client/utils";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -71,6 +71,10 @@ const PaintContainer: FC = () => {
 
     newLayers.push(new Layer(width, height, true));
     setLayers(newLayers);
+
+    const a = window.innerWidth / width;
+    const b = (window.innerHeight - 31 - 60) / height; //TODO: 31 is a bad hard-wired variable, need to make this actually dynamic based on canvas's available size!
+    setScale(ilerp(0.25, 1600, Math.min(b, a)));
   }, []);
 
   useDocumentEvent(
