@@ -130,6 +130,7 @@ class PencilTool extends Tool {
   }
 
   onMouseUp(state: PaintContextType, args: OnClickArgs): void {
+    if (this.pixels.length == 0) return;
     state.addUndoAction(new PencilAction(this.pixels));
   }
 }
