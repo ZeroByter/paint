@@ -181,7 +181,7 @@ const PaintContainer: FC = () => {
         );
 
         const newScale = clamp(
-          scale + e.deltaY / -100000 / lerp(3, 0.01, scale / 0.04),
+          scale + e.deltaY / -100000 / lerp(3, 0.1, scale / 0.04),
           0,
           100
         );
