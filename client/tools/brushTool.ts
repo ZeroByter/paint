@@ -31,6 +31,8 @@ class BrushTool extends Tool {
       width,
       height,
       layers,
+      brushSize,
+      brushHardness,
     } = state;
 
     const useColor = primary ? primaryColor : secondaryColor;
@@ -48,7 +50,7 @@ class BrushTool extends Tool {
         .add(direction.add(direction.multiply(i)))
         .round();
 
-      const radius = 2;
+      const radius = brushSize;
       for (
         let y = paintLocation.y - radius;
         y < paintLocation.y + radius + 1;
@@ -62,7 +64,9 @@ class BrushTool extends Tool {
           const alpha = Math.round(
             clamp01(
               1 - getDistance(x, y, paintLocation.x, paintLocation.y) / radius
-            ) * useColor.a
+            ) *
+              useColor.a *
+              brushHardness
           );
 
           const layerColors: {

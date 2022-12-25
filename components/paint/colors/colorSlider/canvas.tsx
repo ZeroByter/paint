@@ -1,5 +1,12 @@
 import Color from "@shared/types/color";
-import { FC, useCallback, useEffect, useRef, useState } from "react";
+import {
+  FC,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  MouseEvent as ReactMouseEvent,
+} from "react";
 import { SliderType, specialMaxValue } from ".";
 import ArrowCanvas from "./arrowCanvas";
 import css from "./canvas.module.scss";
@@ -78,45 +85,57 @@ const Canvas: FC<Props> = ({ type, value }) => {
     }
   }, [getLastColor, lastColorChanged, primaryColor, secondaryColor, type]);
 
+  const getValueFromX = (x: number) => {
+    const root = rootRef.current;
+    if (!root) return 0;
+
+    const rect = root.getBoundingClientRect();
+
+    return clamp01((x - rect.x) / rect.width);
+  };
+
+  const setColorFromEvent = useCallback(
+    (x: number) => {
+      const lastColor = lastColorChanged == 0 ? primaryColor : secondaryColor;
+      const setColor =
+        lastColorChanged == 0 ? setPrimaryColor : setSecondaryColor;
+
+      const value = getValueFromX(x);
+
+      if (type == "r") {
+        setColor(lastColor.set(0, Math.round(value * 255)));
+      } else if (type == "g") {
+        setColor(lastColor.set(1, Math.round(value * 255)));
+      } else if (type == "b") {
+        setColor(lastColor.set(2, Math.round(value * 255)));
+      } else if (type == "a") {
+        setColor(lastColor.set(3, Math.round(value * 255)));
+      } else {
+        const hsv = colorsys.rgbToHsv(lastColor);
+        hsv[type] = Math.round(value * specialMaxValue[type]);
+        const rgb = colorsys.hsvToRgb(hsv);
+        setColor(new Color(rgb.r, rgb.g, rgb.b, lastColor.a));
+      }
+    },
+    [
+      lastColorChanged,
+      primaryColor,
+      secondaryColor,
+      setPrimaryColor,
+      setSecondaryColor,
+      type,
+    ]
+  );
+
   useWindowEvent(
     "mousemove",
     useCallback(
       (e: MouseEvent) => {
-        const root = rootRef.current;
-        if (!root) return;
         if (!isMouseDown) return;
 
-        const rect = root.getBoundingClientRect();
-
-        const lastColor = lastColorChanged == 0 ? primaryColor : secondaryColor;
-        const setColor =
-          lastColorChanged == 0 ? setPrimaryColor : setSecondaryColor;
-
-        const value = clamp01((e.clientX - rect.x) / rect.width);
-
-        if (type == "r") {
-          setColor(lastColor.set(0, Math.round(value * 255)));
-        } else if (type == "g") {
-          setColor(lastColor.set(1, Math.round(value * 255)));
-        } else if (type == "b") {
-          setColor(lastColor.set(2, Math.round(value * 255)));
-        } else if (type == "a") {
-          setColor(lastColor.set(3, Math.round(value * 255)));
-        } else {
-          const hsv = colorsys.rgbToHsv(lastColor);
-          hsv[type] = Math.round(value * specialMaxValue[type]);
-          const rgb = colorsys.hsvToRgb(hsv);
-          setColor(new Color(rgb.r, rgb.g, rgb.b, lastColor.a));
-        }
+        setColorFromEvent(e.pageX);
       },
-      [
-        isMouseDown,
-        lastColorChanged,
-        primaryColor,
-        setPrimaryColor,
-        setSecondaryColor,
-        type,
-      ]
+      [isMouseDown, setColorFromEvent]
     )
   );
 
@@ -127,7 +146,8 @@ const Canvas: FC<Props> = ({ type, value }) => {
     }, [])
   );
 
-  const handleMouseDown = () => {
+  const handleMouseDown = (e: ReactMouseEvent<HTMLDivElement>) => {
+    setColorFromEvent(e.pageX);
     setIsMouseDown(true);
   };
 

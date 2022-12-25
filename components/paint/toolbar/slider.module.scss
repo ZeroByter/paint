@@ -1,16 +1,24 @@
 .root {
   position: relative;
-  background: blue;
+  width: 150px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
 
-  .input {
-    opacity: 0;
-  }
-
-  .track {
+  .canvas {
     position: absolute;
     left: 0px;
     top: 0px;
+    width: 100%;
     height: 100%;
-    background: red;
+    cursor: pointer;
+    border: 1px solid hsl(0deg 0% 60%);
+  }
+
+  .text {
+    z-index: 1;
+    font-size: 14px;
+    padding-left: 4px;
+    pointer-events: none;
   }
 }
