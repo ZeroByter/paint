@@ -56,6 +56,11 @@ export type PaintContextType = {
   activeToolId: string;
   setActiveToolId: (newToolId: string) => void;
 
+  brushSize: number;
+  setBrushSize: (newSize: number) => void;
+  brushHardness: number;
+  setBrushHardness: (newHardness: number) => void;
+
   loadFromImage: (image: HTMLImageElement) => void;
 
   getRealScale: (number?: number) => number;
@@ -140,6 +145,9 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const [selectionClickability, setSelectionClickability] = useState(0);
 
   const [activeToolId, setActiveToolId] = useState("brush");
+
+  const [brushSize, setBrushSize] = useState(2);
+  const [brushHardness, setBrushHardness] = useState(0.5);
 
   const [notificationData, setNotificationData] = useState<NotificationData>();
 
@@ -416,6 +424,10 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setSelectionClickability,
     activeToolId,
     setActiveToolId,
+    brushSize,
+    setBrushSize,
+    brushHardness,
+    setBrushHardness,
     loadFromImage,
     getRealScale,
     addPixelColor,
