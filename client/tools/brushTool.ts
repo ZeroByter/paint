@@ -104,7 +104,7 @@ class BrushTool extends Tool {
     this.pixels = [];
     this.layersClone = cloneDeep(layers);
 
-    this.doPaint(state, mouseLoc, args.button == 0, mouseLoc);
+    this.doPaint(state, mouseLoc, args.button == 0, mouseLoc.add(0, 1));
 
     updateActiveLayers();
   }
