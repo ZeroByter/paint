@@ -40,6 +40,7 @@ const PaintContainer: FC = () => {
     getRealScale,
     setOffset,
     addUndoAction,
+    scaleToSize,
   } = PaintFetcher();
 
   useDocumentEvent(
@@ -119,16 +120,23 @@ const PaintContainer: FC = () => {
           }
 
           if (e.code == "KeyZ") {
-            undoAction();
-            setNotification(`Undo`);
+            const didUndo = undoAction();
+            if (didUndo) {
+              setNotification(`Undo`);
+            }
           }
 
           if (e.code == "KeyY") {
-            redoAction();
-            setNotification(`Redo`);
+            const redo = redoAction();
+            if (redo) {
+              setNotification(`Redo`);
+            }
           }
 
-          if (e.shiftKey && e.code == "KeyX") {
+          if (e.shiftKey && e.code == "KeyX" && selection.isValid()) {
+            setOffset(new Location());
+            scaleToSize(selection.width, selection.height);
+
             cropToSelection(selection);
             setNotification(`Cropped to selection`);
           }
@@ -139,10 +147,12 @@ const PaintContainer: FC = () => {
         width,
         height,
         layers,
+        setNotification,
         undoAction,
         redoAction,
+        setOffset,
+        scaleToSize,
         cropToSelection,
-        setNotification,
       ]
     )
   );

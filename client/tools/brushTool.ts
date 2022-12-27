@@ -4,7 +4,6 @@ import Color from "@shared/types/color";
 import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
 import { PaintContextType } from "components/contexts/paint";
-import { cloneDeep } from "lodash/fp";
 import Tool, { OnClickArgs, OnDragArgs } from "./tool";
 
 class BrushTool extends Tool {
@@ -45,7 +44,7 @@ class BrushTool extends Tool {
 
     const direction = lastMouseLoc.minus(mouseLoc).normalized();
 
-    for (let i = 0; i < distance; i++) {
+    for (let i = 0; i < distance; i += 2) {
       const paintLocation = mouseLoc
         .add(direction.add(direction.multiply(i)))
         .round();
@@ -53,12 +52,12 @@ class BrushTool extends Tool {
       const radius = brushSize;
       for (
         let y = paintLocation.y - radius;
-        y < paintLocation.y + radius + 1;
+        y < paintLocation.y + radius;
         y++
       ) {
         for (
           let x = paintLocation.x - radius;
-          x < paintLocation.x + radius + 1;
+          x < paintLocation.x + radius;
           x++
         ) {
           const alpha = Math.round(
