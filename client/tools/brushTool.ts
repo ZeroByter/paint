@@ -106,7 +106,7 @@ class BrushTool extends Tool {
     const { updateActiveLayers, mouseLoc, layers } = state;
 
     this.pixels = [];
-    this.layersClone = cloneDeep(layers);
+    this.layersClone = layers.map((layer) => layer.clone());
 
     this.doPaint(state, mouseLoc, args.button == 0, mouseLoc.add(0, 1));
 

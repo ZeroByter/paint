@@ -90,6 +90,25 @@ class Layer {
   updatePixels() {
     this.pixelsId = randomString();
   }
+
+  clone() {
+    const newLayer = new Layer(0, 0, false);
+
+    newLayer.id = this.id;
+
+    newLayer.name = this.name;
+    newLayer.order = this.order;
+    newLayer.active = this.active;
+    newLayer.visible = this.visible;
+
+    newLayer.width = this.width;
+    newLayer.height = this.height;
+
+    newLayer.pixels = new Uint8ClampedArray(this.pixels);
+    newLayer.pixelsId = this.pixelsId;
+
+    return newLayer;
+  }
 }
 
 export type ActiveLayersState = { [id: string]: null };
