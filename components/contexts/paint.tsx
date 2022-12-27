@@ -61,6 +61,8 @@ export type PaintContextType = {
   brushHardness: number;
   setBrushHardness: (newHardness: number) => void;
 
+  scaleToSize: (width: number, height: number) => void;
+
   loadFromImage: (image: HTMLImageElement) => void;
 
   getRealScale: (number?: number) => number;
@@ -91,8 +93,8 @@ export type PaintContextType = {
   isMouseInsideImage: () => boolean;
 
   addUndoAction: (action: UndoAction) => void;
-  undoAction: () => void;
-  redoAction: () => void;
+  undoAction: () => boolean;
+  redoAction: () => boolean;
 
   cropToSelection: (
     selection: Selection,
@@ -151,6 +153,12 @@ const PaintProvider: FC<Props> = ({ children }) => {
 
   const [notificationData, setNotificationData] = useState<NotificationData>();
 
+  const scaleToSize = (width: number, height: number) => {
+    const a = window.innerWidth / width;
+    const b = (window.innerHeight - 31 - 60) / height; //TODO: 31 is a bad hard-wired variable, need to make this actually dynamic based on canvas's available size!
+    setScale(ilerp(0.25, 1600, Math.min(b, a)));
+  };
+
   const loadFromImage = (image: HTMLImageElement) => {
     setWidth(image.width);
     setHeight(image.height);
@@ -162,9 +170,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
 
     setOffset(new Location());
 
-    const a = window.innerWidth / image.width;
-    const b = (window.innerHeight - 31 - 60) / image.height; //TODO: 31 is a bad hard-wired variable, need to make this actually dynamic based on canvas's available size!
-    setScale(ilerp(0.25, 1600, Math.min(b, a)));
+    scaleToSize(image.width, image.height);
   };
 
   const getRealScale = (scaleOverride?: number) => {
@@ -325,20 +331,24 @@ const PaintProvider: FC<Props> = ({ children }) => {
 
   const undoAction = () => {
     const undoAction = undoActions.current.pop();
-    if (!undoAction) return;
+    if (!undoAction) return false;
 
     undoAction.undo(stateValue);
 
     redoActions.current.push(undoAction);
+
+    return true;
   };
 
   const redoAction = () => {
     const redoAction = redoActions.current.pop();
-    if (!redoAction) return;
+    if (!redoAction) return false;
 
     redoAction.redo(stateValue);
 
     undoActions.current.push(redoAction);
+
+    return true;
   };
 
   const cropToSelection = (
@@ -428,6 +438,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setBrushSize,
     brushHardness,
     setBrushHardness,
+    scaleToSize,
     loadFromImage,
     getRealScale,
     addPixelColor,

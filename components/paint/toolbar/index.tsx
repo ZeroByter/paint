@@ -14,7 +14,7 @@ const ToolsToolbar: FC = () => {
   };
 
   useWindowEvent("keydown", (e: KeyboardEvent) => {
-    const modifier = e.shiftKey ? 10 : 1;
+    const modifier = e.ctrlKey ? 5 : 1;
 
     if (e.code == "BracketLeft") {
       setBrushSize(clamp(brushSize - modifier, 1, 900));
