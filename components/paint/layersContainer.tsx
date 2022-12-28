@@ -28,6 +28,7 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
   const context = PaintFetcher();
   const {
     offset,
+    mouseLoc,
     setMouseLoc,
     setMouseScaledLoc,
     getRealScale,
@@ -45,11 +46,13 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
 
         setIsMouseDown(true);
 
+        lastDraggedRef.current = mouseLoc.copy();
+
         if (e.button == 0 || e.button == 2) {
           Tools[activeToolId].onMouseDown(context, { button: e.button });
         }
       },
-      [activeToolId, context]
+      [activeToolId, context, mouseLoc]
     )
   );
 
