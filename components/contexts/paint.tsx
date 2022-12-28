@@ -149,7 +149,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
 
   const [activeToolId, setActiveToolId] = useState("brush");
 
-  const [brushSize, setBrushSize] = useState(2);
+  const [brushSize, setBrushSize] = useState(3);
   const [brushHardness, setBrushHardness] = useState(0.5);
 
   const [notificationData, setNotificationData] = useState<NotificationData>();
