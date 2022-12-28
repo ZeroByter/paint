@@ -23,3 +23,14 @@ export const ilerp = (a: number, b: number, t: number) => {
 export const getDistance = (x1: number, y1: number, x2: number, y2: number) => {
   return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
 };
+
+export const getFastDistance = (
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number
+) => {
+  const dx = x1 - x2;
+  const dy = y1 - y2;
+  return dx * dx + dy * dy;
+};

@@ -74,7 +74,8 @@ export type PaintContextType = {
     g: number,
     b: number,
     a: number,
-    update: boolean
+    update: boolean,
+    layersCopy?: Layer[]
   ) => void;
   setPixelColor: (
     x: number,
@@ -198,7 +199,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
     g: number,
     b: number,
     a: number,
-    update = false
+    update = false,
+    layersCopy?: Layer[]
   ) => {
     if (x < 0 || y < 0 || x > width - 1 || y > height - 1) return;
 
@@ -213,7 +215,9 @@ const PaintProvider: FC<Props> = ({ children }) => {
       }
     }
 
-    const layersCopy = [...layers];
+    if (layersCopy == null) {
+      layersCopy = [...layers];
+    }
 
     for (const layer of layersCopy) {
       if (!layer.active) continue;
@@ -235,7 +239,9 @@ const PaintProvider: FC<Props> = ({ children }) => {
       if (update) layer.updatePixels();
     }
 
-    setLayers(layersCopy);
+    if (layersCopy == null) {
+      setLayers(layersCopy);
+    }
   };
 
   const setPixelColor = (
