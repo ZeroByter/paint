@@ -32,5 +32,5 @@ export const getFastDistance = (
 ) => {
   const dx = x1 - x2;
   const dy = y1 - y2;
-  return dx * dx + dy * dy;
+  return Math.abs(dx) + Math.abs(dy);
 };

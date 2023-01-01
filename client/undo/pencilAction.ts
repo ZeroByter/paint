@@ -5,7 +5,8 @@ import { PaintContextType } from "components/contexts/paint";
 import UndoAction from "./undoAction";
 
 export type UndoPixel = {
-  location: Location;
+  x: number;
+  y: number;
   colorBefore: Color;
   colorAfter: Color;
   layer: string;
@@ -30,8 +31,8 @@ export default class PencilAction extends UndoAction {
 
     for (const pixel of this.pixels) {
       layersMap[pixel.layer].setPixelData(
-        pixel.location.x,
-        pixel.location.y,
+        pixel.x,
+        pixel.y,
         pixel.colorBefore.r,
         pixel.colorBefore.g,
         pixel.colorBefore.b,
@@ -56,8 +57,8 @@ export default class PencilAction extends UndoAction {
 
     for (const pixel of this.pixels) {
       layersMap[pixel.layer].setPixelData(
-        pixel.location.x,
-        pixel.location.y,
+        pixel.x,
+        pixel.y,
         pixel.colorAfter.r,
         pixel.colorAfter.g,
         pixel.colorAfter.b,

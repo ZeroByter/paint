@@ -18,6 +18,10 @@ import {
   useState,
 } from "react";
 
+export type ColorPerLayer = {
+  [id: string]: Color;
+};
+
 export type PaintContextType = {
   width: number;
   setWidth: (newWidth: number) => void;
@@ -76,7 +80,7 @@ export type PaintContextType = {
     a: number,
     update: boolean,
     layersCopy?: Layer[]
-  ) => void;
+  ) => ColorPerLayer;
   setPixelColor: (
     x: number,
     y: number,
@@ -202,7 +206,17 @@ const PaintProvider: FC<Props> = ({ children }) => {
     update = false,
     layersCopy?: Layer[]
   ) => {
-    if (x < 0 || y < 0 || x > width - 1 || y > height - 1) return;
+    if (layersCopy == null) {
+      layersCopy = [...layers];
+    }
+
+    const newColorPerLayer: { [id: string]: Color } = {};
+    for (const layer of layersCopy) {
+      newColorPerLayer[layer.id] = new Color(0, 0, 0, 0);
+    }
+
+    if (x < 0 || y < 0 || x > width - 1 || y > height - 1)
+      return newColorPerLayer;
 
     if (selection.isValid()) {
       if (
@@ -211,12 +225,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
         x > selection.x + selection.width - 1 ||
         y > selection.y + selection.height - 1
       ) {
-        return;
+        return newColorPerLayer;
       }
-    }
-
-    if (layersCopy == null) {
-      layersCopy = [...layers];
     }
 
     for (const layer of layersCopy) {
@@ -242,6 +252,12 @@ const PaintProvider: FC<Props> = ({ children }) => {
     if (layersCopy == null) {
       setLayers(layersCopy);
     }
+
+    for (const layer of layersCopy) {
+      newColorPerLayer[layer.id] = layer.getPixelColor(x, y);
+    }
+
+    return newColorPerLayer;
   };
 
   const setPixelColor = (

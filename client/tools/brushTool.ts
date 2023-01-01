@@ -8,7 +8,9 @@ import Tool, { OnClickArgs, OnDragArgs } from "./tool";
 
 class BrushTool extends Tool {
   pixels: UndoPixel[] = [];
+
   layersClone: Layer[] = [];
+  layersCloneMap: { [id: string]: Layer } = {};
 
   cachedLayersCopy: Layer[] = [];
   cachedAlpha: number[] = [];
@@ -31,7 +33,6 @@ class BrushTool extends Tool {
       primaryColor,
       secondaryColor,
       width,
-      height,
       brushSize,
       setLayers,
     } = state;
@@ -61,23 +62,7 @@ class BrushTool extends Tool {
         const finalX = paintLocation.x - halfSize + x;
         const finalY = paintLocation.y - halfSize + y;
 
-        const layerColors: {
-          [id: string]: { colorBefore: Color; layer: Layer };
-        } = {};
-
-        if (x >= 0 && y >= 0 && x < width && y < height) {
-          for (let i = 0; i < this.cachedLayersCopy.length; i++) {
-            const activeLayer = this.cachedLayersCopy[i];
-            const layerClone = this.layersClone[i];
-
-            layerColors[activeLayer.id] = {
-              colorBefore: layerClone.getPixelColor(finalX, finalY),
-              layer: activeLayer,
-            };
-          }
-        }
-
-        addPixelColor(
+        const newColorsPerLayers = addPixelColor(
           finalX,
           finalY,
           useColor.r,
@@ -88,66 +73,19 @@ class BrushTool extends Tool {
           this.cachedLayersCopy
         );
 
-        for (const id in layerColors) {
-          const data = layerColors[id];
+        for (const id in this.layersCloneMap) {
+          const layer = this.layersCloneMap[id];
 
+          //this push function is causing a lot of lag with big brushes, maybe replace it with Map or something?
           this.pixels.push({
-            location: new Location(finalX, finalY),
-            colorBefore: data.colorBefore,
-            colorAfter: data.layer.getPixelColor(finalX, finalY),
+            x: finalX,
+            y: finalY,
+            colorBefore: layer.getPixelColor(finalX, finalY),
+            colorAfter: newColorsPerLayers[id],
             layer: id,
           });
         }
       }
-
-      // for (
-      //   let y = paintLocation.y - brushSize;
-      //   y < paintLocation.y + brushSize;
-      //   y++
-      // ) {
-      //   for (
-      //     let x = paintLocation.x - brushSize;
-      //     x < paintLocation.x + brushSize;
-      //     x++
-      //   ) {
-      //     const alpha = Math.round(
-      //       clamp01(
-      //         1 - getDistance(x, y, paintLocation.x, paintLocation.y) / brushSize
-      //       ) *
-      //         useColor.a *
-      //         brushHardness
-      //     );
-
-      // const layerColors: {
-      //   [id: string]: { colorBefore: Color; layer: Layer };
-      // } = {};
-
-      // if (x >= 0 && y >= 0 && x < width && y < height) {
-      //   for (let i = 0; i < layers.length; i++) {
-      //     const activeLayer = layers[i];
-      //     const layerClone = this.layersClone[i];
-
-      //     layerColors[activeLayer.id] = {
-      //       colorBefore: layerClone.getPixelColor(x, y),
-      //       layer: activeLayer,
-      //     };
-      //   }
-      // }
-
-      //     addPixelColor(x, y, useColor.r, useColor.g, useColor.b, alpha, false);
-
-      // for (const id in layerColors) {
-      //   const data = layerColors[id];
-
-      //   this.pixels.push({
-      //     location: new Location(x, y),
-      //     colorBefore: data.colorBefore,
-      //     colorAfter: data.layer.getPixelColor(x, y),
-      //     layer: id,
-      //   });
-      // }
-      //   }
-      // }
     }
 
     setLayers(this.cachedLayersCopy);
@@ -166,9 +104,13 @@ class BrushTool extends Tool {
 
     this.pixels = [];
     this.layersClone = layers.map((layer) => layer.clone());
+    this.layersCloneMap = {};
+    for (const layer of this.layersClone) {
+      this.layersCloneMap[layer.id] = layer;
+    }
 
     this.cachedAlpha = [];
-    this.cachedLayersCopy = [...layers];
+    this.cachedLayersCopy = layers.map((layer) => layer.clone());
 
     const primary = args.button == 0;
 
@@ -181,7 +123,7 @@ class BrushTool extends Tool {
       const y = Math.floor(i / brushSize);
 
       const alpha = Math.round(
-        clamp01(1 - getFastDistance(x, y, halfSize, halfSize) / brushSize) *
+        clamp01(1 - getDistance(x, y, halfSize, halfSize) / halfSize) *
           useColor.a *
           brushHardness
       );
