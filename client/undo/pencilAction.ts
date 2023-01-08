@@ -7,8 +7,10 @@ import UndoAction from "./undoAction";
 export type UndoPixel = {
   x: number;
   y: number;
-  colorBefore: Color;
-  colorAfter: Color;
+  r: number;
+  g: number;
+  b: number;
+  a: number;
   layer: string;
 };
 
@@ -30,14 +32,9 @@ export default class PencilAction extends UndoAction {
     }
 
     for (const pixel of this.pixels) {
-      layersMap[pixel.layer].setPixelData(
-        pixel.x,
-        pixel.y,
-        pixel.colorBefore.r,
-        pixel.colorBefore.g,
-        pixel.colorBefore.b,
-        pixel.colorBefore.a
-      );
+      //TODO: Get color of layer before this undo
+      //TODO: Develop generic function to get previous color of pixel before a certain undo action...
+      layersMap[pixel.layer].setPixelData(pixel.x, pixel.y, 255, 0, 0, 255);
     }
 
     for (const layer of cloneLayers) {
@@ -59,10 +56,10 @@ export default class PencilAction extends UndoAction {
       layersMap[pixel.layer].setPixelData(
         pixel.x,
         pixel.y,
-        pixel.colorAfter.r,
-        pixel.colorAfter.g,
-        pixel.colorAfter.b,
-        pixel.colorAfter.a
+        pixel.r,
+        pixel.g,
+        pixel.b,
+        pixel.a
       );
     }
 

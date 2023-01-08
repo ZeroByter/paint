@@ -5,9 +5,12 @@ import { PaintContextType } from "components/contexts/paint";
 import UndoAction from "./undoAction";
 
 export type UndoPixel = {
-  location: Location;
-  colorBefore: Color;
-  colorAfter: Color;
+  x: number;
+  y: number;
+  r: number;
+  g: number;
+  b: number;
+  a: number;
   layer: string;
 };
 
@@ -30,12 +33,12 @@ export default class PencilAction extends UndoAction {
 
     for (const pixel of this.pixels) {
       layersMap[pixel.layer].setPixelData(
-        pixel.location.x,
-        pixel.location.y,
-        pixel.colorBefore.r,
-        pixel.colorBefore.g,
-        pixel.colorBefore.b,
-        pixel.colorBefore.a
+        pixel.x,
+        pixel.y,
+        pixel.r,
+        pixel.g,
+        pixel.b,
+        pixel.a
       );
     }
 
@@ -56,12 +59,12 @@ export default class PencilAction extends UndoAction {
 
     for (const pixel of this.pixels) {
       layersMap[pixel.layer].setPixelData(
-        pixel.location.x,
-        pixel.location.y,
-        pixel.colorAfter.r,
-        pixel.colorAfter.g,
-        pixel.colorAfter.b,
-        pixel.colorAfter.a
+        pixel.x,
+        pixel.y,
+        pixel.r,
+        pixel.g,
+        pixel.b,
+        pixel.a
       );
     }
 

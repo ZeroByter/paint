@@ -44,9 +44,12 @@ class PencilTool extends Tool {
         if (!layer.active) continue;
 
         this.pixels.push({
-          location: mouseLoc,
-          colorBefore: layer.getPixelColor(mouseLoc.x, mouseLoc.y),
-          colorAfter: useColor,
+          x: mouseLoc.x,
+          y: mouseLoc.y,
+          r: useColor.r,
+          g: useColor.g,
+          b: useColor.b,
+          a: useColor.a,
           layer: layer.id,
         });
       }
@@ -107,9 +110,12 @@ class PencilTool extends Tool {
           if (!layer.active) continue;
 
           this.pixels.push({
-            location: paintLocation,
-            colorBefore: layer.getPixelColor(paintLocation.x, paintLocation.y),
-            colorAfter: useColor,
+            x: paintLocation.x,
+            y: paintLocation.y,
+            r: useColor.r,
+            g: useColor.g,
+            b: useColor.b,
+            a: useColor.a,
             layer: layer.id,
           });
         }

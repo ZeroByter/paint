@@ -73,18 +73,18 @@ class BrushTool extends Tool {
           this.cachedLayersCopy
         );
 
-        for (const id in this.layersCloneMap) {
-          const layer = this.layersCloneMap[id];
+        // for (const id in this.layersCloneMap) {
+        //   const layer = this.layersCloneMap[id];
 
-          //this push function is causing a lot of lag with big brushes, maybe replace it with Map or something?
-          this.pixels.push({
-            x: finalX,
-            y: finalY,
-            colorBefore: layer.getPixelColor(finalX, finalY),
-            colorAfter: newColorsPerLayers[id],
-            layer: id,
-          });
-        }
+        //   //this push function is causing a lot of lag with big brushes, maybe replace it with Map or something?
+        //   this.pixels.push({
+        //     x: finalX,
+        //     y: finalY,
+        //     colorBefore: layer.getPixelColor(finalX, finalY),
+        //     colorAfter: newColorsPerLayers[id],
+        //     layer: id,
+        //   });
+        // }
       }
     }
 
