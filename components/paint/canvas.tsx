@@ -1,5 +1,13 @@
 import Layer from "@shared/types/layer";
-import { FC, MouseEvent, useEffect, useMemo, useRef } from "react";
+import { PaintFetcher } from "components/contexts/paint";
+import {
+  CSSProperties,
+  FC,
+  MouseEvent,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import css from "./canvas.module.scss";
 
 type Props = {
@@ -7,6 +15,8 @@ type Props = {
 };
 
 const Canvas: FC<Props> = ({ layer }) => {
+  const { scale, getRealScale } = PaintFetcher();
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
 
@@ -47,10 +57,12 @@ const Canvas: FC<Props> = ({ layer }) => {
   };
 
   const memoStyle = useMemo(
-    () => ({
-      zIndex: layer.order,
-    }),
-    [layer]
+    () =>
+      ({
+        zIndex: layer.order,
+        imageRendering: getRealScale() > 3 ? "pixelated" : "auto",
+      } as CSSProperties),
+    [layer, getRealScale]
   );
 
   return (

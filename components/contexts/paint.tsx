@@ -2,6 +2,7 @@ import { addColors } from "@client/layersToImageData";
 import Tools from "@client/tools";
 import Tool from "@client/tools/tool";
 import CropAction, { CroppedLayer } from "@client/undo/cropAction";
+import { UndoPixel } from "@client/undo/pencilAction";
 import UndoAction from "@client/undo/undoAction";
 import { ilerp, lerp } from "@client/utils";
 import Color from "@shared/types/color";
@@ -17,6 +18,10 @@ import {
   useRef,
   useState,
 } from "react";
+
+export type ColorPerLayer = {
+  [id: string]: Color;
+};
 
 export type PaintContextType = {
   width: number;
@@ -76,7 +81,7 @@ export type PaintContextType = {
     a: number,
     update: boolean,
     layersCopy?: Layer[]
-  ) => void;
+  ) => ColorPerLayer;
   setPixelColor: (
     x: number,
     y: number,
@@ -101,6 +106,8 @@ export type PaintContextType = {
     selection: Selection,
     shouldAddUndoAction?: boolean
   ) => void;
+
+  getUndoPixelColor: (layerId: string, x: number, y: number) => UndoPixel;
 
   notificationData?: NotificationData;
   setNotification: (text: string, image?: ImageData) => void;
@@ -166,6 +173,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
 
     const newLayer = new Layer(image.width, image.height, true);
     newLayer.setPixelDataFromImage(image);
+    newLayer.createPixelsCopy();
 
     setLayers([newLayer]);
 
@@ -202,7 +210,17 @@ const PaintProvider: FC<Props> = ({ children }) => {
     update = false,
     layersCopy?: Layer[]
   ) => {
-    if (x < 0 || y < 0 || x > width - 1 || y > height - 1) return;
+    if (layersCopy == null) {
+      layersCopy = [...layers];
+    }
+
+    const newColorPerLayer: { [id: string]: Color } = {};
+    for (const layer of layersCopy) {
+      newColorPerLayer[layer.id] = new Color(0, 0, 0, 0);
+    }
+
+    if (x < 0 || y < 0 || x > width - 1 || y > height - 1)
+      return newColorPerLayer;
 
     if (selection.isValid()) {
       if (
@@ -211,12 +229,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
         x > selection.x + selection.width - 1 ||
         y > selection.y + selection.height - 1
       ) {
-        return;
+        return newColorPerLayer;
       }
-    }
-
-    if (layersCopy == null) {
-      layersCopy = [...layers];
     }
 
     for (const layer of layersCopy) {
@@ -242,6 +256,12 @@ const PaintProvider: FC<Props> = ({ children }) => {
     if (layersCopy == null) {
       setLayers(layersCopy);
     }
+
+    for (const layer of layersCopy) {
+      newColorPerLayer[layer.id] = layer.getPixelColor(x, y);
+    }
+
+    return newColorPerLayer;
   };
 
   const setPixelColor = (
@@ -403,6 +423,47 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setSelection(new Selection());
   };
 
+  const getUndoPixelColor = (layerId: string, x: number, y: number) => {
+    for (let i = 0; i < undoActions.current.length; i++) {
+      const undoAction =
+        undoActions.current[undoActions.current.length - i - 1];
+
+      const pixels = (undoAction as any).pixels as
+        | Map<string, Map<number, UndoPixel>>
+        | undefined;
+
+      if (pixels) {
+        const data = pixels.get(layerId);
+        if (data) {
+          const undoPixel = data.get(x + y * width);
+          if (undoPixel) {
+            return undoPixel;
+          }
+        }
+      }
+    }
+
+    const pixelsCopy = layers.find((layer) => layer.id == layerId)?.pixelsCopy;
+
+    if (pixelsCopy) {
+      const index = x + y * width;
+
+      return {
+        r: pixelsCopy[index * 4],
+        g: pixelsCopy[index * 4 + 1],
+        b: pixelsCopy[index * 4 + 2],
+        a: pixelsCopy[index * 4 + 3],
+      };
+    }
+
+    return {
+      r: 0,
+      g: 0,
+      b: 0,
+      a: 0,
+    };
+  };
+
   const setNotification = (text: string, image?: ImageData) => {
     setNotificationData({
       id: randomString(),
@@ -456,6 +517,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
     undoAction,
     redoAction,
     cropToSelection,
+    getUndoPixelColor,
     notificationData,
     setNotification,
   };

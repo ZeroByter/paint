@@ -7,8 +7,12 @@ import { PaintContextType } from "components/contexts/paint";
 import Tool, { OnClickArgs, OnDragArgs } from "./tool";
 
 class BrushTool extends Tool {
-  pixels: UndoPixel[] = [];
+  lastDrawIndex = -1;
+
+  pixels = new Map<string, Map<number, UndoPixel>>();
+
   layersClone: Layer[] = [];
+  layersCloneMap: { [id: string]: Layer } = {};
 
   cachedLayersCopy: Layer[] = [];
   cachedAlpha: number[] = [];
@@ -44,40 +48,40 @@ class BrushTool extends Tool {
       getDistance(mouseLoc.x, mouseLoc.y, lastMouseLoc.x, lastMouseLoc.y)
     );
 
+    const loopDistance = Math.max(1, distance);
+
     const direction = lastMouseLoc.minus(mouseLoc).normalized();
 
-    for (let i = 0; i < distance; i++) {
-      const paintLocation = mouseLoc
+    for (let i = 0; i < loopDistance; i++) {
+      let paintLocation = mouseLoc
         .add(direction.add(direction.multiply(i)))
         .round();
+      if (distance == 0) {
+        paintLocation = mouseLoc;
+      }
 
       const halfSize = Math.floor(brushSize / 2);
       const doubleSize = brushSize * brushSize;
 
       for (let i = 0; i < doubleSize; i++) {
         const x = i % brushSize;
-        const y = Math.floor(i / brushSize);
+        const y = (i / brushSize) >> 0;
 
         const finalX = paintLocation.x - halfSize + x;
         const finalY = paintLocation.y - halfSize + y;
 
-        const layerColors: {
-          [id: string]: { colorBefore: Color; layer: Layer };
-        } = {};
-
-        if (x >= 0 && y >= 0 && x < width && y < height) {
-          for (let i = 0; i < this.cachedLayersCopy.length; i++) {
-            const activeLayer = this.cachedLayersCopy[i];
-            const layerClone = this.layersClone[i];
-
-            layerColors[activeLayer.id] = {
-              colorBefore: layerClone.getPixelColor(finalX, finalY),
-              layer: activeLayer,
-            };
-          }
+        if (
+          finalX < 0 ||
+          finalY < 0 ||
+          finalX > width - 1 ||
+          finalY > height - 1
+        ) {
+          continue;
         }
 
-        addPixelColor(
+        const finalIndex = finalX + finalY * width;
+
+        const newColorsPerLayers = addPixelColor(
           finalX,
           finalY,
           useColor.r,
@@ -88,66 +92,25 @@ class BrushTool extends Tool {
           this.cachedLayersCopy
         );
 
-        for (const id in layerColors) {
-          const data = layerColors[id];
+        for (const id in this.layersCloneMap) {
+          const layer = this.layersCloneMap[id];
 
-          this.pixels.push({
-            location: new Location(finalX, finalY),
-            colorBefore: data.colorBefore,
-            colorAfter: data.layer.getPixelColor(finalX, finalY),
-            layer: id,
+          if (!layer.active) continue;
+
+          if (!this.pixels.has(layer.id)) {
+            this.pixels.set(layer.id, new Map<number, UndoPixel>());
+          }
+
+          const newColor = newColorsPerLayers[layer.id];
+
+          this.pixels.get(layer.id)!.set(finalIndex, {
+            r: newColor.r,
+            g: newColor.g,
+            b: newColor.b,
+            a: newColor.a,
           });
         }
       }
-
-      // for (
-      //   let y = paintLocation.y - brushSize;
-      //   y < paintLocation.y + brushSize;
-      //   y++
-      // ) {
-      //   for (
-      //     let x = paintLocation.x - brushSize;
-      //     x < paintLocation.x + brushSize;
-      //     x++
-      //   ) {
-      //     const alpha = Math.round(
-      //       clamp01(
-      //         1 - getDistance(x, y, paintLocation.x, paintLocation.y) / brushSize
-      //       ) *
-      //         useColor.a *
-      //         brushHardness
-      //     );
-
-      // const layerColors: {
-      //   [id: string]: { colorBefore: Color; layer: Layer };
-      // } = {};
-
-      // if (x >= 0 && y >= 0 && x < width && y < height) {
-      //   for (let i = 0; i < layers.length; i++) {
-      //     const activeLayer = layers[i];
-      //     const layerClone = this.layersClone[i];
-
-      //     layerColors[activeLayer.id] = {
-      //       colorBefore: layerClone.getPixelColor(x, y),
-      //       layer: activeLayer,
-      //     };
-      //   }
-      // }
-
-      //     addPixelColor(x, y, useColor.r, useColor.g, useColor.b, alpha, false);
-
-      // for (const id in layerColors) {
-      //   const data = layerColors[id];
-
-      //   this.pixels.push({
-      //     location: new Location(x, y),
-      //     colorBefore: data.colorBefore,
-      //     colorAfter: data.layer.getPixelColor(x, y),
-      //     layer: id,
-      //   });
-      // }
-      //   }
-      // }
     }
 
     setLayers(this.cachedLayersCopy);
@@ -162,26 +125,32 @@ class BrushTool extends Tool {
       brushHardness,
       primaryColor,
       secondaryColor,
+      width,
     } = state;
 
-    this.pixels = [];
+    this.pixels = new Map<string, Map<number, UndoPixel>>();
+
     this.layersClone = layers.map((layer) => layer.clone());
+    this.layersCloneMap = {};
+    for (const layer of this.layersClone) {
+      this.layersCloneMap[layer.id] = layer;
+    }
 
     this.cachedAlpha = [];
-    this.cachedLayersCopy = [...layers];
+    this.cachedLayersCopy = layers.map((layer) => layer.clone());
 
     const primary = args.button == 0;
 
     const useColor = primary ? primaryColor : secondaryColor;
-    const halfSize = Math.floor(brushSize / 2);
+    const halfSize = (brushSize - 1) / 2;
     const doubleSize = brushSize * brushSize;
 
     for (let i = 0; i < doubleSize; i++) {
       const x = i % brushSize;
-      const y = Math.floor(i / brushSize);
+      const y = (i / brushSize) >> 0;
 
       const alpha = Math.round(
-        clamp01(1 - getFastDistance(x, y, halfSize, halfSize) / brushSize) *
+        clamp01(1 - getDistance(x, y, halfSize, halfSize) / (brushSize / 2)) *
           useColor.a *
           brushHardness
       );
@@ -189,13 +158,21 @@ class BrushTool extends Tool {
       this.cachedAlpha.push(alpha);
     }
 
-    this.doPaint(state, mouseLoc, primary, mouseLoc.add(0, 1));
+    this.lastDrawIndex = mouseLoc.x + mouseLoc.y * width;
+
+    this.doPaint(state, mouseLoc, primary, mouseLoc);
 
     updateActiveLayers();
   }
 
   onDrag(state: PaintContextType, args: OnDragArgs): void {
-    const { updateActiveLayers } = state;
+    const { updateActiveLayers, width } = state;
+
+    const drawIndex = args.accurateMouseLoc.x + args.accurateMouseLoc.y * width;
+
+    if (drawIndex == this.lastDrawIndex) return;
+
+    this.lastDrawIndex = drawIndex;
 
     this.doPaint(
       state,
@@ -208,7 +185,7 @@ class BrushTool extends Tool {
   }
 
   onMouseUp(state: PaintContextType, args: OnClickArgs): void {
-    if (this.pixels.length == 0) return;
+    if (this.pixels.size == 0) return;
     state.addUndoAction(new PencilAction(this.pixels));
   }
 }

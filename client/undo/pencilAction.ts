@@ -1,20 +1,18 @@
-import Color from "@shared/types/color";
 import Layer from "@shared/types/layer";
-import Location from "@shared/types/location";
 import { PaintContextType } from "components/contexts/paint";
 import UndoAction from "./undoAction";
 
 export type UndoPixel = {
-  location: Location;
-  colorBefore: Color;
-  colorAfter: Color;
-  layer: string;
+  r: number;
+  g: number;
+  b: number;
+  a: number;
 };
 
 export default class PencilAction extends UndoAction {
-  pixels: UndoPixel[];
+  pixels: Map<string, Map<number, UndoPixel>>;
 
-  constructor(pixels: UndoPixel[]) {
+  constructor(pixels: Map<string, Map<number, UndoPixel>>) {
     super();
 
     this.pixels = pixels;
@@ -28,15 +26,22 @@ export default class PencilAction extends UndoAction {
       layersMap[layer.id] = layer;
     }
 
-    for (const pixel of this.pixels) {
-      layersMap[pixel.layer].setPixelData(
-        pixel.location.x,
-        pixel.location.y,
-        pixel.colorBefore.r,
-        pixel.colorBefore.g,
-        pixel.colorBefore.b,
-        pixel.colorBefore.a
-      );
+    for (const [layerId, pixelsData] of this.pixels) {
+      for (const [index, color] of pixelsData) {
+        const x = index % state.width;
+        const y = (index / state.width) >> 0; //fast floor bit operation for positive numbers
+
+        const undoColor = state.getUndoPixelColor(layerId, x, y);
+
+        layersMap[layerId].setPixelData(
+          x,
+          y,
+          undoColor.r,
+          undoColor.g,
+          undoColor.b,
+          undoColor.a
+        );
+      }
     }
 
     for (const layer of cloneLayers) {
@@ -54,15 +59,20 @@ export default class PencilAction extends UndoAction {
       layersMap[layer.id] = layer;
     }
 
-    for (const pixel of this.pixels) {
-      layersMap[pixel.layer].setPixelData(
-        pixel.location.x,
-        pixel.location.y,
-        pixel.colorAfter.r,
-        pixel.colorAfter.g,
-        pixel.colorAfter.b,
-        pixel.colorAfter.a
-      );
+    for (const [layerId, pixelsData] of this.pixels) {
+      for (const [index, color] of pixelsData) {
+        const x = index % state.width;
+        const y = (index / state.width) >> 0; //fast floor bit operation for positive numbers
+
+        layersMap[layerId].setPixelData(
+          x,
+          y,
+          color.r,
+          color.g,
+          color.b,
+          color.a
+        );
+      }
     }
 
     for (const layer of cloneLayers) {
