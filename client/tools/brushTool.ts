@@ -1,6 +1,5 @@
 import PencilAction, { UndoPixel } from "@client/undo/pencilAction";
 import { clamp01, getDistance, getFastDistance } from "@client/utils";
-import Color from "@shared/types/color";
 import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
 import { PaintContextType } from "components/contexts/paint";
@@ -14,7 +13,6 @@ class BrushTool extends Tool {
   layersClone: Layer[] = [];
   layersCloneMap: { [id: string]: Layer } = {};
 
-  cachedLayersCopy: Layer[] = [];
   cachedAlpha: number[] = [];
 
   constructor() {
@@ -89,7 +87,7 @@ class BrushTool extends Tool {
           useColor.b,
           this.cachedAlpha[i],
           false,
-          this.cachedLayersCopy
+          this.layersClone
         );
 
         for (const id in this.layersCloneMap) {
@@ -113,7 +111,7 @@ class BrushTool extends Tool {
       }
     }
 
-    setLayers(this.cachedLayersCopy);
+    setLayers(this.layersClone);
   }
 
   onMouseDown(state: PaintContextType, args: OnClickArgs): void {
@@ -137,7 +135,6 @@ class BrushTool extends Tool {
     }
 
     this.cachedAlpha = [];
-    this.cachedLayersCopy = layers.map((layer) => layer.clone());
 
     const primary = args.button == 0;
 

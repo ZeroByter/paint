@@ -23,14 +23,14 @@ const TransparencyBackground: FC = () => {
       const y = Math.floor(i / width);
 
       if ((x + y) % 2 == 0) {
-        newPixels[i * 4] = 202;
-        newPixels[i * 4 + 1] = 202;
-        newPixels[i * 4 + 2] = 202;
+        newPixels[i * 4] = 231;
+        newPixels[i * 4 + 1] = 231;
+        newPixels[i * 4 + 2] = 231;
         newPixels[i * 4 + 3] = 255;
       } else {
-        newPixels[i * 4] = 240;
-        newPixels[i * 4 + 1] = 240;
-        newPixels[i * 4 + 2] = 240;
+        newPixels[i * 4] = 255;
+        newPixels[i * 4 + 1] = 255;
+        newPixels[i * 4 + 2] = 255;
         newPixels[i * 4 + 3] = 255;
       }
     }
