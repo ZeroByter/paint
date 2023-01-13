@@ -6,7 +6,7 @@ import { PaintContextType, PaintFetcher } from "components/contexts/paint";
 import Tool, { OnClickArgs, OnDragArgs } from "./tool";
 
 class PencilTool extends Tool {
-  pixels: UndoPixel[] = [];
+  pixels = new Map<string, Map<number, UndoPixel>>();
   drawnLocations: { [index: number]: undefined } = {};
 
   constructor() {
@@ -16,88 +16,42 @@ class PencilTool extends Tool {
     this.tooltip = "Pencil";
   }
 
-  onMouseDown(state: PaintContextType, args: OnClickArgs): void {
+  doPaint(
+    state: PaintContextType,
+    mouseLoc: Location,
+    primary: boolean,
+    lastDragLocation: Location
+  ) {
     const {
       setPixelColor,
       primaryColor,
       secondaryColor,
-      mouseLoc,
       layers,
       width,
       height,
     } = state;
 
-    const useColor = args.button == 0 ? primaryColor : secondaryColor;
-
-    this.pixels = [];
-    this.drawnLocations = {
-      [mouseLoc.x + mouseLoc.y * width]: undefined,
-    };
-
-    if (
-      mouseLoc.x >= 0 &&
-      mouseLoc.y >= 0 &&
-      mouseLoc.x < width &&
-      mouseLoc.y < height
-    ) {
-      for (const layer of layers) {
-        if (!layer.active) continue;
-
-        this.pixels.push({
-          x: mouseLoc.x,
-          y: mouseLoc.y,
-          r: useColor.r,
-          g: useColor.g,
-          b: useColor.b,
-          a: useColor.a,
-          layer: layer.id,
-        });
-      }
-    }
-
-    setPixelColor(
-      mouseLoc.x,
-      mouseLoc.y,
-      useColor.r,
-      useColor.g,
-      useColor.b,
-      useColor.a,
-      true
-    );
-  }
-
-  onDrag(state: PaintContextType, args: OnDragArgs): void {
-    const {
-      primaryColor,
-      secondaryColor,
-      setPixelColor,
-      updateActiveLayers,
-      layers,
-      width,
-      height,
-    } = state;
-
-    const mouseLoc = args.accurateMouseLoc;
-
-    const useColor = args.buttons == 1 ? primaryColor : secondaryColor;
-
-    const lastMouseLoc = args.lastDragLocation.copy();
+    const useColor = primary ? primaryColor : secondaryColor;
+    const lastMouseLoc = lastDragLocation.copy();
 
     const distance = Math.ceil(
       getDistance(mouseLoc.x, mouseLoc.y, lastMouseLoc.x, lastMouseLoc.y)
     );
+    const loopDistance = Math.max(1, distance);
 
     const direction = lastMouseLoc.minus(mouseLoc).normalized();
 
-    for (let i = 0; i < distance; i++) {
-      const paintLocation = mouseLoc
+    for (let i = 0; i < loopDistance; i++) {
+      let paintLocation = mouseLoc
         .add(direction.add(direction.multiply(i)))
         .round();
+      if (distance == 0) {
+        paintLocation = mouseLoc;
+      }
 
       const paintLocationIndex = paintLocation.x + paintLocation.y * width;
 
       if (paintLocationIndex in this.drawnLocations) continue;
-
       this.drawnLocations[paintLocationIndex] = undefined;
 
       if (
@@ -109,14 +63,15 @@ class PencilTool extends Tool {
         for (const layer of layers) {
           if (!layer.active) continue;
 
-          this.pixels.push({
-            x: paintLocation.x,
-            y: paintLocation.y,
+          if (!this.pixels.has(layer.id)) {
+            this.pixels.set(layer.id, new Map<number, UndoPixel>());
+          }
+
+          this.pixels.get(layer.id)!.set(paintLocationIndex, {
             r: useColor.r,
             g: useColor.g,
             b: useColor.b,
             a: useColor.a,
-            layer: layer.id,
           });
         }
       }
@@ -131,12 +86,35 @@ class PencilTool extends Tool {
         false
       );
     }
+  }
+
+  onMouseDown(state: PaintContextType, args: OnClickArgs): void {
+    const { updateActiveLayers, mouseLoc, width } = state;
+
+    this.pixels = new Map<string, Map<number, UndoPixel>>();
+    this.drawnLocations = {};
+
+    this.doPaint(state, mouseLoc, args.button == 0, mouseLoc);
+
+    updateActiveLayers();
+  }
+
+  onDrag(state: PaintContextType, args: OnDragArgs): void {
+    const { updateActiveLayers } = state;
+
+    this.doPaint(
+      state,
+      args.accurateMouseLoc,
+      args.buttons == 1,
+      args.lastDragLocation
+    );
 
     updateActiveLayers();
   }
 
   onMouseUp(state: PaintContextType, args: OnClickArgs): void {
-    if (this.pixels.length == 0) return;
+    if (this.pixels.size == 0) return;
+
     state.addUndoAction(new PencilAction(this.pixels));
   }
 }

@@ -125,6 +125,8 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
 
   const handleMouseUp = useCallback(
     (e: MouseEvent) => {
+      if ((e.target as any).getAttribute("data-interactable") != "true") return;
+
       setIsMouseDown(false);
 
       if (e.button == 0 || e.button == 2) {

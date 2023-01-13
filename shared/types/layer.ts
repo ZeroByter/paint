@@ -15,6 +15,8 @@ class Layer {
   pixels: Uint8ClampedArray;
   pixelsId: string;
 
+  pixelsCopy: Uint8ClampedArray;
+
   constructor(
     width: number,
     height: number,
@@ -34,7 +36,13 @@ class Layer {
     this.pixels = new Uint8ClampedArray(width * height * 4);
     this.pixels.fill(initial ? 255 : 0);
 
+    this.pixelsCopy = new Uint8ClampedArray(this.pixels);
+
     this.pixelsId = this.id;
+  }
+
+  createPixelsCopy() {
+    this.pixelsCopy = new Uint8ClampedArray(this.pixels);
   }
 
   getPixelIndex(x: number, y: number) {
@@ -106,6 +114,8 @@ class Layer {
 
     newLayer.pixels = new Uint8ClampedArray(this.pixels);
     newLayer.pixelsId = this.pixelsId;
+
+    newLayer.pixelsCopy = new Uint8ClampedArray(this.pixelsCopy);
 
     return newLayer;
   }

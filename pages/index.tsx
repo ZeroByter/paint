@@ -1,5 +1,4 @@
 import PaintProvider from "components/contexts/paint";
-import ToolbarProvider from "components/contexts/toolbar";
 import PaintToolbar from "components/paint/paintToolbar";
 import ToolsToolbar from "components/paint/toolbar";
 import Head from "next/head";

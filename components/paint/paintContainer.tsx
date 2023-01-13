@@ -47,6 +47,7 @@ const PaintContainer: FC = () => {
     "paste",
     useCallback(
       (e: ClipboardEvent) => {
+        if (e.target != document.body) return;
         if (!e.clipboardData || e.clipboardData.files.length != 1) return; //TODO: Support multiple images? Each image to it's own layer, canvas size is of the biggest image
 
         for (let i = 0; i < e.clipboardData.files.length; i++) {
@@ -82,8 +83,8 @@ const PaintContainer: FC = () => {
     "keydown",
     useCallback(
       (e: KeyboardEvent) => {
-        if (e.ctrlKey) {
-          if (e.code == "KeyC") {
+        if (e.target == document.body && e.ctrlKey) {
+          if (e.code == "KeyC" && !e.shiftKey) {
             const isSelectionValid = selection && selection.isValid();
 
             const finalX = isSelectionValid ? selection.x : 0;
@@ -119,14 +120,14 @@ const PaintContainer: FC = () => {
             });
           }
 
-          if (e.code == "KeyZ") {
+          if (e.code == "KeyZ" && !e.shiftKey) {
             const didUndo = undoAction();
             if (didUndo) {
               setNotification(`Undo`);
             }
           }
 
-          if (e.code == "KeyY") {
+          if (e.code == "KeyY" || (e.shiftKey && e.code == "KeyZ")) {
             const redo = redoAction();
             if (redo) {
               setNotification(`Redo`);

@@ -2,6 +2,7 @@ import { addColors } from "@client/layersToImageData";
 import Tools from "@client/tools";
 import Tool from "@client/tools/tool";
 import CropAction, { CroppedLayer } from "@client/undo/cropAction";
+import { UndoPixel } from "@client/undo/pencilAction";
 import UndoAction from "@client/undo/undoAction";
 import { ilerp, lerp } from "@client/utils";
 import Color from "@shared/types/color";
@@ -106,6 +107,8 @@ export type PaintContextType = {
     shouldAddUndoAction?: boolean
   ) => void;
 
+  getUndoPixelColor: (layerId: string, x: number, y: number) => UndoPixel;
+
   notificationData?: NotificationData;
   setNotification: (text: string, image?: ImageData) => void;
 };
@@ -170,6 +173,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
 
     const newLayer = new Layer(image.width, image.height, true);
     newLayer.setPixelDataFromImage(image);
+    newLayer.createPixelsCopy();
 
     setLayers([newLayer]);
 
@@ -419,6 +423,47 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setSelection(new Selection());
   };
 
+  const getUndoPixelColor = (layerId: string, x: number, y: number) => {
+    for (let i = 0; i < undoActions.current.length; i++) {
+      const undoAction =
+        undoActions.current[undoActions.current.length - i - 1];
+
+      const pixels = (undoAction as any).pixels as
+        | Map<string, Map<number, UndoPixel>>
+        | undefined;
+
+      if (pixels) {
+        const data = pixels.get(layerId);
+        if (data) {
+          const undoPixel = data.get(x + y * width);
+          if (undoPixel) {
+            return undoPixel;
+          }
+        }
+      }
+    }
+
+    const pixelsCopy = layers.find((layer) => layer.id == layerId)?.pixelsCopy;
+
+    if (pixelsCopy) {
+      const index = x + y * width;
+
+      return {
+        r: pixelsCopy[index * 4],
+        g: pixelsCopy[index * 4 + 1],
+        b: pixelsCopy[index * 4 + 2],
+        a: pixelsCopy[index * 4 + 3],
+      };
+    }
+
+    return {
+      r: 0,
+      g: 0,
+      b: 0,
+      a: 0,
+    };
+  };
+
   const setNotification = (text: string, image?: ImageData) => {
     setNotificationData({
       id: randomString(),
@@ -472,6 +517,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
     undoAction,
     redoAction,
     cropToSelection,
+    getUndoPixelColor,
     notificationData,
     setNotification,
   };
