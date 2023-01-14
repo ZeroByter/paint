@@ -11,16 +11,20 @@ const TransparencyBackground: FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    canvas.width = width;
-    canvas.height = height;
+    const scale = 2;
+    const scaledWidth = width * scale;
+    const scaledHeight = height * scale;
+
+    canvas.width = scaledWidth;
+    canvas.height = scaledHeight;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const newPixels = new Uint8ClampedArray(width * height * 4);
-    for (let i = 0; i < width * height; i++) {
-      const x = i % width;
-      const y = Math.floor(i / width);
+    const newPixels = new Uint8ClampedArray(scaledWidth * scaledHeight * 4);
+    for (let i = 0; i < scaledWidth * scaledHeight; i++) {
+      const x = i % scaledWidth;
+      const y = Math.floor(i / scaledWidth);
 
       if ((x + y) % 2 == 0) {
         newPixels[i * 4] = 231;
@@ -35,7 +39,7 @@ const TransparencyBackground: FC = () => {
       }
     }
 
-    ctx.putImageData(new ImageData(newPixels, width, height), 0, 0);
+    ctx.putImageData(new ImageData(newPixels, scaledWidth, scaledHeight), 0, 0);
   }, [width, height]);
 
   return <canvas ref={canvasRef} className={css.root} />;

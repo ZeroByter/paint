@@ -1,5 +1,5 @@
 import PencilAction, { UndoPixel } from "@client/undo/pencilAction";
-import { clamp01, getDistance, getFastDistance } from "@client/utils";
+import { getDistance, ilerp, lerp } from "@client/utils";
 import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
 import { PaintContextType } from "components/contexts/paint";
@@ -11,7 +11,7 @@ export type BrushData = {
 };
 
 export const generateBrushEffect = (
-  x: number,
+  x: number, //x and y aren't used yet, but they are given here in order to implement precise sub-pixel coloring later
   y: number,
   radius: number,
   opacity: number,
@@ -21,18 +21,15 @@ export const generateBrushEffect = (
 
   const size = radius;
 
-  const halfSize = (size - 1) / 2;
-  const doubleSize = size * size;
-
-  for (let i = 0; i < doubleSize; i++) {
+  for (let i = 0; i < size * size; i++) {
     const x = i % size;
-    const y = (i / size) >> 0;
+    const y = (i / size) >> 0; //fast floor for positive numbers
 
-    const alpha = Math.round(
-      clamp01(1 - getDistance(x, y, halfSize, halfSize) / (size / 2)) *
-        opacity *
-        hardness
-    );
+    const distance = getDistance(x + 0.5, y + 0.5, size / 2, size / 2);
+
+    const alpha =
+      ilerp(size / 2, size / 2 - lerp(size / 2, 1, hardness ** 0.5), distance) *
+      opacity;
 
     data.push(alpha);
   }
