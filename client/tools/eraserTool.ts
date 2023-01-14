@@ -5,6 +5,7 @@ import Color from "@shared/types/color";
 import { PaintContextType, PaintFetcher } from "components/contexts/paint";
 import Tool, { OnClickArgs, OnDragArgs } from "./tool";
 import Layer from "@shared/types/layer";
+import { BrushData, generateBrushEffect } from "./brushTool";
 
 class EraserTool extends Tool {
   lastDrawIndex = -1;
@@ -14,7 +15,10 @@ class EraserTool extends Tool {
   layersClone: Layer[] = [];
   layersCloneMap: { [id: string]: Layer } = {};
 
-  cachedAlpha: number[] = [];
+  cachedAlpha: BrushData = {
+    data: [],
+    size: 0,
+  };
 
   constructor() {
     super();
@@ -29,17 +33,7 @@ class EraserTool extends Tool {
     primary: boolean,
     lastDragLocation: Location
   ) {
-    const {
-      primaryColor,
-      secondaryColor,
-      width,
-      height,
-      brushSize,
-      layers,
-      setLayers,
-    } = state;
-
-    const useColor = primary ? primaryColor : secondaryColor;
+    const { primaryColor, secondaryColor, width, height, setLayers } = state;
 
     const lastMouseLoc = lastDragLocation.copy();
 
@@ -58,6 +52,8 @@ class EraserTool extends Tool {
       if (distance == 0) {
         paintLocation = mouseLoc;
       }
+
+      const brushSize = this.cachedAlpha.size;
 
       const halfSize = Math.floor(brushSize / 2);
       const doubleSize = brushSize * brushSize;
@@ -90,7 +86,11 @@ class EraserTool extends Tool {
           }
 
           const existingColor = layer.getPixelColor(finalX, finalY);
-          const newAlpha = clamp(existingColor.a - this.cachedAlpha[i], 0, 255);
+          const newAlpha = clamp(
+            existingColor.a - this.cachedAlpha.data[i],
+            0,
+            255
+          );
           const newColor = new Color(
             existingColor.r,
             existingColor.g,
@@ -140,26 +140,16 @@ class EraserTool extends Tool {
       this.layersCloneMap[layer.id] = layer;
     }
 
-    this.cachedAlpha = [];
-
     const primary = args.button == 0;
-
     const useColor = primary ? primaryColor : secondaryColor;
-    const halfSize = (brushSize - 1) / 2;
-    const doubleSize = brushSize * brushSize;
 
-    for (let i = 0; i < doubleSize; i++) {
-      const x = i % brushSize;
-      const y = (i / brushSize) >> 0;
-
-      const alpha = Math.round(
-        clamp01(1 - getDistance(x, y, halfSize, halfSize) / (brushSize / 2)) *
-          useColor.a *
-          brushHardness
-      );
-
-      this.cachedAlpha.push(alpha);
-    }
+    this.cachedAlpha = generateBrushEffect(
+      mouseLoc.x,
+      mouseLoc.y,
+      brushSize,
+      useColor.a,
+      brushHardness
+    );
 
     this.lastDrawIndex = mouseLoc.x + mouseLoc.y * width;
 
