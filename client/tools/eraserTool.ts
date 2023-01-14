@@ -151,6 +151,10 @@ class EraserTool extends Tool {
       brushHardness
     );
 
+    if (this.cachedAlpha.size == 1) {
+      this.cachedAlpha.data[0] = useColor.a;
+    }
+
     this.lastDrawIndex = mouseLoc.x + mouseLoc.y * width;
 
     this.doErase(state, mouseLoc, primary, mouseLoc);
