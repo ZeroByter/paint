@@ -1,5 +1,6 @@
 import Layer from "@shared/types/layer";
 import { PaintContextType } from "components/contexts/paint";
+import { getUndoPixelColor } from "components/contexts/paintUtils";
 import UndoAction from "./undoAction";
 
 export type UndoPixel = {
@@ -31,7 +32,7 @@ export default class PencilAction extends UndoAction {
         const x = index % state.width;
         const y = (index / state.width) >> 0; //fast floor bit operation for positive numbers
 
-        const undoColor = state.getUndoPixelColor(layerId, x, y);
+        const undoColor = getUndoPixelColor(state, layerId, x, y);
 
         layersMap[layerId].setPixelData(
           x,

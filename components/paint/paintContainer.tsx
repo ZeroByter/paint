@@ -18,10 +18,21 @@ import Location from "@shared/types/location";
 import PasteAction from "@client/undo/pasteAction";
 import useDocumentEvent from "@client/hooks/useDocumentEvent";
 import { ilerp, lerp } from "@client/utils";
+import {
+  addUndoAction,
+  cropToSelection,
+  getRealScale,
+  loadFromImage,
+  redoAction,
+  scaleToSize,
+  setNotification,
+  undoAction,
+} from "components/contexts/paintUtils";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
+  const paintState = PaintFetcher();
   const {
     width,
     height,
@@ -29,19 +40,11 @@ const PaintContainer: FC = () => {
     setScale,
     setLayers,
     layers,
-    loadFromImage,
     selection,
-    undoAction,
-    redoAction,
-    cropToSelection,
     setSelection,
-    setNotification,
     offset,
-    getRealScale,
     setOffset,
-    addUndoAction,
-    scaleToSize,
-  } = PaintFetcher();
+  } = paintState;
 
   useDocumentEvent(
     "paste",
@@ -57,14 +60,17 @@ const PaintContainer: FC = () => {
 
           const image = new Image();
           image.onload = () => {
-            addUndoAction(new PasteAction(layers, width, height, image));
-            loadFromImage(image);
+            addUndoAction(
+              paintState,
+              new PasteAction(layers, width, height, image)
+            );
+            loadFromImage(paintState, image);
             setSelection(new Selection());
           };
           image.src = window.URL.createObjectURL(file);
         }
       },
-      [addUndoAction, height, layers, loadFromImage, setSelection, width]
+      [height, layers, paintState, setSelection, width]
     )
   );
 
@@ -110,7 +116,7 @@ const PaintContainer: FC = () => {
 
             ctx.putImageData(newImageData, 0, 0);
 
-            setNotification(`Copied image`, newImageData);
+            setNotification(paintState, `Copied image`, newImageData);
 
             canvas.toBlob((blob) => {
               if (!blob) return;
@@ -121,40 +127,29 @@ const PaintContainer: FC = () => {
           }
 
           if (e.code == "KeyZ" && !e.shiftKey) {
-            const didUndo = undoAction();
+            const didUndo = undoAction(paintState);
             if (didUndo) {
-              setNotification(`Undo`);
+              setNotification(paintState, `Undo`);
             }
           }
 
           if (e.code == "KeyY" || (e.shiftKey && e.code == "KeyZ")) {
-            const redo = redoAction();
+            const redo = redoAction(paintState);
             if (redo) {
-              setNotification(`Redo`);
+              setNotification(paintState, `Redo`);
             }
           }
 
           if (e.shiftKey && e.code == "KeyX" && selection.isValid()) {
             setOffset(new Location());
-            scaleToSize(selection.width, selection.height);
+            scaleToSize(paintState, selection.width, selection.height);
 
-            cropToSelection(selection);
-            setNotification(`Cropped to selection`);
+            cropToSelection(paintState, selection);
+            setNotification(paintState, `Cropped to selection`);
           }
         }
       },
-      [
-        selection,
-        width,
-        height,
-        layers,
-        setNotification,
-        undoAction,
-        redoAction,
-        setOffset,
-        scaleToSize,
-        cropToSelection,
-      ]
+      [selection, width, height, layers, paintState, setOffset]
     )
   );
 
@@ -172,7 +167,7 @@ const PaintContainer: FC = () => {
           containerOffset.y = rect.y;
         }
 
-        const realScale = getRealScale();
+        const realScale = getRealScale(paintState);
 
         const preMouseLoc = new Location(
           Math.floor(
@@ -196,7 +191,7 @@ const PaintContainer: FC = () => {
           0,
           100
         );
-        const newRealScale = getRealScale(newScale);
+        const newRealScale = getRealScale(paintState, newScale);
 
         const postMouseLoc = new Location(
           Math.floor(

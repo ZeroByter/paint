@@ -3,6 +3,11 @@ import { getDistance } from "@client/utils";
 import Color from "@shared/types/color";
 import Location from "@shared/types/location";
 import { PaintContextType, PaintFetcher } from "components/contexts/paint";
+import {
+  addUndoAction,
+  setPixelColor,
+  updateActiveLayers,
+} from "components/contexts/paintUtils";
 import Tool, { OnClickArgs, OnDragArgs } from "./tool";
 
 class PencilTool extends Tool {
@@ -22,14 +27,7 @@ class PencilTool extends Tool {
     primary: boolean,
     lastDragLocation: Location
   ) {
-    const {
-      setPixelColor,
-      primaryColor,
-      secondaryColor,
-      layers,
-      width,
-      height,
-    } = state;
+    const { primaryColor, secondaryColor, layers, width, height } = state;
 
     const useColor = primary ? primaryColor : secondaryColor;
     const lastMouseLoc = lastDragLocation.copy();
@@ -77,6 +75,7 @@ class PencilTool extends Tool {
       }
 
       setPixelColor(
+        state,
         paintLocation.x,
         paintLocation.y,
         useColor.r,
@@ -89,19 +88,17 @@ class PencilTool extends Tool {
   }
 
   onMouseDown(state: PaintContextType, args: OnClickArgs): void {
-    const { updateActiveLayers, mouseLoc, width } = state;
+    const { mouseLoc } = state;
 
     this.pixels = new Map<string, Map<number, UndoPixel>>();
     this.drawnLocations = {};
 
     this.doPaint(state, mouseLoc, args.button == 0, mouseLoc);
 
-    updateActiveLayers();
+    updateActiveLayers(state);
   }
 
   onDrag(state: PaintContextType, args: OnDragArgs): void {
-    const { updateActiveLayers } = state;
-
     this.doPaint(
       state,
       args.accurateMouseLoc,
@@ -109,13 +106,13 @@ class PencilTool extends Tool {
       args.lastDragLocation
     );
 
-    updateActiveLayers();
+    updateActiveLayers(state);
   }
 
   onMouseUp(state: PaintContextType, args: OnClickArgs): void {
     if (this.pixels.size == 0) return;
 
-    state.addUndoAction(new PencilAction(this.pixels));
+    addUndoAction(state, new PencilAction(this.pixels));
   }
 }
 

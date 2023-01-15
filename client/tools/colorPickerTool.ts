@@ -2,6 +2,7 @@ import { getDistance } from "@client/utils";
 import Color from "@shared/types/color";
 import Location from "@shared/types/location";
 import { PaintContextType, PaintFetcher } from "components/contexts/paint";
+import { isMouseInsideImage } from "components/contexts/paintUtils";
 import Tool, { OnClickArgs, OnDragArgs } from "./tool";
 
 class ColorPickerTool extends Tool {
@@ -20,10 +21,9 @@ class ColorPickerTool extends Tool {
       setPrimaryColor,
       setSecondaryColor,
       setLastColorChanged,
-      isMouseInsideImage,
     } = state;
 
-    if (!isMouseInsideImage()) return;
+    if (!isMouseInsideImage(state)) return;
 
     for (const layer of layers) {
       if (layer.active) {

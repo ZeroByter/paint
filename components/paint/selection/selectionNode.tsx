@@ -2,6 +2,7 @@ import { clamp, getDistance, ilerp, lerp } from "@client/utils";
 import Location from "@shared/types/location";
 import Selection from "@shared/types/selection";
 import { PaintFetcher } from "components/contexts/paint";
+import { getRealScale } from "components/contexts/paintUtils";
 import {
   FC,
   useCallback,
@@ -22,8 +23,8 @@ const SelectionNode: FC<Props> = ({ direction, isHover }) => {
   const [pos, setPos] = useState(new Location());
   const [nodeDistance, setNodeDistance] = useState(99);
 
-  const { getRealScale, width, height, offset, selection, setSelection } =
-    PaintFetcher();
+  const paintState = PaintFetcher();
+  const { width, height, offset, selection } = paintState;
 
   const _setNodeDistance = useCallback(
     (newDistance: number) => {
@@ -36,7 +37,7 @@ const SelectionNode: FC<Props> = ({ direction, isHover }) => {
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      const scale = getRealScale();
+      const scale = getRealScale(paintState);
 
       if (direction == "up" || direction == "down") {
         //calculating offsets of node from left and top of whole screen

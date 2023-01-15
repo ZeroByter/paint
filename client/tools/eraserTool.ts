@@ -6,6 +6,10 @@ import { PaintContextType, PaintFetcher } from "components/contexts/paint";
 import Tool, { OnClickArgs, OnDragArgs } from "./tool";
 import Layer from "@shared/types/layer";
 import { BrushData, generateBrushEffect } from "./brushTool";
+import {
+  addUndoAction,
+  updateActiveLayers,
+} from "components/contexts/paintUtils";
 
 class EraserTool extends Tool {
   lastDrawIndex = -1;
@@ -122,7 +126,6 @@ class EraserTool extends Tool {
 
   onMouseDown(state: PaintContextType, args: OnClickArgs): void {
     const {
-      updateActiveLayers,
       mouseLoc,
       layers,
       brushSize,
@@ -159,11 +162,11 @@ class EraserTool extends Tool {
 
     this.doErase(state, mouseLoc, primary, mouseLoc);
 
-    updateActiveLayers();
+    updateActiveLayers(state);
   }
 
   onDrag(state: PaintContextType, args: OnDragArgs): void {
-    const { updateActiveLayers, width } = state;
+    const { width } = state;
 
     const drawIndex = args.accurateMouseLoc.x + args.accurateMouseLoc.y * width;
 
@@ -178,12 +181,12 @@ class EraserTool extends Tool {
       args.lastDragLocation
     );
 
-    updateActiveLayers();
+    updateActiveLayers(state);
   }
 
   onMouseUp(state: PaintContextType, args: OnClickArgs): void {
     if (this.pixels.size == 0) return;
-    state.addUndoAction(new PencilAction(this.pixels));
+    addUndoAction(state, new PencilAction(this.pixels));
   }
 }
 

@@ -1,5 +1,6 @@
 import Location from "@shared/types/location";
 import { PaintFetcher } from "components/contexts/paint";
+import { getRealScale } from "components/contexts/paintUtils";
 import { FC, MouseEvent, ReactNode, useState } from "react";
 import css from "./rootContainer.module.scss";
 
@@ -14,7 +15,8 @@ const RootContainer: FC<Props> = ({ children }) => {
     new Location()
   );
 
-  const { offset, setOffset, getRealScale } = PaintFetcher();
+  const paintState = PaintFetcher();
+  const { offset, setOffset } = paintState;
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
     setIsMouseDown(true);
@@ -25,7 +27,7 @@ const RootContainer: FC<Props> = ({ children }) => {
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (isMouseDown) {
       if (e.buttons == 4) {
-        const realScale = getRealScale();
+        const realScale = getRealScale(paintState);
 
         setOffset(
           new Location(

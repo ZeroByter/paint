@@ -1,6 +1,7 @@
 import Layer from "@shared/types/layer";
 import Selection from "@shared/types/selection";
 import { PaintContextType } from "components/contexts/paint";
+import { cropToSelection } from "components/contexts/paintUtils";
 import UndoAction from "./undoAction";
 
 export type CroppedLayer = {
@@ -59,6 +60,6 @@ export default class CropAction extends UndoAction {
   redo(state: PaintContextType): void {
     state.setSelection(this.selection);
 
-    state.cropToSelection(this.selection, false);
+    cropToSelection(state, this.selection, false);
   }
 }

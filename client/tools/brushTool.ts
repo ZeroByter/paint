@@ -3,6 +3,11 @@ import { getDistance, ilerp, lerp } from "@client/utils";
 import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
 import { PaintContextType } from "components/contexts/paint";
+import {
+  addPixelColor,
+  addUndoAction,
+  updateActiveLayers,
+} from "components/contexts/paintUtils";
 import Tool, { OnClickArgs, OnDragArgs } from "./tool";
 
 export type BrushData = {
@@ -66,14 +71,7 @@ class BrushTool extends Tool {
     primary: boolean,
     lastDragLocation: Location
   ) {
-    const {
-      addPixelColor,
-      primaryColor,
-      secondaryColor,
-      width,
-      height,
-      setLayers,
-    } = state;
+    const { primaryColor, secondaryColor, width, height, setLayers } = state;
 
     const useColor = primary ? primaryColor : secondaryColor;
 
@@ -119,6 +117,7 @@ class BrushTool extends Tool {
         const finalIndex = finalX + finalY * width;
 
         const newColorsPerLayers = addPixelColor(
+          state,
           finalX,
           finalY,
           useColor.r,
@@ -155,7 +154,6 @@ class BrushTool extends Tool {
 
   onMouseDown(state: PaintContextType, args: OnClickArgs): void {
     const {
-      updateActiveLayers,
       mouseLoc,
       layers,
       brushSize,
@@ -188,11 +186,11 @@ class BrushTool extends Tool {
 
     this.doPaint(state, mouseLoc, primary, mouseLoc);
 
-    updateActiveLayers();
+    updateActiveLayers(state);
   }
 
   onDrag(state: PaintContextType, args: OnDragArgs): void {
-    const { updateActiveLayers, width } = state;
+    const { width } = state;
 
     const drawIndex = args.accurateMouseLoc.x + args.accurateMouseLoc.y * width;
 
@@ -207,12 +205,12 @@ class BrushTool extends Tool {
       args.lastDragLocation
     );
 
-    updateActiveLayers();
+    updateActiveLayers(state);
   }
 
   onMouseUp(state: PaintContextType, args: OnClickArgs): void {
     if (this.pixels.size == 0) return;
-    state.addUndoAction(new PencilAction(this.pixels));
+    addUndoAction(state, new PencilAction(this.pixels));
   }
 }
 

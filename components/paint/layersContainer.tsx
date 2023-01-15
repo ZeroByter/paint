@@ -3,6 +3,7 @@ import Tools from "@client/tools";
 import { getDistance, ilerp, lerp } from "@client/utils";
 import Location from "@shared/types/location";
 import { PaintFetcher } from "components/contexts/paint";
+import { getRealScale } from "components/contexts/paintUtils";
 import {
   FC,
   MutableRefObject,
@@ -26,16 +27,16 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
   const [isMouseDown, setIsMouseDown] = useState(false);
 
   const context = PaintFetcher();
+  const paintState = context;
   const {
     offset,
     mouseLoc,
     setMouseLoc,
     setMouseScaledLoc,
-    getRealScale,
     width,
     height,
     activeToolId,
-  } = context;
+  } = paintState;
 
   useWindowEvent(
     "mousedown",
@@ -69,7 +70,7 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
           containerOffset.y = rect.y;
         }
 
-        const realScale = getRealScale();
+        const realScale = getRealScale(paintState);
 
         const newMouseLoc = new Location(
           Math.floor(
@@ -111,11 +112,11 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
         activeToolId,
         containerRef,
         context,
-        getRealScale,
         height,
         isMouseDown,
         offset.x,
         offset.y,
+        paintState,
         setMouseLoc,
         setMouseScaledLoc,
         width,
@@ -146,9 +147,9 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
 
   const styledRootMemo = useMemo(() => {
     return {
-      transform: `scale(${getRealScale()})`,
+      transform: `scale(${getRealScale(paintState)})`,
     };
-  }, [getRealScale]);
+  }, [paintState]);
 
   const styledContainerMemo = useMemo(() => {
     return {

@@ -1,12 +1,14 @@
 import useWindowEvent from "@client/hooks/useWindowEvent";
 import Tools, { ToolKeyShortcuts } from "@client/tools";
 import { PaintFetcher } from "components/contexts/paint";
+import { setNotification } from "components/contexts/paintUtils";
 import { FC, useCallback } from "react";
 import ToolButton from "./toolButton";
 import css from "./toolsPanel.module.scss";
 
 const ToolsPanel: FC = () => {
-  const { setActiveToolId, setNotification } = PaintFetcher();
+  const paintState = PaintFetcher();
+  const { setActiveToolId } = paintState;
 
   const renderTools = Object.entries(Tools).map(([id, tool]) => {
     return <ToolButton key={id} id={id} tool={tool} />;
@@ -19,10 +21,10 @@ const ToolsPanel: FC = () => {
         const tool = ToolKeyShortcuts[e.code];
         if (tool) {
           setActiveToolId(tool);
-          setNotification(`Selected tool '${Tools[tool].tooltip}'`);
+          setNotification(paintState, `Selected tool '${Tools[tool].tooltip}'`);
         }
       },
-      [setActiveToolId, setNotification]
+      [paintState, setActiveToolId]
     )
   );
 

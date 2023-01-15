@@ -1,6 +1,7 @@
 import Layer from "@shared/types/layer";
 import Selection from "@shared/types/selection";
 import { PaintContextType } from "components/contexts/paint";
+import { loadFromImage } from "components/contexts/paintUtils";
 import { clone, cloneDeep } from "lodash/fp";
 import UndoAction from "./undoAction";
 
@@ -40,6 +41,6 @@ export default class PasteAction extends UndoAction {
   }
 
   redo(state: PaintContextType): void {
-    state.loadFromImage(this.afterImage);
+    loadFromImage(state, this.afterImage);
   }
 }

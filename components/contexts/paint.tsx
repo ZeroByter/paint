@@ -24,6 +24,9 @@ export type ColorPerLayer = {
 };
 
 export type PaintContextType = {
+  undoActions: UndoAction[];
+  redoActions: UndoAction[];
+
   width: number;
   setWidth: (newWidth: number) => void;
   height: number;
@@ -42,9 +45,6 @@ export type PaintContextType = {
 
   layers: Layer[];
   setLayers: (newScale: Layer[]) => void;
-
-  setActiveLayers: (ids: string[]) => void;
-  setVisibleLayers: (ids: string[]) => void;
 
   primaryColor: Color;
   setPrimaryColor: (newColor: Color) => void;
@@ -66,51 +66,8 @@ export type PaintContextType = {
   brushHardness: number;
   setBrushHardness: (newHardness: number) => void;
 
-  scaleToSize: (width: number, height: number) => void;
-
-  loadFromImage: (image: HTMLImageElement) => void;
-
-  getRealScale: (number?: number) => number;
-
-  addPixelColor: (
-    x: number,
-    y: number,
-    r: number,
-    g: number,
-    b: number,
-    a: number,
-    update: boolean,
-    layersCopy?: Layer[]
-  ) => ColorPerLayer;
-  setPixelColor: (
-    x: number,
-    y: number,
-    r: number,
-    g: number,
-    b: number,
-    a: number,
-    update: boolean
-  ) => void;
-
-  erasePixel: (x: number, y: number, opacity: number, update: boolean) => void;
-
-  updateActiveLayers: () => void;
-
-  isMouseInsideImage: () => boolean;
-
-  addUndoAction: (action: UndoAction) => void;
-  undoAction: () => boolean;
-  redoAction: () => boolean;
-
-  cropToSelection: (
-    selection: Selection,
-    shouldAddUndoAction?: boolean
-  ) => void;
-
-  getUndoPixelColor: (layerId: string, x: number, y: number) => UndoPixel;
-
   notificationData?: NotificationData;
-  setNotification: (text: string, image?: ImageData) => void;
+  setNotificationData: (newData: NotificationData) => void;
 };
 
 export const PaintContext = createContext<PaintContextType>(
@@ -161,318 +118,9 @@ const PaintProvider: FC<Props> = ({ children }) => {
 
   const [notificationData, setNotificationData] = useState<NotificationData>();
 
-  const scaleToSize = (width: number, height: number) => {
-    const a = window.innerWidth / width;
-    const b = (window.innerHeight - 31 - 60) / height; //TODO: 31 is a bad hard-wired variable, need to make this actually dynamic based on canvas's available size!
-    setScale(ilerp(0.25, 1600, Math.min(b, a)));
-  };
-
-  const loadFromImage = (image: HTMLImageElement) => {
-    setWidth(image.width);
-    setHeight(image.height);
-
-    const newLayer = new Layer(image.width, image.height, true);
-    newLayer.setPixelDataFromImage(image);
-    newLayer.createPixelsCopy();
-
-    setLayers([newLayer]);
-
-    setOffset(new Location());
-
-    scaleToSize(image.width, image.height);
-  };
-
-  const getRealScale = (scaleOverride?: number) => {
-    return lerp(0.25, 1600, scaleOverride ?? scale);
-  };
-
-  const setActiveLayers = (ids: string[]) => {
-    const newLayers = [...layers];
-    for (const layer of newLayers) {
-      layer.active = ids.includes(layer.id);
-    }
-    setLayers(newLayers);
-  };
-
-  const setVisibleLayers = (ids: string[]) => {
-    for (const layer of layers) {
-      layer.visible = ids.includes(layer.id);
-    }
-  };
-
-  const addPixelColor = (
-    x: number,
-    y: number,
-    r: number,
-    g: number,
-    b: number,
-    a: number,
-    update = false,
-    layersCopy?: Layer[]
-  ) => {
-    if (layersCopy == null) {
-      layersCopy = [...layers];
-    }
-
-    const newColorPerLayer: { [id: string]: Color } = {};
-    for (const layer of layersCopy) {
-      newColorPerLayer[layer.id] = new Color(0, 0, 0, 0);
-    }
-
-    if (x < 0 || y < 0 || x > width - 1 || y > height - 1)
-      return newColorPerLayer;
-
-    if (selection.isValid()) {
-      if (
-        x < selection.x ||
-        y < selection.y ||
-        x > selection.x + selection.width - 1 ||
-        y > selection.y + selection.height - 1
-      ) {
-        return newColorPerLayer;
-      }
-    }
-
-    for (const layer of layersCopy) {
-      if (!layer.active) continue;
-
-      const currentColor = layer.getPixelColor(x, y);
-
-      const combined = addColors(
-        r,
-        g,
-        b,
-        a,
-        currentColor.r,
-        currentColor.g,
-        currentColor.b,
-        currentColor.a
-      );
-
-      layer.setPixelData(x, y, combined.r, combined.g, combined.b, combined.a);
-      if (update) layer.updatePixels();
-    }
-
-    if (layersCopy == null) {
-      setLayers(layersCopy);
-    }
-
-    for (const layer of layersCopy) {
-      newColorPerLayer[layer.id] = layer.getPixelColor(x, y);
-    }
-
-    return newColorPerLayer;
-  };
-
-  const setPixelColor = (
-    x: number,
-    y: number,
-    r: number,
-    g: number,
-    b: number,
-    a: number,
-    update = false
-  ) => {
-    if (x < 0 || y < 0 || x > width - 1 || y > height - 1) return;
-
-    if (selection.isValid()) {
-      if (
-        x < selection.x ||
-        y < selection.y ||
-        x > selection.x + selection.width - 1 ||
-        y > selection.y + selection.height - 1
-      ) {
-        return;
-      }
-    }
-
-    const layersCopy = [...layers];
-
-    for (const layer of layersCopy) {
-      if (!layer.active) continue;
-
-      layer.setPixelData(x, y, r, g, b, a);
-      if (update) layer.updatePixels();
-    }
-
-    setLayers(layersCopy);
-  };
-
-  const erasePixel = (
-    x: number,
-    y: number,
-    opacity: number,
-    update = false
-  ) => {
-    if (x < 0 || y < 0 || x > width - 1 || y > height - 1) return;
-
-    if (selection.isValid()) {
-      if (
-        x < selection.x ||
-        y < selection.y ||
-        x > selection.x + selection.width - 1 ||
-        y > selection.y + selection.height - 1
-      ) {
-        return;
-      }
-    }
-
-    for (const layer of layers) {
-      if (!layer.active) continue;
-
-      const color = layer.getPixelColor(x, y);
-      layer.setPixelData(
-        x,
-        y,
-        color.r,
-        color.g,
-        color.b,
-        Math.min(0, opacity - color.a)
-      );
-      if (update) layer.updatePixels();
-    }
-  };
-
-  const updateActiveLayers = () => {
-    for (const layer of layers) {
-      if (!layer.active) continue;
-
-      layer.updatePixels();
-    }
-  };
-
-  const isMouseInsideImage = () => {
-    return (
-      mouseLoc.x >= 0 &&
-      mouseLoc.y >= 0 &&
-      mouseLoc.x < width &&
-      mouseLoc.y < height
-    );
-  };
-
-  const addUndoAction = (action: UndoAction) => {
-    redoActions.current = [];
-    undoActions.current.push(action);
-  };
-
-  const undoAction = () => {
-    const undoAction = undoActions.current.pop();
-    if (!undoAction) return false;
-
-    undoAction.undo(stateValue);
-
-    redoActions.current.push(undoAction);
-
-    return true;
-  };
-
-  const redoAction = () => {
-    const redoAction = redoActions.current.pop();
-    if (!redoAction) return false;
-
-    redoAction.redo(stateValue);
-
-    undoActions.current.push(redoAction);
-
-    return true;
-  };
-
-  const cropToSelection = (
-    selection: Selection,
-    shouldAddUndoAction = true
-  ) => {
-    if (!selection.isValid()) return;
-
-    if (shouldAddUndoAction) {
-      addUndoAction(
-        new CropAction(
-          layers.map((layer) => ({ id: layer.id, pixels: layer.pixels })),
-          width,
-          height,
-          selection
-        )
-      );
-    }
-
-    for (const layer of layers) {
-      const newPixels = new Uint8ClampedArray(
-        selection.width * selection.height * 4
-      );
-
-      for (let y = 0; y < selection.height; y++) {
-        for (let x = 0; x < selection.width; x++) {
-          const oldIndex = (selection.x + x + (selection.y + y) * width) * 4;
-          const newIndex = (x + y * selection.width) * 4;
-
-          newPixels[newIndex] = layer.pixels[oldIndex];
-          newPixels[newIndex + 1] = layer.pixels[oldIndex + 1];
-          newPixels[newIndex + 2] = layer.pixels[oldIndex + 2];
-          newPixels[newIndex + 3] = layer.pixels[oldIndex + 3];
-        }
-      }
-
-      layer.pixels = newPixels;
-
-      layer.width = selection.width;
-      layer.height = selection.height;
-    }
-
-    setWidth(selection.width);
-    setHeight(selection.height);
-
-    setSelection(new Selection());
-  };
-
-  const getUndoPixelColor = (layerId: string, x: number, y: number) => {
-    for (let i = 0; i < undoActions.current.length; i++) {
-      const undoAction =
-        undoActions.current[undoActions.current.length - i - 1];
-
-      const pixels = (undoAction as any).pixels as
-        | Map<string, Map<number, UndoPixel>>
-        | undefined;
-
-      if (pixels) {
-        const data = pixels.get(layerId);
-        if (data) {
-          const undoPixel = data.get(x + y * width);
-          if (undoPixel) {
-            return undoPixel;
-          }
-        }
-      }
-    }
-
-    const pixelsCopy = layers.find((layer) => layer.id == layerId)?.pixelsCopy;
-
-    if (pixelsCopy) {
-      const index = x + y * width;
-
-      return {
-        r: pixelsCopy[index * 4],
-        g: pixelsCopy[index * 4 + 1],
-        b: pixelsCopy[index * 4 + 2],
-        a: pixelsCopy[index * 4 + 3],
-      };
-    }
-
-    return {
-      r: 0,
-      g: 0,
-      b: 0,
-      a: 0,
-    };
-  };
-
-  const setNotification = (text: string, image?: ImageData) => {
-    setNotificationData({
-      id: randomString(),
-      text,
-      image,
-    });
-  };
-
   const stateValue = {
+    undoActions: undoActions.current,
+    redoActions: undoActions.current,
     width,
     setWidth,
     height,
@@ -487,8 +135,6 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setMouseScaledLoc,
     layers,
     setLayers,
-    setActiveLayers,
-    setVisibleLayers,
     primaryColor,
     setPrimaryColor,
     secondaryColor,
@@ -505,21 +151,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setBrushSize,
     brushHardness,
     setBrushHardness,
-    scaleToSize,
-    loadFromImage,
-    getRealScale,
-    addPixelColor,
-    setPixelColor,
-    erasePixel,
-    updateActiveLayers,
-    isMouseInsideImage,
-    addUndoAction,
-    undoAction,
-    redoAction,
-    cropToSelection,
-    getUndoPixelColor,
     notificationData,
-    setNotification,
+    setNotificationData,
   };
 
   return (
