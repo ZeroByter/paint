@@ -149,6 +149,8 @@ class BrushTool extends Tool {
   }
 
   onMouseDown(state: PaintContextType, args: OnClickArgs): void {
+    if (this.pixels.size != 0) return;
+
     const {
       mouseLoc,
       layers,
@@ -207,6 +209,7 @@ class BrushTool extends Tool {
   onMouseUp(state: PaintContextType, args: OnClickArgs): void {
     if (this.pixels.size == 0) return;
     addUndoAction(state, new PencilAction(this.pixels));
+    this.pixels = new Map<string, Map<number, UndoPixel>>();
   }
 }
 
