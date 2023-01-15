@@ -81,18 +81,8 @@ export const addPixelColor = (
     newColorPerLayer[layer.id] = new Color(0, 0, 0, 0);
   }
 
-  if (x < 0 || y < 0 || x > width - 1 || y > height - 1)
+  if (!canAffectPixel(state, x, y)) {
     return newColorPerLayer;
-
-  if (selection.isValid()) {
-    if (
-      x < selection.x ||
-      y < selection.y ||
-      x > selection.x + selection.width - 1 ||
-      y > selection.y + selection.height - 1
-    ) {
-      return newColorPerLayer;
-    }
   }
 
   for (const layer of layersCopy) {
@@ -138,18 +128,7 @@ export const setPixelColor = (
 ) => {
   const { width, height, selection } = state;
 
-  if (x < 0 || y < 0 || x > width - 1 || y > height - 1) return;
-
-  if (selection.isValid()) {
-    if (
-      x < selection.x ||
-      y < selection.y ||
-      x > selection.x + selection.width - 1 ||
-      y > selection.y + selection.height - 1
-    ) {
-      return;
-    }
-  }
+  if (!canAffectPixel(state, x, y)) return;
 
   const layersCopy = [...state.layers];
 
@@ -170,20 +149,9 @@ export const erasePixel = (
   opacity: number,
   update = false
 ) => {
-  const { width, height, selection, layers } = state;
+  const { layers } = state;
 
-  if (x < 0 || y < 0 || x > width - 1 || y > height - 1) return;
-
-  if (selection.isValid()) {
-    if (
-      x < selection.x ||
-      y < selection.y ||
-      x > selection.x + selection.width - 1 ||
-      y > selection.y + selection.height - 1
-    ) {
-      return;
-    }
-  }
+  if (!canAffectPixel(state, x, y)) return;
 
   for (const layer of layers) {
     if (!layer.active) continue;
@@ -354,4 +322,27 @@ export const setNotification = (
     text,
     image,
   });
+};
+
+export const canAffectPixel = (
+  state: PaintContextType,
+  x: number,
+  y: number
+) => {
+  if (x < 0 || y < 0 || x > state.width - 1 || y > state.height - 1) {
+    return false;
+  }
+
+  if (state.selection.isValid()) {
+    if (
+      x < state.selection.x ||
+      y < state.selection.y ||
+      x > state.selection.x + state.selection.width - 1 ||
+      y > state.selection.y + state.selection.height - 1
+    ) {
+      return false;
+    }
+  }
+
+  return true;
 };

@@ -6,6 +6,7 @@ import { PaintContextType } from "components/contexts/paint";
 import {
   addPixelColor,
   addUndoAction,
+  canAffectPixel,
   updateActiveLayers,
 } from "components/contexts/paintUtils";
 import Tool, { OnClickArgs, OnDragArgs } from "./tool";
@@ -105,12 +106,7 @@ class BrushTool extends Tool {
         const finalX = paintLocation.x - halfSize + x;
         const finalY = paintLocation.y - halfSize + y;
 
-        if (
-          finalX < 0 ||
-          finalY < 0 ||
-          finalX > width - 1 ||
-          finalY > height - 1
-        ) {
+        if (!canAffectPixel(state, finalX, finalY)) {
           continue;
         }
 

@@ -45,7 +45,7 @@ const SelectionNode: FC<Props> = ({ direction, isHover }) => {
         const windowVerSpace =
           window.innerHeight / 2 -
           (height * scale) / 2 +
-          31 / 2 +
+          65 / 2 +
           (direction == "down" ? selection.height * scale : 0);
 
         //take position of node and offset it by physical position inside window space
@@ -75,7 +75,7 @@ const SelectionNode: FC<Props> = ({ direction, isHover }) => {
           (width * scale) / 2 +
           (direction == "right" ? selection.width * scale : 0);
         const windowVerSpace =
-          window.innerHeight / 2 - (height * scale) / 2 + 31 / 2;
+          window.innerHeight / 2 - (height * scale) / 2 + 65 / 2;
 
         //take position of node and offset it by physical position inside window space
         const nodePosition = new Location(

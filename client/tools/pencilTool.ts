@@ -5,6 +5,7 @@ import Location from "@shared/types/location";
 import { PaintContextType, PaintFetcher } from "components/contexts/paint";
 import {
   addUndoAction,
+  canAffectPixel,
   setPixelColor,
   updateActiveLayers,
 } from "components/contexts/paintUtils";
@@ -52,12 +53,7 @@ class PencilTool extends Tool {
       if (paintLocationIndex in this.drawnLocations) continue;
       this.drawnLocations[paintLocationIndex] = undefined;
 
-      if (
-        paintLocation.x >= 0 &&
-        paintLocation.y >= 0 &&
-        paintLocation.x < width &&
-        paintLocation.y < height
-      ) {
+      if (canAffectPixel(state, paintLocation.x, paintLocation.y)) {
         for (const layer of layers) {
           if (!layer.active) continue;
 
@@ -72,18 +68,18 @@ class PencilTool extends Tool {
             a: useColor.a,
           });
         }
-      }
 
-      setPixelColor(
-        state,
-        paintLocation.x,
-        paintLocation.y,
-        useColor.r,
-        useColor.g,
-        useColor.b,
-        useColor.a,
-        false
-      );
+        setPixelColor(
+          state,
+          paintLocation.x,
+          paintLocation.y,
+          useColor.r,
+          useColor.g,
+          useColor.b,
+          useColor.a,
+          false
+        );
+      }
     }
   }
 
