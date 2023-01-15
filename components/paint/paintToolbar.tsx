@@ -3,6 +3,7 @@ import layersToImageData from "@client/layersToImageData";
 import { clamp } from "@client/utils";
 import Color from "@shared/types/color";
 import { PaintFetcher } from "components/contexts/paint";
+import { loadFromImage } from "components/contexts/paintUtils";
 import ToolbarProvider from "components/contexts/toolbar";
 import ToolbarContainer, {
   MenuItem,
@@ -11,7 +12,8 @@ import { isEmpty } from "lodash/fp";
 import { FC, useCallback } from "react";
 
 const PaintToolbar: FC = () => {
-  const { loadFromImage, width, height, layers } = PaintFetcher();
+  const paintState = PaintFetcher();
+  const { width, height, layers } = paintState;
 
   const handleLoadUrl = () => {
     const url = prompt(
@@ -24,7 +26,7 @@ const PaintToolbar: FC = () => {
     const image = new Image();
     image.src = url;
     image.onload = () => {
-      loadFromImage(image);
+      loadFromImage(paintState, image);
     };
   };
 
@@ -43,14 +45,14 @@ const PaintToolbar: FC = () => {
 
         const image = new Image();
         image.onload = () => {
-          loadFromImage(image);
+          loadFromImage(paintState, image);
         };
         image.src = window.URL.createObjectURL(file);
       }
     };
 
     input.click();
-  }, [loadFromImage]);
+  }, [paintState]);
 
   const handleSave = useCallback(() => {
     const canvas = document.createElement("canvas");

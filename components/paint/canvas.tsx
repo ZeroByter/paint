@@ -1,5 +1,6 @@
 import Layer from "@shared/types/layer";
 import { PaintFetcher } from "components/contexts/paint";
+import { getRealScale } from "components/contexts/paintUtils";
 import {
   CSSProperties,
   FC,
@@ -15,7 +16,7 @@ type Props = {
 };
 
 const Canvas: FC<Props> = ({ layer }) => {
-  const { scale, getRealScale } = PaintFetcher();
+  const paintState = PaintFetcher();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -60,9 +61,9 @@ const Canvas: FC<Props> = ({ layer }) => {
     () =>
       ({
         zIndex: layer.order,
-        imageRendering: getRealScale() > 3 ? "pixelated" : "auto",
+        imageRendering: getRealScale(paintState) > 3 ? "pixelated" : "auto",
       } as CSSProperties),
-    [layer, getRealScale]
+    [layer.order, paintState]
   );
 
   return (

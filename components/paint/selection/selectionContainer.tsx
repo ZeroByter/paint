@@ -1,6 +1,7 @@
 import { clamp } from "@client/utils";
 import Location from "@shared/types/location";
 import { PaintFetcher } from "components/contexts/paint";
+import { getRealScale } from "components/contexts/paintUtils";
 import { set } from "lodash/fp";
 import {
   FC,
@@ -51,15 +52,15 @@ const SelectionContainer: FC = () => {
   const [upHover, setUpHover] = useState(false);
   const [downHover, setDownHover] = useState(false);
 
+  const paintState = PaintFetcher();
   const {
     width,
     height,
     offset,
-    getRealScale,
     selection,
     setSelection,
     selectionClickability,
-  } = PaintFetcher();
+  } = paintState;
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
@@ -67,7 +68,7 @@ const SelectionContainer: FC = () => {
         const offset = new Location(e.clientX, e.clientY).minus(
           mouseStartDragMousePos.current
         );
-        const scale = getRealScale();
+        const scale = getRealScale(paintState);
         const selectionStartPos = mouseStartDragSelectionPos.current;
 
         setSelection(
@@ -88,7 +89,7 @@ const SelectionContainer: FC = () => {
         );
       }
     },
-    [getRealScale, selection, setSelection, width, height]
+    [paintState, setSelection, selection, width, height]
   );
 
   useEffect(() => {
@@ -138,7 +139,7 @@ const SelectionContainer: FC = () => {
   };
 
   const memoStyle = useMemo(() => {
-    const scale = getRealScale();
+    const scale = getRealScale(paintState);
 
     const cursorIndex = cursorHoverToIndex(
       leftHover,
@@ -161,15 +162,16 @@ const SelectionContainer: FC = () => {
       opacity: selection.isValid() ? "1" : "0",
     };
   }, [
-    getRealScale,
-    width,
-    offset,
-    selection,
-    height,
-    upHover,
-    downHover,
+    paintState,
     leftHover,
     rightHover,
+    upHover,
+    downHover,
+    width,
+    offset.x,
+    offset.y,
+    selection,
+    height,
     selectionClickability,
   ]);
 

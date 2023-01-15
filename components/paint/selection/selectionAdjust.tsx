@@ -2,6 +2,7 @@ import { clamp, getDistance, ilerp, lerp } from "@client/utils";
 import Location from "@shared/types/location";
 import Selection from "@shared/types/selection";
 import { PaintFetcher } from "components/contexts/paint";
+import { getRealScale } from "components/contexts/paintUtils";
 import {
   FC,
   useCallback,
@@ -26,13 +27,13 @@ const SelectionAdjust: FC<Props> = ({ children, hoverIndex }) => {
   const mouseStartDragMousePos = useRef(new Location());
   const mouseStartDragSelection = useRef(new Selection());
 
-  const { getRealScale, width, height, offset, selection, setSelection } =
-    PaintFetcher();
+  const paintState = PaintFetcher();
+  const { width, height, selection, setSelection } = paintState;
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
       if (isMouseDownRef.current) {
-        const scale = getRealScale();
+        const scale = getRealScale(paintState);
         const offset = new Location(e.clientX, e.clientY)
           .minus(mouseStartDragMousePos.current)
           .divide(scale);
@@ -211,7 +212,16 @@ const SelectionAdjust: FC<Props> = ({ children, hoverIndex }) => {
         }
       }
     },
-    [getRealScale, height, selection, setSelection, width]
+    [
+      height,
+      paintState,
+      selection.height,
+      selection.width,
+      selection.x,
+      selection.y,
+      setSelection,
+      width,
+    ]
   );
 
   useEffect(() => {

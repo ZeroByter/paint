@@ -16,8 +16,7 @@ import css from "./cursorHandle.module.scss";
 const CursorHandle: FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const { width, height, mouseLoc, mouseScaledLoc, getRealScale } =
-    PaintFetcher();
+  const { width, height, mouseLoc } = PaintFetcher();
 
   useEffect(() => {
     const canvas = canvasRef.current;

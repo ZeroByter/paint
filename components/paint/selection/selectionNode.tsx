@@ -2,6 +2,7 @@ import { clamp, getDistance, ilerp, lerp } from "@client/utils";
 import Location from "@shared/types/location";
 import Selection from "@shared/types/selection";
 import { PaintFetcher } from "components/contexts/paint";
+import { getRealScale } from "components/contexts/paintUtils";
 import {
   FC,
   useCallback,
@@ -22,8 +23,8 @@ const SelectionNode: FC<Props> = ({ direction, isHover }) => {
   const [pos, setPos] = useState(new Location());
   const [nodeDistance, setNodeDistance] = useState(99);
 
-  const { getRealScale, width, height, offset, selection, setSelection } =
-    PaintFetcher();
+  const paintState = PaintFetcher();
+  const { width, height, offset, selection } = paintState;
 
   const _setNodeDistance = useCallback(
     (newDistance: number) => {
@@ -36,7 +37,7 @@ const SelectionNode: FC<Props> = ({ direction, isHover }) => {
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      const scale = getRealScale();
+      const scale = getRealScale(paintState);
 
       if (direction == "up" || direction == "down") {
         //calculating offsets of node from left and top of whole screen
@@ -44,7 +45,7 @@ const SelectionNode: FC<Props> = ({ direction, isHover }) => {
         const windowVerSpace =
           window.innerHeight / 2 -
           (height * scale) / 2 +
-          31 / 2 +
+          65 / 2 +
           (direction == "down" ? selection.height * scale : 0);
 
         //take position of node and offset it by physical position inside window space
@@ -74,7 +75,7 @@ const SelectionNode: FC<Props> = ({ direction, isHover }) => {
           (width * scale) / 2 +
           (direction == "right" ? selection.width * scale : 0);
         const windowVerSpace =
-          window.innerHeight / 2 - (height * scale) / 2 + 31 / 2;
+          window.innerHeight / 2 - (height * scale) / 2 + 65 / 2;
 
         //take position of node and offset it by physical position inside window space
         const nodePosition = new Location(

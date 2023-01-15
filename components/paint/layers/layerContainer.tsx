@@ -3,6 +3,7 @@ import { ChangeEvent, FC } from "react";
 import css from "./layerContainer.module.scss";
 import _, { set } from "lodash/fp";
 import { PaintFetcher } from "components/contexts/paint";
+import { setActiveLayers } from "components/contexts/paintUtils";
 
 type Props = {
   layer: Layer;
@@ -10,7 +11,8 @@ type Props = {
 };
 
 const LayerContainer: FC<Props> = ({ layer, shiftKey }) => {
-  const { setLayers, layers, setActiveLayers } = PaintFetcher();
+  const paintState = PaintFetcher();
+  const { setLayers, layers } = paintState;
 
   const handleActiveLayerChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (shiftKey) {
@@ -21,7 +23,7 @@ const LayerContainer: FC<Props> = ({ layer, shiftKey }) => {
         setLayers(set([index, "active"], false, layers));
       }
     } else {
-      setActiveLayers([layer.id]);
+      setActiveLayers(paintState, [layer.id]);
     }
   };
 

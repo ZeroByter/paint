@@ -118,14 +118,20 @@ const ColorWheel: FC = () => {
       const rgb = colorsys.hslToRgb(hsl.deg, hsl.sat, hsl.lig);
 
       if (primary) {
-        setPrimaryColor(new Color(rgb.r, rgb.g, rgb.b, 255));
+        setPrimaryColor(new Color(rgb.r, rgb.g, rgb.b, primaryColor.a));
         setLastColorChanged(0);
       } else {
-        setSecondaryColor(new Color(rgb.r, rgb.g, rgb.b, 255));
+        setSecondaryColor(new Color(rgb.r, rgb.g, rgb.b, secondaryColor.a));
         setLastColorChanged(1);
       }
     },
-    [setLastColorChanged, setPrimaryColor, setSecondaryColor]
+    [
+      primaryColor.a,
+      secondaryColor.a,
+      setLastColorChanged,
+      setPrimaryColor,
+      setSecondaryColor,
+    ]
   );
 
   useWindowEvent(
