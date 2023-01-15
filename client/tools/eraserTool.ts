@@ -8,6 +8,7 @@ import Layer from "@shared/types/layer";
 import { BrushData, generateBrushEffect } from "./brushTool";
 import {
   addUndoAction,
+  canAffectPixel,
   updateActiveLayers,
 } from "components/contexts/paintUtils";
 
@@ -69,12 +70,7 @@ class EraserTool extends Tool {
         const finalX = paintLocation.x - halfSize + x;
         const finalY = paintLocation.y - halfSize + y;
 
-        if (
-          finalX < 0 ||
-          finalY < 0 ||
-          finalX > width - 1 ||
-          finalY > height - 1
-        ) {
+        if (!canAffectPixel(state, finalX, finalY)) {
           continue;
         }
 

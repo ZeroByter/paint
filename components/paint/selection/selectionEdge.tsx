@@ -14,7 +14,7 @@ const SelectionEdge: FC<Props> = ({ direction, index, isHover }) => {
 
   return (
     <div className={css.root} data-direction={direction}>
-      {selectionClickability > 0 && (
+      {selectionClickability == "EDITING" && (
         <SelectionNode
           direction={direction}
           isHover={(hover: boolean) => isHover(index, hover)}

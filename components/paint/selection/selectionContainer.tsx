@@ -154,9 +154,9 @@ const SelectionContainer: FC = () => {
       width: `${selection.width * scale}px`,
       height: `${selection.height * scale}px`,
       cursor: cursorHoverMap[cursorIndex],
-      background: selectionClickability == 0 ? "none" : "",
+      background: selectionClickability == "WORKING" ? "none" : "",
       pointerEvents:
-        selectionClickability <= 1 || !selection.isValid()
+        selectionClickability != "EDITING" || !selection.isValid()
           ? ("none" as "none")
           : ("all" as "all"),
       opacity: selection.isValid() ? "1" : "0",

@@ -2,6 +2,7 @@ import BrushTool from "./brushTool";
 import ColorPickerTool from "./colorPickerTool";
 import EraserTool from "./eraserTool";
 import PencilTool from "./pencilTool";
+import SelectSoftMoveTool from "./selectSoftMoveTool";
 import SelectTool from "./selectTool";
 import Tool from "./tool";
 
@@ -15,8 +16,9 @@ export const ToolKeyShortcuts: { [id: string]: string } = {
 
 const Tools: { [id: string]: Tool } = {
   select: new SelectTool(),
-  eraser: new EraserTool(),
+  selectSoftMove: new SelectSoftMoveTool(),
   pencil: new PencilTool(),
+  eraser: new EraserTool(),
   brush: new BrushTool(),
   colorpicker: new ColorPickerTool(),
 };

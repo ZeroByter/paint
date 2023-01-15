@@ -4,13 +4,13 @@ import Selection from "@shared/types/selection";
 import { PaintContextType } from "components/contexts/paint";
 import Tool, { OnClickArgs, OnDragArgs } from "./tool";
 
-class SelectTool extends Tool {
+class SelectSoftMoveTool extends Tool {
   dragStartLocation = new Location();
 
   constructor() {
     super();
 
-    this.text = "S";
+    this.text = "SM";
     this.tooltip = "Select";
   }
 
@@ -51,13 +51,13 @@ class SelectTool extends Tool {
 
   onMouseUp(state: PaintContextType, args: OnClickArgs): void {
     const { setSelectionClickability } = state;
-    setSelectionClickability("CREATING");
+    setSelectionClickability("EDITING");
   }
 
   onSelect(state: PaintContextType): void {
     const { setSelectionClickability } = state;
 
-    setSelectionClickability("CREATING");
+    setSelectionClickability("EDITING");
   }
 
   onUnselect(state: PaintContextType): void {
@@ -67,4 +67,4 @@ class SelectTool extends Tool {
   }
 }
 
-export default SelectTool;
+export default SelectSoftMoveTool;
