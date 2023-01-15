@@ -2,68 +2,43 @@ import { clamp } from "@client/utils";
 import Location from "@shared/types/location";
 import Selection from "@shared/types/selection";
 import { PaintContextType } from "components/contexts/paint";
+import { getRealScale } from "components/contexts/paintUtils";
+import SelectMoveTool from "./selectMoveTool";
 import Tool, { OnClickArgs, OnDragArgs } from "./tool";
 
-class SelectSoftMoveTool extends Tool {
-  dragStartLocation = new Location();
-
+class SelectSoftMoveTool extends SelectMoveTool {
   constructor() {
     super();
 
     this.text = "SM";
     this.tooltip = "Select";
+    this.editingState = "EDITING";
   }
 
-  onMouseDown(state: PaintContextType, args: OnClickArgs): void {
-    const { setSelection, mouseLoc, setSelectionClickability, width, height } =
-      state;
-
-    setSelection(new Selection(0, 0, 0, 0));
-
-    this.dragStartLocation = mouseLoc.copy();
-    this.dragStartLocation.x = clamp(this.dragStartLocation.x, 0, width);
-    this.dragStartLocation.y = clamp(this.dragStartLocation.y, 0, height);
-    setSelectionClickability("CREATING");
-  }
-
-  onDrag(state: PaintContextType, args: OnDragArgs): void {
-    const { mouseLoc, setSelection, width, height } = state;
-
-    const newMouseLoc = mouseLoc.copy();
-    newMouseLoc.x = clamp(newMouseLoc.x, 0, width);
-    newMouseLoc.y = clamp(newMouseLoc.y, 0, height);
-
-    const offset = newMouseLoc.minus(this.dragStartLocation);
-
-    const newWidth = Math.min(
-      this.dragStartLocation.x,
-      this.dragStartLocation.x + offset.x
-    );
-    const newHeight = Math.min(
-      this.dragStartLocation.y,
-      this.dragStartLocation.y + offset.y
-    );
+  onSelectMove(
+    state: PaintContextType,
+    selectionStartPos: Location,
+    offset: Location
+  ): void {
+    const { setSelection, selection, width, height } = state;
+    const scale = getRealScale(state);
 
     setSelection(
-      new Selection(newWidth, newHeight, Math.abs(offset.x), Math.abs(offset.y))
+      selection.newLocation(
+        new Location(
+          clamp(
+            selectionStartPos.x + Math.round(offset.x / scale),
+            0,
+            width - selection.width
+          ),
+          clamp(
+            selectionStartPos.y + Math.round(offset.y / scale),
+            0,
+            height - selection.height
+          )
+        )
+      )
     );
-  }
-
-  onMouseUp(state: PaintContextType, args: OnClickArgs): void {
-    const { setSelectionClickability } = state;
-    setSelectionClickability("EDITING");
-  }
-
-  onSelect(state: PaintContextType): void {
-    const { setSelectionClickability } = state;
-
-    setSelectionClickability("EDITING");
-  }
-
-  onUnselect(state: PaintContextType): void {
-    const { setSelectionClickability } = state;
-
-    setSelectionClickability("WORKING");
   }
 }
 

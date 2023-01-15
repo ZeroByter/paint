@@ -100,12 +100,16 @@ const SelectionNode: FC<Props> = ({ direction, isHover }) => {
       }
     },
     [
-      getRealScale,
+      paintState,
       direction,
-      selection,
       width,
       height,
-      offset,
+      selection.height,
+      selection.x,
+      selection.width,
+      selection.y,
+      offset.x,
+      offset.y,
       _setNodeDistance,
     ]
   );

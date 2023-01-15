@@ -2,6 +2,7 @@ import BrushTool from "./brushTool";
 import ColorPickerTool from "./colorPickerTool";
 import EraserTool from "./eraserTool";
 import PencilTool from "./pencilTool";
+import SelectHardMoveTool from "./selectHardMoveTool";
 import SelectSoftMoveTool from "./selectSoftMoveTool";
 import SelectTool from "./selectTool";
 import Tool from "./tool";
@@ -18,6 +19,7 @@ const Tools: { [id: string]: Tool } = {
   select: new SelectTool(),
   selectSoftMove: new SelectSoftMoveTool(),
   pencil: new PencilTool(),
+  selectHardMove: new SelectHardMoveTool(),
   eraser: new EraserTool(),
   brush: new BrushTool(),
   colorpicker: new ColorPickerTool(),

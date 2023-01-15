@@ -1,6 +1,10 @@
 import Location from "./location";
 
-export type SelectionClickability = "CREATING" | "EDITING" | "WORKING";
+export type SelectionClickability =
+  | "CREATING"
+  | "EDITING"
+  | "EDITING_HARD"
+  | "WORKING";
 
 class Selection {
   x: number;
