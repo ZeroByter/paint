@@ -59,7 +59,7 @@ const ColorsPanel: FC = () => {
               onChange={handleHexChange}
             />
           </div>
-          <div>RGB</div>
+          <div>HSV</div>
           <ColorSlider type="h" />
           <ColorSlider type="s" />
           <ColorSlider type="v" />
