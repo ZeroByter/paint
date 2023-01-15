@@ -1,9 +1,8 @@
 import { clamp } from "@client/utils";
 import Location from "@shared/types/location";
-import Selection from "@shared/types/selection";
 import { PaintContextType } from "components/contexts/paint";
+import { getRealScale } from "components/contexts/paintUtils";
 import SelectMoveTool from "./selectMoveTool";
-import Tool, { OnClickArgs, OnDragArgs } from "./tool";
 
 class SelectHardMoveTool extends SelectMoveTool {
   constructor() {
@@ -13,6 +12,12 @@ class SelectHardMoveTool extends SelectMoveTool {
     this.tooltip = "Select";
     this.editingState = "EDITING_HARD";
   }
+
+  onSelectMove(
+    state: PaintContextType,
+    selectionStartPos: Location,
+    offset: Location
+  ): void {}
 }
 
 export default SelectHardMoveTool;
