@@ -13,6 +13,7 @@ import { randomString } from "@shared/utils";
 import {
   createContext,
   FC,
+  MutableRefObject,
   ReactNode,
   useContext,
   useRef,
@@ -24,8 +25,8 @@ export type ColorPerLayer = {
 };
 
 export type PaintContextType = {
-  undoActions: UndoAction[];
-  redoActions: UndoAction[];
+  undoActions: MutableRefObject<UndoAction[]>;
+  redoActions: MutableRefObject<UndoAction[]>;
 
   width: number;
   setWidth: (newWidth: number) => void;
@@ -119,8 +120,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const [notificationData, setNotificationData] = useState<NotificationData>();
 
   const stateValue = {
-    undoActions: undoActions.current,
-    redoActions: undoActions.current,
+    undoActions,
+    redoActions,
     width,
     setWidth,
     height,
