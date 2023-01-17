@@ -189,28 +189,28 @@ export const isMouseInsideImage = (state: PaintContextType) => {
 };
 
 export const addUndoAction = (state: PaintContextType, action: UndoAction) => {
-  state.redoActions = [];
-  state.undoActions.push(action);
+  state.redoActions.current = [];
+  state.undoActions.current.push(action);
 };
 
 export const undoAction = (state: PaintContextType) => {
-  const undoAction = state.undoActions.pop();
+  const undoAction = state.undoActions.current.pop();
   if (!undoAction) return false;
 
   undoAction.undo(state);
 
-  state.redoActions.push(undoAction);
+  state.redoActions.current.push(undoAction);
 
   return true;
 };
 
 export const redoAction = (state: PaintContextType) => {
-  const redoAction = state.redoActions.pop();
+  const redoAction = state.redoActions.current.pop();
   if (!redoAction) return false;
 
   redoAction.redo(state);
 
-  state.undoActions.push(redoAction);
+  state.undoActions.current.push(redoAction);
 
   return true;
 };
@@ -271,8 +271,9 @@ export const getUndoPixelColor = (
   x: number,
   y: number
 ) => {
-  for (let i = 0; i < state.undoActions.length; i++) {
-    const undoAction = state.undoActions[state.undoActions.length - i - 1];
+  for (let i = 0; i < state.undoActions.current.length; i++) {
+    const undoAction =
+      state.undoActions.current[state.undoActions.current.length - i - 1];
 
     const pixels = (undoAction as any).pixels as
       | Map<string, Map<number, UndoPixel>>
