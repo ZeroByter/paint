@@ -1,51 +1,50 @@
 import { randomString } from "@shared/utils";
 import Color from "./color";
-import TemporaryLayer from "./temporaryLayer";
+import Layer from "./layer";
 
-class Layer {
+class TemporaryLayer {
   id: string;
 
-  name: string;
-  order: number;
-  active: boolean;
-  visible: boolean;
-
+  x: number;
+  y: number;
   width: number;
   height: number;
+
+  order: number;
 
   pixels: Uint8ClampedArray;
   pixelsId: string;
 
-  pixelsCopy: Uint8ClampedArray;
-
-  temporaryLayer?: TemporaryLayer;
-
   constructor(
+    layer: Layer,
     width: number,
     height: number,
-    initial: boolean,
-    newOrder: number = 0
+    x: number,
+    y: number
   ) {
-    this.id = randomString();
+    this.id = layer.id;
 
-    this.name = initial ? "Background" : "Layer #";
-    this.order = newOrder;
-    this.active = initial;
-    this.visible = true;
-
+    this.x = x;
+    this.y = y;
     this.width = width;
     this.height = height;
 
+    this.order = layer.order + 0.5;
+
     this.pixels = new Uint8ClampedArray(width * height * 4);
-    this.pixels.fill(initial ? 255 : 0);
+    for (let i = 0; i < this.pixels.length / 4; i++) {
+      const x = i % width;
+      const y = (i / width) >> 0; //fast floor bit operation for positive numbers
 
-    this.pixelsCopy = new Uint8ClampedArray(this.pixels);
+      const color = layer.getPixelColor(this.x + x, this.y + y);
 
-    this.pixelsId = this.id;
-  }
+      this.pixels[i * 4] = color.r;
+      this.pixels[i * 4 + 1] = color.g;
+      this.pixels[i * 4 + 2] = color.b;
+      this.pixels[i * 4 + 3] = color.a;
+    }
 
-  createPixelsCopy() {
-    this.pixelsCopy = new Uint8ClampedArray(this.pixels);
+    this.pixelsId = randomString();
   }
 
   getPixelIndex(x: number, y: number) {
@@ -101,33 +100,6 @@ class Layer {
   updatePixels() {
     this.pixelsId = randomString();
   }
-
-  createTemporaryLayer(width: number, height: number, x: number, y: number) {
-    this.temporaryLayer = new TemporaryLayer(this, width, height, x, y);
-  }
-
-  clone() {
-    const newLayer = new Layer(0, 0, false);
-
-    newLayer.id = this.id;
-
-    newLayer.name = this.name;
-    newLayer.order = this.order;
-    newLayer.active = this.active;
-    newLayer.visible = this.visible;
-
-    newLayer.width = this.width;
-    newLayer.height = this.height;
-
-    newLayer.pixels = new Uint8ClampedArray(this.pixels);
-    newLayer.pixelsId = this.pixelsId;
-
-    newLayer.pixelsCopy = new Uint8ClampedArray(this.pixelsCopy);
-
-    return newLayer;
-  }
 }
 
-export type ActiveLayersState = { [id: string]: null };
-
-export default Layer;
+export default TemporaryLayer;

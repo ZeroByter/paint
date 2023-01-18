@@ -1,4 +1,5 @@
 import Layer from "@shared/types/layer";
+import TemporaryLayer from "@shared/types/temporaryLayer";
 import { PaintFetcher } from "components/contexts/paint";
 import { getRealScale } from "components/contexts/paintUtils";
 import {
@@ -12,7 +13,7 @@ import {
 import css from "./canvas.module.scss";
 
 type Props = {
-  layer: Layer;
+  layer: Layer | TemporaryLayer;
 };
 
 const Canvas: FC<Props> = ({ layer }) => {
@@ -57,14 +58,22 @@ const Canvas: FC<Props> = ({ layer }) => {
     return false;
   };
 
-  const memoStyle = useMemo(
-    () =>
-      ({
-        zIndex: layer.order,
-        imageRendering: getRealScale(paintState) > 3 ? "pixelated" : "auto",
-      } as CSSProperties),
-    [layer.order, paintState]
-  );
+  const memoStyle: CSSProperties = useMemo(() => {
+    const temporaryLayerCSS: CSSProperties =
+      layer instanceof TemporaryLayer
+        ? {
+            width: "auto",
+            left: `${layer.x}px`,
+            top: `${layer.y}px`,
+          }
+        : {};
+
+    return {
+      zIndex: layer.order,
+      imageRendering: getRealScale(paintState) > 3 ? "pixelated" : "auto",
+      ...temporaryLayerCSS,
+    };
+  }, [layer, paintState]);
 
   return (
     <canvas

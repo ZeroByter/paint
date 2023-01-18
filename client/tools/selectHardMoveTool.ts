@@ -18,6 +18,31 @@ class SelectHardMoveTool extends SelectMoveTool {
     selectionStartPos: Location,
     offset: Location
   ): void {}
+
+  onSelect(state: PaintContextType): void {
+    const { layers, selection } = state;
+
+    if (!selection.isValid()) return;
+
+    for (const layer of layers) {
+      if (!layer.active) continue;
+
+      layer.createTemporaryLayer(
+        selection.width,
+        selection.height,
+        selection.x,
+        selection.y
+      );
+    }
+  }
+
+  onUnselect(state: PaintContextType): void {
+    const { layers } = state;
+
+    for (const layer of layers) {
+      layer.temporaryLayer = undefined;
+    }
+  }
 }
 
 export default SelectHardMoveTool;
