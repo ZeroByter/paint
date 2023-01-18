@@ -163,7 +163,12 @@ const SelectionContainer: FC = () => {
     <SelectionAdjust
       hoverIndex={cursorHoverToIndex(leftHover, rightHover, upHover, downHover)}
     >
-      <div className={css.root} style={memoStyle} onMouseDown={handleMouseDown}>
+      <div
+        data-interactable="true"
+        className={css.root}
+        style={memoStyle}
+        onMouseDown={handleMouseDown}
+      >
         <SelectionEdge direction="up" index={1} isHover={handleNodeHover} />
         <SelectionEdge direction="down" index={2} isHover={handleNodeHover} />
         <SelectionEdge direction="left" index={3} isHover={handleNodeHover} />

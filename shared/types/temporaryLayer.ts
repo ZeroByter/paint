@@ -15,6 +15,8 @@ class TemporaryLayer {
   pixels: Uint8ClampedArray;
   pixelsId: string;
 
+  parentLayer: Layer;
+
   constructor(
     layer: Layer,
     width: number,
@@ -45,6 +47,8 @@ class TemporaryLayer {
     }
 
     this.pixelsId = randomString();
+
+    this.parentLayer = layer;
   }
 
   getPixelIndex(x: number, y: number) {
@@ -99,6 +103,23 @@ class TemporaryLayer {
 
   updatePixels() {
     this.pixelsId = randomString();
+  }
+
+  pasteOntoLayer() {
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        const i = x + y * this.width;
+
+        const r = this.pixels[i * 4];
+        const g = this.pixels[i * 4 + 1];
+        const b = this.pixels[i * 4 + 2];
+        const a = this.pixels[i * 4 + 3];
+
+        this.parentLayer.setPixelData(this.x + x, this.y + y, r, g, b, a);
+      }
+    }
+
+    this.parentLayer.updatePixels();
   }
 }
 

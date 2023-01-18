@@ -18,10 +18,10 @@ export const ToolKeyShortcuts: { [id: string]: string } = {
 const Tools: { [id: string]: Tool } = {
   select: new SelectTool(),
   selectSoftMove: new SelectSoftMoveTool(),
-  pencil: new PencilTool(),
-  selectHardMove: new SelectHardMoveTool(),
-  eraser: new EraserTool(),
   brush: new BrushTool(),
+  selectHardMove: new SelectHardMoveTool(),
+  pencil: new PencilTool(),
+  eraser: new EraserTool(),
   colorpicker: new ColorPickerTool(),
 };
 
