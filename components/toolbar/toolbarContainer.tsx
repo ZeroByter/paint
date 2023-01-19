@@ -29,6 +29,7 @@ const ToolbarContainer: FC<Props> = ({ menuItems }) => {
     return (
       <ToolbarButton
         key={index}
+        index={index}
         menuItem={menuItem}
         menuActive={activeMenu === index}
         setMenuActive={setActiveMenu}
@@ -38,7 +39,7 @@ const ToolbarContainer: FC<Props> = ({ menuItems }) => {
 
   return (
     <div className={css.root}>
-      <ClickOutside onClick={handleClickOutside}>
+      <ClickOutside className={css.clickOutside} onClick={handleClickOutside}>
         {renderMenuItems}
       </ClickOutside>
     </div>

@@ -1,8 +1,10 @@
 import { FC, ReactNode, useEffect, useRef, useState } from "react";
 import css from "./clickOutside.module.scss";
+import classNames from "classnames";
 
 type Props = {
   children: ReactNode;
+  className?: string;
   onClick: () => void;
 };
 
@@ -21,7 +23,7 @@ const getIsElementInsideTarget = (
   return false;
 };
 
-const ClickOutside: FC<Props> = ({ children, onClick }) => {
+const ClickOutside: FC<Props> = ({ children, className, onClick }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const handleClick = (e: MouseEvent) => {
@@ -43,7 +45,7 @@ const ClickOutside: FC<Props> = ({ children, onClick }) => {
   }, []);
 
   return (
-    <div className={css.root} ref={containerRef}>
+    <div className={classNames(css.root, className)} ref={containerRef}>
       {children}
     </div>
   );

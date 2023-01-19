@@ -3,4 +3,9 @@
   padding: 4px;
   position: relative;
   z-index: 1;
+
+  .clickOutside {
+    display: flex;
+    gap: 4px;
+  }
 }

@@ -8,7 +8,7 @@ import ToolbarProvider from "components/contexts/toolbar";
 import ToolbarContainer, {
   MenuItem,
 } from "components/toolbar/toolbarContainer";
-import { isEmpty } from "lodash/fp";
+import { isEmpty, noop } from "lodash/fp";
 import { FC, useCallback } from "react";
 
 const PaintToolbar: FC = () => {
@@ -18,7 +18,7 @@ const PaintToolbar: FC = () => {
   const handleLoadUrl = () => {
     const url = prompt(
       "Image URL",
-      "https://cdn.pixabay.com/photo/2015/03/17/02/01/cubes-677092__480.png"
+      "https://cdn.pixabay.com/photo/2015/03/17/02/01/cubes-677092__480.png" //TODO: Remove this default URL eventually...
     );
 
     if (isEmpty(url)) return;
@@ -105,6 +105,10 @@ const PaintToolbar: FC = () => {
     )
   );
 
+  const openGithub = () => {
+    open("https://github.com/zerobyter/paint");
+  };
+
   const toolbarMenuItems: MenuItem[] = [
     {
       text: "File",
@@ -113,6 +117,17 @@ const PaintToolbar: FC = () => {
         { text: "Load (local)", onClick: handleLoadLocal },
         { text: "Download", onClick: handleSave },
       ],
+    },
+    {
+      text: "Effects",
+      subItems: [
+        { text: "Project Layer", onClick: noop },
+        { text: "Inverse Project Layer", onClick: noop },
+      ],
+    },
+    {
+      text: "About",
+      subItems: [{ text: "View GitHub", onClick: openGithub }],
     },
   ];
 
