@@ -1,4 +1,5 @@
 import HardMoveAction from "@client/undo/hardMoveAction";
+import { UndoPixel } from "@client/undo/undoPixelColor";
 import { clamp } from "@client/utils";
 import Location from "@shared/types/location";
 import { PaintContextType } from "components/contexts/paint";
@@ -100,14 +101,20 @@ class SelectHardMoveTool extends SelectMoveTool {
 
     const { layers, selection } = state;
 
-    const layerIds: string[] = [];
+    const pixels = new Map<string, Map<number, UndoPixel>>();
 
     for (const layer of layers) {
       if (!layer.temporaryLayer) continue;
 
-      layerIds.push(layer.id);
-
+      pixels.set(layer.id, new Map<number, UndoPixel>());
       layer.temporaryLayer.pasteOntoLayer();
+
+      for (let y = 0; y < selection.height; y++) {
+        for (let x = 0; x < selection.width; x++) {
+          const pixel = layer.getPixelColor(selection.x + x, selection.y + y);
+          pixels.get(layer.id)?.set(x + y * selection.width, pixel);
+        }
+      }
 
       layer.temporaryLayer = undefined;
     }
@@ -115,7 +122,7 @@ class SelectHardMoveTool extends SelectMoveTool {
     addUndoAction(
       state,
       new HardMoveAction(
-        layerIds,
+        pixels,
         selection.width,
         selection.height,
         this.sourceX,
