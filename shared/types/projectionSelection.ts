@@ -1,5 +1,3 @@
-import Location from "./location";
-
 class ProjectionSelection {
   topLeftX: number;
   topLeftY: number;

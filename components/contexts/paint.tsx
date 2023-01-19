@@ -4,6 +4,7 @@ import Color from "@shared/types/color";
 import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
 import Selection, { SelectionClickability } from "@shared/types/selection";
+import ProjectionSelection from "@shared/types/projectionSelection";
 import Tools, { ToolTypes } from "@client/tools";
 import {
   createContext,
@@ -51,6 +52,10 @@ export type PaintContextType = {
 
   selection: Selection;
   setSelection: (newSelection: Selection) => void;
+  projectionSelection: ProjectionSelection | undefined;
+  setProjectionSelection: (
+    newSelection: ProjectionSelection | undefined
+  ) => void;
   selectionClickability: SelectionClickability;
   setSelectionClickability: (newClickability: SelectionClickability) => void;
 
@@ -105,6 +110,9 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const [lastColorChanged, setLastColorChanged] = useState<0 | 1>(0);
 
   const [selection, setSelection] = useState(new Selection(0, 0, 0, 0));
+  const [projectionSelection, setProjectionSelection] = useState<
+    ProjectionSelection | undefined
+  >();
   const [selectionClickability, setSelectionClickability] =
     useState<SelectionClickability>("WORKING");
 
@@ -140,6 +148,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setLastColorChanged,
     selection,
     setSelection,
+    projectionSelection,
+    setProjectionSelection,
     selectionClickability,
     setSelectionClickability,
     activeToolId,

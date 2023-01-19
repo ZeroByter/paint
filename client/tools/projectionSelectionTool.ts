@@ -1,6 +1,6 @@
 import { clamp } from "@client/utils";
 import Location from "@shared/types/location";
-import Selection from "@shared/types/selection";
+import ProjectionSelection from "@shared/types/projectionSelection";
 import { PaintContextType } from "components/contexts/paint";
 import Tool, { OnClickArgs, OnDragArgs } from "./tool";
 
@@ -16,10 +16,7 @@ class ProjectionSelectTool extends Tool {
   }
 
   onMouseDown(state: PaintContextType, args: OnClickArgs): void {
-    const { setSelection, mouseLoc, setSelectionClickability, width, height } =
-      state;
-
-    setSelection(new Selection(0, 0, 0, 0));
+    const { mouseLoc, setSelectionClickability, width, height } = state;
 
     this.dragStartLocation = mouseLoc.copy();
     this.dragStartLocation.x = clamp(this.dragStartLocation.x, 0, width);
@@ -28,25 +25,23 @@ class ProjectionSelectTool extends Tool {
   }
 
   onDrag(state: PaintContextType, args: OnDragArgs): void {
-    const { mouseLoc, setSelection, width, height } = state;
+    const { mouseLoc, setProjectionSelection, width, height } = state;
 
     const newMouseLoc = mouseLoc.copy();
     newMouseLoc.x = clamp(newMouseLoc.x, 0, width);
     newMouseLoc.y = clamp(newMouseLoc.y, 0, height);
 
-    const offset = newMouseLoc.minus(this.dragStartLocation);
-
-    const newWidth = Math.min(
-      this.dragStartLocation.x,
-      this.dragStartLocation.x + offset.x
-    );
-    const newHeight = Math.min(
-      this.dragStartLocation.y,
-      this.dragStartLocation.y + offset.y
-    );
-
-    setSelection(
-      new Selection(newWidth, newHeight, Math.abs(offset.x), Math.abs(offset.y))
+    setProjectionSelection(
+      new ProjectionSelection(
+        this.dragStartLocation.x,
+        this.dragStartLocation.y,
+        newMouseLoc.x,
+        this.dragStartLocation.y,
+        this.dragStartLocation.x,
+        newMouseLoc.y,
+        newMouseLoc.x,
+        newMouseLoc.y
+      )
     );
   }
 
@@ -62,9 +57,10 @@ class ProjectionSelectTool extends Tool {
   }
 
   onUnselect(state: PaintContextType): void {
-    const { setSelectionClickability } = state;
+    const { setSelectionClickability, setProjectionSelection } = state;
 
     setSelectionClickability("WORKING");
+    setProjectionSelection(undefined);
   }
 }
 

@@ -2,6 +2,7 @@ import useWindowEvent from "@client/hooks/useWindowEvent";
 import layersToImageData from "@client/layersToImageData";
 import { clamp } from "@client/utils";
 import Color from "@shared/types/color";
+import Selection from "@shared/types/selection";
 import { PaintFetcher } from "components/contexts/paint";
 import { loadFromImage } from "components/contexts/paintUtils";
 import ToolbarProvider from "components/contexts/toolbar";
@@ -13,7 +14,7 @@ import { FC, useCallback } from "react";
 
 const PaintToolbar: FC = () => {
   const paintState = PaintFetcher();
-  const { width, height, layers, setActiveToolId } = paintState;
+  const { width, height, layers, setActiveToolId, setSelection } = paintState;
 
   const handleLoadUrl = () => {
     const url = prompt(
@@ -107,6 +108,7 @@ const PaintToolbar: FC = () => {
 
   const selectProjectionSelectionTool = () => {
     setActiveToolId("projectionSelect");
+    setSelection(new Selection());
   };
 
   const openGithub = () => {

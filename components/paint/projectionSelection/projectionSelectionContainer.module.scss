@@ -1,0 +1,9 @@
+.root {
+  pointer-events: none;
+
+  .canvas {
+    transform: translate(-50%, -50%);
+    position: absolute;
+    image-rendering: auto;
+  }
+}

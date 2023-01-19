@@ -28,6 +28,7 @@ import {
   setNotification,
   undoAction,
 } from "components/contexts/paintUtils";
+import ProjectionSelectionContainer from "./projectionSelection/projectionSelectionContainer";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -238,6 +239,7 @@ const PaintContainer: FC = () => {
           {/* <CursorHandle /> */}
         </LayersContainer>
         <SelectionContainer />
+        <ProjectionSelectionContainer />
       </div>
       <LayersPanel />
       <ColorsPanel />
