@@ -23,7 +23,7 @@ class SelectTool extends Tool {
     this.dragStartLocation = mouseLoc.copy();
     this.dragStartLocation.x = clamp(this.dragStartLocation.x, 0, width);
     this.dragStartLocation.y = clamp(this.dragStartLocation.y, 0, height);
-    setSelectionClickability(1);
+    setSelectionClickability("CREATING");
   }
 
   onDrag(state: PaintContextType, args: OnDragArgs): void {
@@ -51,19 +51,19 @@ class SelectTool extends Tool {
 
   onMouseUp(state: PaintContextType, args: OnClickArgs): void {
     const { setSelectionClickability } = state;
-    setSelectionClickability(2);
+    setSelectionClickability("CREATING");
   }
 
   onSelect(state: PaintContextType): void {
     const { setSelectionClickability } = state;
 
-    setSelectionClickability(2);
+    setSelectionClickability("CREATING");
   }
 
   onUnselect(state: PaintContextType): void {
     const { setSelectionClickability } = state;
 
-    setSelectionClickability(0);
+    setSelectionClickability("WORKING");
   }
 }
 

@@ -1,3 +1,6 @@
+import useWindowEvent from "@client/hooks/useWindowEvent";
+import Tools from "@client/tools";
+import SelectMoveTool from "@client/tools/selectMoveTool";
 import { clamp } from "@client/utils";
 import Location from "@shared/types/location";
 import { PaintFetcher } from "components/contexts/paint";
@@ -58,55 +61,34 @@ const SelectionContainer: FC = () => {
     height,
     offset,
     selection,
-    setSelection,
     selectionClickability,
+    activeToolId,
   } = paintState;
 
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      if (isMouseDownRef.current) {
-        const offset = new Location(e.clientX, e.clientY).minus(
-          mouseStartDragMousePos.current
-        );
-        const scale = getRealScale(paintState);
-        const selectionStartPos = mouseStartDragSelectionPos.current;
+  useWindowEvent(
+    "mousemove",
+    useCallback(
+      (e: MouseEvent) => {
+        if (isMouseDownRef.current) {
+          const offset = new Location(e.clientX, e.clientY).minus(
+            mouseStartDragMousePos.current
+          );
+          const selectionStartPos = mouseStartDragSelectionPos.current;
 
-        setSelection(
-          selection.newLocation(
-            new Location(
-              clamp(
-                selectionStartPos.x + Math.round(offset.x / scale),
-                0,
-                width - selection.width
-              ),
-              clamp(
-                selectionStartPos.y + Math.round(offset.y / scale),
-                0,
-                height - selection.height
-              )
-            )
-          )
-        );
-      }
-    },
-    [paintState, setSelection, selection, width, height]
+          const tool = Tools[activeToolId] as SelectMoveTool;
+          tool.onSelectMove(paintState, selectionStartPos, offset);
+        }
+      },
+      [paintState, activeToolId]
+    )
   );
 
-  useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, [handleMouseMove]);
-
-  useEffect(() => {
-    window.addEventListener("mouseup", handleMouseUp);
-
-    return () => {
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, []);
+  useWindowEvent(
+    "mouseup",
+    useCallback(() => {
+      isMouseDownRef.current = false;
+    }, [])
+  );
 
   const handleMouseDown = (e: ReactMouseEvent<HTMLDivElement>) => {
     if (e.target != e.currentTarget) return;
@@ -115,10 +97,6 @@ const SelectionContainer: FC = () => {
     isMouseDownRef.current = true;
     mouseStartDragMousePos.current = new Location(e.clientX, e.clientY);
     mouseStartDragSelectionPos.current = new Location(selection.x, selection.y);
-  };
-
-  const handleMouseUp = () => {
-    isMouseDownRef.current = false;
   };
 
   const handleNodeHover = (index: number, isHover: boolean) => {
@@ -154,11 +132,17 @@ const SelectionContainer: FC = () => {
       width: `${selection.width * scale}px`,
       height: `${selection.height * scale}px`,
       cursor: cursorHoverMap[cursorIndex],
-      background: selectionClickability == 0 ? "none" : "",
+      background:
+        selectionClickability == "WORKING" ||
+        selectionClickability == "EDITING_HARD"
+          ? "none"
+          : "",
       pointerEvents:
-        selectionClickability <= 1 || !selection.isValid()
-          ? ("none" as "none")
-          : ("all" as "all"),
+        selection.isValid() &&
+        (selectionClickability == "EDITING" ||
+          selectionClickability == "EDITING_HARD")
+          ? ("all" as "all")
+          : ("none" as "none"),
       opacity: selection.isValid() ? "1" : "0",
     };
   }, [
@@ -179,7 +163,12 @@ const SelectionContainer: FC = () => {
     <SelectionAdjust
       hoverIndex={cursorHoverToIndex(leftHover, rightHover, upHover, downHover)}
     >
-      <div className={css.root} style={memoStyle} onMouseDown={handleMouseDown}>
+      <div
+        data-interactable="true"
+        className={css.root}
+        style={memoStyle}
+        onMouseDown={handleMouseDown}
+      >
         <SelectionEdge direction="up" index={1} isHover={handleNodeHover} />
         <SelectionEdge direction="down" index={2} isHover={handleNodeHover} />
         <SelectionEdge direction="left" index={3} isHover={handleNodeHover} />

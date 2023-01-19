@@ -7,8 +7,10 @@ import Color from "@shared/types/color";
 import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
 import { PaintContextType } from "./paint";
-import { UndoPixel } from "@client/undo/pencilAction";
 import { randomString } from "@shared/utils";
+import UndoPixelsAbility, {
+  getUndoPixelColorType,
+} from "@client/undo/undoPixelColor";
 
 export const scaleToSize = (
   state: PaintContextType,
@@ -269,23 +271,31 @@ export const getUndoPixelColor = (
   state: PaintContextType,
   layerId: string,
   x: number,
-  y: number
+  y: number,
+  skipActions = 0
 ) => {
   for (let i = 0; i < state.undoActions.current.length; i++) {
     const undoAction =
-      state.undoActions.current[state.undoActions.current.length - i - 1];
+      state.undoActions.current[
+        state.undoActions.current.length - i - 1 - skipActions
+      ];
 
-    const pixels = (undoAction as any).pixels as
-      | Map<string, Map<number, UndoPixel>>
-      | undefined;
+    if (!undoAction) break;
 
-    if (pixels) {
-      const data = pixels.get(layerId);
-      if (data) {
-        const undoPixel = data.get(x + y * state.width);
-        if (undoPixel) {
-          return undoPixel;
-        }
+    const getUndoPixelColorFunc: getUndoPixelColorType | undefined = (
+      undoAction as any
+    ).getUndoPixelColor;
+
+    if (getUndoPixelColorFunc) {
+      const undoPixel = getUndoPixelColorFunc.call(
+        undoAction,
+        state,
+        layerId,
+        x,
+        y
+      );
+      if (undoPixel) {
+        return undoPixel;
       }
     }
   }

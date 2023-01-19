@@ -2,15 +2,12 @@ import Layer from "@shared/types/layer";
 import { PaintContextType } from "components/contexts/paint";
 import { getUndoPixelColor } from "components/contexts/paintUtils";
 import UndoAction from "./undoAction";
+import UndoPixelsAbility, { UndoPixel } from "./undoPixelColor";
 
-export type UndoPixel = {
-  r: number;
-  g: number;
-  b: number;
-  a: number;
-};
-
-export default class PencilAction extends UndoAction {
+export default class PencilAction
+  extends UndoAction
+  implements UndoPixelsAbility
+{
   pixels: Map<string, Map<number, UndoPixel>>;
 
   constructor(pixels: Map<string, Map<number, UndoPixel>>) {
@@ -28,7 +25,7 @@ export default class PencilAction extends UndoAction {
     }
 
     for (const [layerId, pixelsData] of this.pixels) {
-      for (const [index, color] of pixelsData) {
+      for (const [index] of pixelsData) {
         const x = index % state.width;
         const y = (index / state.width) >> 0; //fast floor bit operation for positive numbers
 
@@ -81,5 +78,23 @@ export default class PencilAction extends UndoAction {
     }
 
     state.setLayers(cloneLayers);
+  }
+
+  getUndoPixelColor(
+    state: PaintContextType,
+    layerId: string,
+    x: number,
+    y: number
+  ) {
+    const data = this.pixels.get(layerId);
+
+    if (data) {
+      const undoPixel = data.get(x + y * state.width);
+      if (undoPixel) {
+        return undoPixel;
+      }
+    }
+
+    return null;
   }
 }

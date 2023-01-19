@@ -1,15 +1,9 @@
-import { addColors } from "@client/layersToImageData";
-import Tools from "@client/tools";
-import Tool from "@client/tools/tool";
-import CropAction, { CroppedLayer } from "@client/undo/cropAction";
-import { UndoPixel } from "@client/undo/pencilAction";
 import UndoAction from "@client/undo/undoAction";
-import { ilerp, lerp } from "@client/utils";
+import { ilerp } from "@client/utils";
 import Color from "@shared/types/color";
-import Layer, { ActiveLayersState } from "@shared/types/layer";
+import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
-import Selection from "@shared/types/selection";
-import { randomString } from "@shared/utils";
+import Selection, { SelectionClickability } from "@shared/types/selection";
 import {
   createContext,
   FC,
@@ -56,8 +50,8 @@ export type PaintContextType = {
 
   selection: Selection;
   setSelection: (newSelection: Selection) => void;
-  selectionClickability: number;
-  setSelectionClickability: (newClickability: number) => void;
+  selectionClickability: SelectionClickability;
+  setSelectionClickability: (newClickability: SelectionClickability) => void;
 
   activeToolId: string;
   setActiveToolId: (newToolId: string) => void;
@@ -110,7 +104,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const [lastColorChanged, setLastColorChanged] = useState<0 | 1>(0);
 
   const [selection, setSelection] = useState(new Selection(0, 0, 0, 0));
-  const [selectionClickability, setSelectionClickability] = useState(0);
+  const [selectionClickability, setSelectionClickability] =
+    useState<SelectionClickability>("WORKING");
 
   const [activeToolId, setActiveToolId] = useState("brush");
 

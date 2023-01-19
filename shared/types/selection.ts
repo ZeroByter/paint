@@ -1,5 +1,11 @@
 import Location from "./location";
 
+export type SelectionClickability =
+  | "CREATING"
+  | "EDITING"
+  | "EDITING_HARD"
+  | "WORKING";
+
 class Selection {
   x: number;
   y: number;

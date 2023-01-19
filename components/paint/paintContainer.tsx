@@ -215,12 +215,17 @@ const PaintContainer: FC = () => {
         setScale(newScale);
         setOffset(offset.add(difference));
       },
-      [getRealScale, height, offset, scale, setOffset, setScale, width]
+      [height, offset, paintState, scale, setOffset, setScale, width]
     )
   );
 
   const renderLayers = layers.map((layer) => {
     return <Canvas key={layer.id} layer={layer} />;
+  });
+  const renderTemporaryLayers = layers.map((layer) => {
+    if (!layer.temporaryLayer) return null;
+
+    return <Canvas key={`${layer.id}-temp1`} layer={layer.temporaryLayer} />;
   });
 
   return (
@@ -229,6 +234,7 @@ const PaintContainer: FC = () => {
         <LayersContainer containerRef={containerRef}>
           <TransparencyBackground />
           {renderLayers}
+          {renderTemporaryLayers}
           {/* <CursorHandle /> */}
         </LayersContainer>
         <SelectionContainer />

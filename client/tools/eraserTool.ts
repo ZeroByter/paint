@@ -1,4 +1,4 @@
-import PencilAction, { UndoPixel } from "@client/undo/pencilAction";
+import PencilAction from "@client/undo/pencilAction";
 import { clamp, clamp01, getDistance } from "@client/utils";
 import Location from "@shared/types/location";
 import Color from "@shared/types/color";
@@ -8,8 +8,10 @@ import Layer from "@shared/types/layer";
 import { BrushData, generateBrushEffect } from "./brushTool";
 import {
   addUndoAction,
+  canAffectPixel,
   updateActiveLayers,
 } from "components/contexts/paintUtils";
+import { UndoPixel } from "@client/undo/undoPixelColor";
 
 class EraserTool extends Tool {
   lastDrawIndex = -1;
@@ -69,12 +71,7 @@ class EraserTool extends Tool {
         const finalX = paintLocation.x - halfSize + x;
         const finalY = paintLocation.y - halfSize + y;
 
-        if (
-          finalX < 0 ||
-          finalY < 0 ||
-          finalX > width - 1 ||
-          finalY > height - 1
-        ) {
+        if (!canAffectPixel(state, finalX, finalY)) {
           continue;
         }
 
