@@ -1,4 +1,5 @@
-import PencilAction, { UndoPixel } from "@client/undo/pencilAction";
+import PencilAction from "@client/undo/pencilAction";
+import { UndoPixel } from "@client/undo/undoPixelColor";
 import { getDistance, ilerp, lerp } from "@client/utils";
 import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";

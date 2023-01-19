@@ -1,10 +1,14 @@
+import Color from "@shared/types/color";
 import Layer from "@shared/types/layer";
-import Selection from "@shared/types/selection";
 import { PaintContextType } from "components/contexts/paint";
-import { cropToSelection } from "components/contexts/paintUtils";
+import { getUndoPixelColor } from "components/contexts/paintUtils";
 import UndoAction from "./undoAction";
+import UndoPixelsAbility from "./undoPixelColor";
 
-export default class HardMoveAction extends UndoAction {
+export default class HardMoveAction
+  extends UndoAction
+  implements UndoPixelsAbility
+{
   layers: string[];
 
   width: number;
@@ -45,20 +49,43 @@ export default class HardMoveAction extends UndoAction {
       layersMap[layer.id] = layer;
     }
 
-    for (const layerId in this.layers) {
+    for (const layerId of this.layers) {
       const layer = layersMap[layerId];
 
       if (!layer) continue;
 
+      const targetPixels: Color[] = [];
       for (let y = 0; y < this.height; y++) {
         for (let x = 0; x < this.width; x++) {
-          const targetPixel = layer.getPixelColor(
+          targetPixels.push(
+            layer.getPixelColor(this.targetX + x, this.targetY + y)
+          );
+        }
+      }
+
+      for (let y = 0; y < this.height; y++) {
+        for (let x = 0; x < this.width; x++) {
+          const beforeActionPixel = getUndoPixelColor(
+            state,
+            layerId,
             this.targetX + x,
             this.targetY + y
           );
 
-          //TODO: somewhere here need to also place old pixels where target position was
-          //aka, the pixels that were under where we just hard moved the pixels onto
+          layer.setPixelData(
+            this.targetX + x,
+            this.targetY + y,
+            beforeActionPixel.r,
+            beforeActionPixel.g,
+            beforeActionPixel.b,
+            beforeActionPixel.a
+          );
+        }
+      }
+
+      for (let y = 0; y < this.height; y++) {
+        for (let x = 0; x < this.width; x++) {
+          const targetPixel = targetPixels[x + y * this.width];
 
           layer.setPixelData(
             this.sourceX + x,
@@ -75,5 +102,79 @@ export default class HardMoveAction extends UndoAction {
     }
   }
 
-  redo(state: PaintContextType): void {}
+  redo(state: PaintContextType): void {
+    const { layers } = state;
+
+    const layersMap: { [id: string]: Layer } = {};
+    for (const layer of layers) {
+      layersMap[layer.id] = layer;
+    }
+
+    for (const layerId of this.layers) {
+      const layer = layersMap[layerId];
+
+      if (!layer) continue;
+
+      const sourcePixels: Color[] = [];
+      for (let y = 0; y < this.height; y++) {
+        for (let x = 0; x < this.width; x++) {
+          sourcePixels.push(
+            layer.getPixelColor(this.targetX + x, this.targetY + y)
+          );
+        }
+      }
+
+      for (let y = 0; y < this.height; y++) {
+        for (let x = 0; x < this.width; x++) {
+          layer.setPixelData(this.sourceX + x, this.sourceY + y, 0, 0, 0, 0);
+        }
+      }
+
+      for (let y = 0; y < this.height; y++) {
+        for (let x = 0; x < this.width; x++) {
+          const sourcePixel = sourcePixels[x + y * this.width];
+
+          layer.setPixelData(
+            this.targetX + x,
+            this.targetY + y,
+            sourcePixel.r,
+            sourcePixel.g,
+            sourcePixel.b,
+            sourcePixel.a
+          );
+        }
+      }
+
+      layer.updatePixels();
+    }
+  }
+
+  getUndoPixelColor(
+    state: PaintContextType,
+    layerId: string,
+    x: number,
+    y: number
+  ) {
+    if (!this.layers.includes(layerId)) return null;
+
+    if (
+      x > this.targetX - 1 &&
+      y > this.targetY - 1 &&
+      x < this.targetX + this.width &&
+      y < this.targetY + this.height
+    ) {
+      return null;
+    }
+
+    if (
+      x > this.sourceX - 1 &&
+      y > this.sourceY - 1 &&
+      x < this.sourceX + this.width &&
+      y < this.sourceY + this.height
+    ) {
+      return { r: 0, g: 0, b: 0, a: 0 };
+    }
+
+    return null;
+  }
 }

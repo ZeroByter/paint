@@ -7,12 +7,13 @@ import SelectSoftMoveTool from "./selectSoftMoveTool";
 import SelectTool from "./selectTool";
 import Tool from "./tool";
 
-export const ToolKeyShortcuts: { [id: string]: string } = {
+export const ToolKeyShortcuts: { [id: string]: string | string[] } = {
   KeyE: "eraser",
   KeyS: "select",
   KeyP: "pencil",
   KeyB: "brush",
   KeyK: "colorpicker",
+  KeyM: ["selectSoftMove", "selectHardMove"],
 };
 
 const Tools: { [id: string]: Tool } = {

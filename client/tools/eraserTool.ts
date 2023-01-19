@@ -1,4 +1,4 @@
-import PencilAction, { UndoPixel } from "@client/undo/pencilAction";
+import PencilAction from "@client/undo/pencilAction";
 import { clamp, clamp01, getDistance } from "@client/utils";
 import Location from "@shared/types/location";
 import Color from "@shared/types/color";
@@ -11,6 +11,7 @@ import {
   canAffectPixel,
   updateActiveLayers,
 } from "components/contexts/paintUtils";
+import { UndoPixel } from "@client/undo/undoPixelColor";
 
 class EraserTool extends Tool {
   lastDrawIndex = -1;

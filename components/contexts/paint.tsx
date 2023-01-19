@@ -1,15 +1,9 @@
-import { addColors } from "@client/layersToImageData";
-import Tools from "@client/tools";
-import Tool from "@client/tools/tool";
-import CropAction, { CroppedLayer } from "@client/undo/cropAction";
-import { UndoPixel } from "@client/undo/pencilAction";
 import UndoAction from "@client/undo/undoAction";
-import { ilerp, lerp } from "@client/utils";
+import { ilerp } from "@client/utils";
 import Color from "@shared/types/color";
-import Layer, { ActiveLayersState } from "@shared/types/layer";
+import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
 import Selection, { SelectionClickability } from "@shared/types/selection";
-import { randomString } from "@shared/utils";
 import {
   createContext,
   FC,
