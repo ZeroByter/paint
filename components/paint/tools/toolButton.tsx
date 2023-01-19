@@ -1,11 +1,11 @@
-import Tools from "@client/tools";
+import Tools, { ToolTypes } from "@client/tools";
 import Tool from "@client/tools/tool";
 import { PaintFetcher } from "components/contexts/paint";
 import { FC } from "react";
 import css from "./toolButton.module.scss";
 
 type Props = {
-  id: string;
+  id: ToolTypes;
   tool: Tool;
 };
 

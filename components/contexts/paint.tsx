@@ -4,6 +4,7 @@ import Color from "@shared/types/color";
 import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
 import Selection, { SelectionClickability } from "@shared/types/selection";
+import Tools, { ToolTypes } from "@client/tools";
 import {
   createContext,
   FC,
@@ -53,8 +54,8 @@ export type PaintContextType = {
   selectionClickability: SelectionClickability;
   setSelectionClickability: (newClickability: SelectionClickability) => void;
 
-  activeToolId: string;
-  setActiveToolId: (newToolId: string) => void;
+  activeToolId: ToolTypes;
+  setActiveToolId: (newToolId: ToolTypes) => void;
 
   brushSize: number;
   setBrushSize: (newSize: number) => void;
@@ -107,7 +108,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const [selectionClickability, setSelectionClickability] =
     useState<SelectionClickability>("WORKING");
 
-  const [activeToolId, setActiveToolId] = useState("brush");
+  const [activeToolId, setActiveToolId] = useState<ToolTypes>("brush");
 
   const [brushSize, setBrushSize] = useState(3);
   const [brushHardness, setBrushHardness] = useState(0.5);

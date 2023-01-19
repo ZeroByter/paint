@@ -14,6 +14,7 @@ export type OnDragArgs = {
 class Tool {
   text = "";
   tooltip = "";
+  hidden = false;
 
   onSelect(state: PaintContextType) {}
   onUnselect(state: PaintContextType) {}

@@ -1,5 +1,5 @@
 import useWindowEvent from "@client/hooks/useWindowEvent";
-import Tools, { ToolKeyShortcuts } from "@client/tools";
+import Tools, { ToolKeyShortcuts, ToolTypes } from "@client/tools";
 import { PaintFetcher } from "components/contexts/paint";
 import { setNotification } from "components/contexts/paintUtils";
 import { isArray } from "lodash/fp";
@@ -12,7 +12,8 @@ const ToolsPanel: FC = () => {
   const { setActiveToolId, activeToolId } = paintState;
 
   const renderTools = Object.entries(Tools).map(([id, tool]) => {
-    return <ToolButton key={id} id={id} tool={tool} />;
+    if (tool.hidden) return null;
+    return <ToolButton key={id} id={id as ToolTypes} tool={tool} />;
   });
 
   useWindowEvent(
@@ -24,7 +25,7 @@ const ToolsPanel: FC = () => {
           Tools[activeToolId].onUnselect(paintState);
 
           if (isArray(tool)) {
-            let newToolId = "";
+            let newToolId: ToolTypes;
 
             if (tool.includes(activeToolId)) {
               newToolId = tool[(tool.indexOf(activeToolId) + 1) % tool.length];

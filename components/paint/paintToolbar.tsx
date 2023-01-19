@@ -13,7 +13,7 @@ import { FC, useCallback } from "react";
 
 const PaintToolbar: FC = () => {
   const paintState = PaintFetcher();
-  const { width, height, layers } = paintState;
+  const { width, height, layers, setActiveToolId } = paintState;
 
   const handleLoadUrl = () => {
     const url = prompt(
@@ -105,6 +105,10 @@ const PaintToolbar: FC = () => {
     )
   );
 
+  const selectProjectionSelectionTool = () => {
+    setActiveToolId("projectionSelect");
+  };
+
   const openGithub = () => {
     open("https://github.com/zerobyter/paint");
   };
@@ -121,7 +125,7 @@ const PaintToolbar: FC = () => {
     {
       text: "Effects",
       subItems: [
-        { text: "Project Layer", onClick: noop },
+        { text: "Project Layer", onClick: selectProjectionSelectionTool },
         { text: "Inverse Project Layer", onClick: noop },
       ],
     },
