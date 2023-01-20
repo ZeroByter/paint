@@ -61,20 +61,20 @@ class ProjectionSelectTool extends Tool {
     const bottomRightX = newMouseLoc.x;
     const bottomRightY = newMouseLoc.y;
 
-    setProjectionSelection(
-      new ProjectionSelection(
-        topLeftX,
-        topLeftY,
-        topRightX,
-        topRightY,
-        bottomLeftX,
-        bottomLeftY,
-        bottomRightX,
-        bottomRightY
-      )
+    const newSelection = new ProjectionSelection(
+      topLeftX,
+      topLeftY,
+      topRightX,
+      topRightY,
+      bottomLeftX,
+      bottomLeftY,
+      bottomRightX,
+      bottomRightY
     );
 
-    projectImage(state);
+    setProjectionSelection(newSelection);
+
+    projectImage(layers, newSelection);
   }
 
   onMouseUp(state: PaintContextType, args: OnClickArgs): void {

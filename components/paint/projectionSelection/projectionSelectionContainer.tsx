@@ -54,6 +54,7 @@ const ProjectionSelectionContainer: FC = () => {
           )} L ${getCornerLocation("bottomRight")} L ${getCornerLocation(
             "bottomLeft"
           )} Z`}
+          data-interactable="true"
           stroke="rgba(0,0,255,0.25)"
           fill="rgba(0,0,255,0.15)"
           strokeWidth={1}

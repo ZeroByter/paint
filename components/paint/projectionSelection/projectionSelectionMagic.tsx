@@ -1,5 +1,7 @@
 import { getDistance, lerp } from "@client/utils";
+import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
+import ProjectionSelection from "@shared/types/projectionSelection";
 import { PaintContextType } from "components/contexts/paint";
 
 const getNormalizedDirection = (
@@ -28,9 +30,10 @@ const getLocationFromLocation = (
   );
 };
 
-export const projectImage = (state: PaintContextType) => {
-  const { layers, width, height, projectionSelection } = state;
-
+export const projectImage = (
+  layers: Layer[],
+  projectionSelection: ProjectionSelection
+) => {
   if (!projectionSelection) return;
 
   const {
@@ -64,33 +67,50 @@ export const projectImage = (state: PaintContextType) => {
     bottomRightY
   );
 
-  const topDirection = getNormalizedDirection(
-    topRightX,
-    topRightY,
-    topLeftX,
-    topLeftY
-  );
-  const bottomDirection = getNormalizedDirection(
-    bottomRightX,
-    bottomRightY,
-    bottomLeftX,
-    bottomLeftY
-  );
-  const leftDirection = getNormalizedDirection(
-    bottomLeftX,
-    bottomLeftY,
-    topLeftX,
-    topLeftY
-  );
-  const rightDirection = getNormalizedDirection(
-    bottomRightX,
-    bottomRightY,
-    topRightX,
-    topRightY
-  );
-
   const horizontalDistance = Math.max(topDistance, bottomDistance);
   const verticalDistance = Math.max(leftDistance, rightDistance);
+
+  const topMarks = new Map<number, Location>();
+  const bottomMarks = new Map<number, Location>();
+  const leftMarks = new Map<number, Location>();
+  const rightMarks = new Map<number, Location>();
+
+  for (let y = 0; y < verticalDistance; y++) {
+    const verticalValue = y / verticalDistance;
+
+    leftMarks.set(
+      verticalValue,
+      new Location(
+        lerp(topLeftX, bottomLeftX, verticalValue),
+        lerp(topLeftY, bottomLeftY, verticalValue)
+      )
+    );
+    rightMarks.set(
+      verticalValue,
+      new Location(
+        lerp(topRightX, bottomRightX, verticalValue),
+        lerp(topRightY, bottomRightY, verticalValue)
+      )
+    );
+  }
+  for (let x = 0; x < horizontalDistance; x++) {
+    const horizontalValue = x / horizontalDistance;
+
+    topMarks.set(
+      horizontalValue,
+      new Location(
+        lerp(topLeftX, topRightX, horizontalValue),
+        lerp(topLeftY, topRightY, horizontalValue)
+      )
+    );
+    bottomMarks.set(
+      horizontalValue,
+      new Location(
+        lerp(bottomLeftX, bottomRightX, horizontalValue),
+        lerp(bottomLeftY, bottomRightY, horizontalValue)
+      )
+    );
+  }
 
   for (const layer of layers) {
     if (!layer.active) continue;
@@ -102,36 +122,18 @@ export const projectImage = (state: PaintContextType) => {
 
     for (let y = 0; y < verticalDistance; y++) {
       for (let x = 0; x < horizontalDistance; x++) {
-        const topMark = new Location(
-          lerp(topLeftX, topRightX, x / horizontalDistance),
-          lerp(topLeftY, topRightY, x / horizontalDistance)
-        );
-        const bottomMark = new Location(
-          lerp(bottomLeftX, bottomRightX, x / horizontalDistance),
-          lerp(bottomLeftY, bottomRightY, x / horizontalDistance)
-        );
-        const leftMark = new Location(
-          lerp(topLeftX, bottomLeftX, y / verticalDistance),
-          lerp(topLeftY, bottomLeftY, y / verticalDistance)
-        );
-        const rightMark = new Location(
-          lerp(topRightX, bottomRightX, y / verticalDistance),
-          lerp(topRightY, bottomRightY, y / verticalDistance)
-        );
+        const horizontalValue = x / horizontalDistance;
+        const verticalValue = y / verticalDistance;
 
-        const finalLocation = new Location(
-          lerp(leftMark.x, rightMark.x, x / horizontalDistance),
-          lerp(topMark.y, bottomMark.y, y / verticalDistance)
-        );
+        const topMark = topMarks.get(horizontalValue) as Location;
+        const bottomMark = bottomMarks.get(horizontalValue) as Location;
+        const leftMark = leftMarks.get(verticalValue) as Location;
+        const rightMark = rightMarks.get(verticalValue) as Location;
 
-        tempLayer.setPixelData(
-          Math.round(finalLocation.x),
-          Math.round(finalLocation.y),
-          255,
-          0,
-          0,
-          255
-        );
+        const finalX = lerp(leftMark.x, rightMark.x, horizontalValue) >> 0;
+        const finalY = lerp(topMark.y, bottomMark.y, verticalValue) >> 0;
+
+        tempLayer.setPixelData(finalX, finalY, 255, 0, 0, 255);
       }
     }
 

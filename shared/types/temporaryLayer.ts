@@ -53,14 +53,11 @@ class TemporaryLayer {
 
   getPixelIndex(x: number, y: number) {
     const index = x + y * this.width;
-    if (x < 0 || y < 0 || x > this.width - 1 || y > this.height - 1) return -1;
-
     return index * 4;
   }
 
   getPixelColor(x: number, y: number) {
     const index = this.getPixelIndex(x, y);
-    if (index == -1) return new Color();
 
     return new Color(
       this.pixels[index],
@@ -79,7 +76,6 @@ class TemporaryLayer {
     a: number
   ) {
     const index = this.getPixelIndex(x, y);
-    if (index == -1) return;
 
     this.pixels[index] = r;
     this.pixels[index + 1] = g;

@@ -33,6 +33,7 @@ const ProjectionSelectionNode: FC<Props> = ({ corner }) => {
     setProjectionSelection,
     mouseLoc,
     freeMouseLoc,
+    layers,
   } = paintState;
 
   const _setNodeDistance = useCallback((newDistance: number) => {
@@ -95,15 +96,15 @@ const ProjectionSelectionNode: FC<Props> = ({ corner }) => {
         );
 
         if (isMouseDownRef.current) {
-          setProjectionSelection(
-            projectionSelection.newCornerLocation(
-              corner,
-              clamp(mouseLoc.x, 0, width),
-              clamp(mouseLoc.y, 0, height)
-            )
+          const newSelection = projectionSelection.newCornerLocation(
+            corner,
+            clamp(mouseLoc.x, 0, width),
+            clamp(mouseLoc.y, 0, height)
           );
 
-          projectImage(paintState);
+          setProjectionSelection(newSelection);
+
+          projectImage(layers, newSelection);
         }
       },
       [
@@ -118,9 +119,10 @@ const ProjectionSelectionNode: FC<Props> = ({ corner }) => {
         offset.y,
         height,
         corner,
-        setProjectionSelection,
         mouseLoc.x,
         mouseLoc.y,
+        setProjectionSelection,
+        layers,
       ]
     )
   );
@@ -142,7 +144,7 @@ const ProjectionSelectionNode: FC<Props> = ({ corner }) => {
     return {
       left: `${pos.x}px`,
       top: `${pos.y}px`,
-      opacity: `${clamp(ilerp(15, 0, nodeDistance), 0.1, 1)}`,
+      opacity: `${clamp(ilerp(15, 0, nodeDistance), 0.3, 1)}`,
     };
   }, [getPosition, nodeDistance]);
 
