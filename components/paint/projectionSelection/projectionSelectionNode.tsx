@@ -11,19 +11,28 @@ import {
   useState,
   MouseEvent as ReactMouseEvent,
   CSSProperties,
+  useRef,
 } from "react";
 import css from "./projectionSelectionNode.module.scss";
 
 type Props = {
-  corner: "topLeft" | "topRight" | "bottomLeft" | "bottomRight";
+  corner: 0 | 1 | 2 | 3;
 };
 
 const ProjectionSelectionNode: FC<Props> = ({ corner }) => {
   const [nodeDistance, setNodeDistance] = useState(99);
+  const isMouseDownRef = useRef(false);
 
   const paintState = PaintFetcher();
-  const { width, height, offset, projectionSelection, mouseLoc, freeMouseLoc } =
-    paintState;
+  const {
+    width,
+    height,
+    offset,
+    projectionSelection,
+    setProjectionSelection,
+    mouseLoc,
+    freeMouseLoc,
+  } = paintState;
 
   const _setNodeDistance = useCallback((newDistance: number) => {
     setNodeDistance(newDistance);
@@ -34,17 +43,17 @@ const ProjectionSelectionNode: FC<Props> = ({ corner }) => {
 
     const realScale = getRealScale(paintState);
 
-    if (corner == "topLeft") {
+    if (corner == 0) {
       return new Location(
         (projectionSelection.topLeftX - width / 2 + offset.x) * realScale,
         (projectionSelection.topLeftY - height / 2 + offset.y) * realScale
       );
-    } else if (corner == "topRight") {
+    } else if (corner == 1) {
       return new Location(
         (projectionSelection.topRightX - width / 2 + offset.x) * realScale,
         (projectionSelection.topRightY - height / 2 + offset.y) * realScale
       );
-    } else if (corner == "bottomLeft") {
+    } else if (corner == 2) {
       return new Location(
         (projectionSelection.bottomLeftX - width / 2 + offset.x) * realScale,
         (projectionSelection.bottomLeftY - height / 2 + offset.y) * realScale
@@ -83,6 +92,16 @@ const ProjectionSelectionNode: FC<Props> = ({ corner }) => {
             pos.y
           )
         );
+
+        if (isMouseDownRef.current) {
+          setProjectionSelection(
+            projectionSelection.newCornerLocation(
+              corner,
+              clamp(mouseLoc.x, 0, width),
+              clamp(mouseLoc.y, 0, height)
+            )
+          );
+        }
       },
       [
         paintState,
@@ -95,9 +114,24 @@ const ProjectionSelectionNode: FC<Props> = ({ corner }) => {
         offset.x,
         offset.y,
         height,
+        corner,
+        setProjectionSelection,
+        mouseLoc.x,
+        mouseLoc.y,
       ]
     )
   );
+
+  useWindowEvent(
+    "mouseup",
+    useCallback(() => {
+      isMouseDownRef.current = false;
+    }, [])
+  );
+
+  const handleMouseDown = () => {
+    isMouseDownRef.current = true;
+  };
 
   const memoStyle: CSSProperties = useMemo(() => {
     const pos = getPosition();
@@ -109,7 +143,13 @@ const ProjectionSelectionNode: FC<Props> = ({ corner }) => {
     };
   }, [getPosition, nodeDistance]);
 
-  return <div className={css.root} style={memoStyle}></div>;
+  return (
+    <div
+      className={css.root}
+      style={memoStyle}
+      onMouseDown={handleMouseDown}
+    ></div>
+  );
 };
 
 export default ProjectionSelectionNode;
