@@ -2,33 +2,6 @@ import { getDistance, lerp } from "@client/utils";
 import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
 import ProjectionSelection from "@shared/types/projectionSelection";
-import { PaintContextType } from "components/contexts/paint";
-
-const getNormalizedDirection = (
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number
-) => {
-  const minusX = x1 - x2;
-  const minusY = y1 - y2;
-  const magnitude = Math.sqrt(minusX * minusX + minusY * minusY);
-  return new Location(minusX / magnitude, minusY / magnitude);
-};
-
-const getLocationFromLocation = (
-  baseX: number,
-  baseY: number,
-  horDir: Location,
-  horDist: number,
-  verDir: Location,
-  verDist: number
-) => {
-  return new Location(
-    baseX + Math.round(horDir.x * horDist) + Math.round(verDir.x * verDist),
-    baseY + Math.round(horDir.y * horDist) + Math.round(verDir.y * verDist)
-  );
-};
 
 export const projectImage = (
   layers: Layer[],
