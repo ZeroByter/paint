@@ -22,14 +22,8 @@ const ProjectionSelectionNode: FC<Props> = ({ corner }) => {
   const [nodeDistance, setNodeDistance] = useState(99);
 
   const paintState = PaintFetcher();
-  const {
-    width,
-    height,
-    offset,
-    projectionSelection,
-    mouseScaledLoc,
-    mouseLoc,
-  } = paintState;
+  const { width, height, offset, projectionSelection, mouseLoc, freeMouseLoc } =
+    paintState;
 
   const _setNodeDistance = useCallback((newDistance: number) => {
     setNodeDistance(newDistance);
@@ -83,8 +77,8 @@ const ProjectionSelectionNode: FC<Props> = ({ corner }) => {
 
         _setNodeDistance(
           getDistance(
-            (mouseLoc.x - width / 2 + offset.x) * scale,
-            (mouseLoc.y - height / 2 + offset.y) * scale,
+            (freeMouseLoc.x - width / 2 + offset.x) * scale,
+            (freeMouseLoc.y - height / 2 + offset.y) * scale,
             pos.x,
             pos.y
           )
@@ -95,8 +89,8 @@ const ProjectionSelectionNode: FC<Props> = ({ corner }) => {
         projectionSelection,
         getPosition,
         _setNodeDistance,
-        mouseLoc.x,
-        mouseLoc.y,
+        freeMouseLoc.x,
+        freeMouseLoc.y,
         width,
         offset.x,
         offset.y,

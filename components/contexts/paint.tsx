@@ -39,6 +39,8 @@ export type PaintContextType = {
   setMouseLoc: (newLoc: Location) => void;
   mouseScaledLoc: Location;
   setMouseScaledLoc: (newLoc: Location) => void;
+  freeMouseLoc: Location;
+  setFreeMouseLoc: (newLoc: Location) => void;
 
   layers: Layer[];
   setLayers: (newScale: Layer[]) => void;
@@ -98,6 +100,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
 
   const [mouseLoc, setMouseLoc] = useState(new Location());
   const [mouseScaledLoc, setMouseScaledLoc] = useState(new Location());
+  const [freeMouseLoc, setFreeMouseLoc] = useState(new Location());
 
   const [layers, setLayers] = useState<Layer[]>([]);
 
@@ -138,6 +141,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setMouseLoc,
     mouseScaledLoc,
     setMouseScaledLoc,
+    freeMouseLoc,
+    setFreeMouseLoc,
     layers,
     setLayers,
     primaryColor,

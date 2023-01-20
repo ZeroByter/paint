@@ -33,6 +33,7 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
     mouseLoc,
     setMouseLoc,
     setMouseScaledLoc,
+    setFreeMouseLoc,
     width,
     height,
     activeToolId,
@@ -72,27 +73,29 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
 
         const realScale = getRealScale(paintState);
 
+        const newFreeMouseLoc = new Location(
+          (e.clientX -
+            containerOffset.x +
+            (width * realScale) / 2 -
+            offset.x * realScale) /
+            realScale,
+          (e.clientY -
+            containerOffset.y +
+            (height * realScale) / 2 -
+            offset.y * realScale) /
+            realScale
+        );
+
         const newMouseLoc = new Location(
-          Math.floor(
-            (e.clientX -
-              containerOffset.x +
-              (width * realScale) / 2 -
-              offset.x * realScale) /
-              realScale
-          ),
-          Math.floor(
-            (e.clientY -
-              containerOffset.y +
-              (height * realScale) / 2 -
-              offset.y * realScale) /
-              realScale
-          )
+          Math.floor(newFreeMouseLoc.x),
+          Math.floor(newFreeMouseLoc.y)
         );
 
         setMouseLoc(newMouseLoc);
         setMouseScaledLoc(
           new Location(newMouseLoc.x * realScale, newMouseLoc.y * realScale)
         );
+        setFreeMouseLoc(newFreeMouseLoc);
 
         if (lastDraggedRef.current.equals(new Location(-1, -1))) {
           lastDraggedRef.current = newMouseLoc.copy();
