@@ -1,5 +1,6 @@
 import useWindowEvent from "@client/hooks/useWindowEvent";
 import layersToImageData from "@client/layersToImageData";
+import Tools from "@client/tools";
 import { clamp } from "@client/utils";
 import Color from "@shared/types/color";
 import Selection from "@shared/types/selection";
@@ -109,6 +110,7 @@ const PaintToolbar: FC = () => {
   const selectProjectionSelectionTool = () => {
     setActiveToolId("projectionSelect");
     setSelection(new Selection());
+    Tools["projectionSelect"].onSelect(paintState);
   };
 
   const openGithub = () => {

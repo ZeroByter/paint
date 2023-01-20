@@ -1,7 +1,8 @@
-import { clamp } from "@client/utils";
+import { clamp, getDistance } from "@client/utils";
 import Location from "@shared/types/location";
 import ProjectionSelection from "@shared/types/projectionSelection";
 import { PaintContextType } from "components/contexts/paint";
+import { projectImage } from "components/paint/projectionSelection/projectionSelectionMagic";
 import Tool, { OnClickArgs, OnDragArgs } from "./tool";
 
 class ProjectionSelectTool extends Tool {
@@ -15,6 +16,23 @@ class ProjectionSelectTool extends Tool {
     this.hidden = true;
   }
 
+  onSelect(state: PaintContextType): void {
+    const { layers, width, height } = state;
+
+    for (const layer of layers) {
+      if (!layer.active) continue;
+
+      layer.createTemporaryLayer(width, height, 0, 0);
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          layer.setPixelData(x, y, 0, 0, 0, 0);
+        }
+      }
+      layer.updatePixels();
+    }
+  }
+
   onMouseDown(state: PaintContextType, args: OnClickArgs): void {
     const { mouseLoc, setSelectionClickability, width, height } = state;
 
@@ -25,42 +43,54 @@ class ProjectionSelectTool extends Tool {
   }
 
   onDrag(state: PaintContextType, args: OnDragArgs): void {
-    const { mouseLoc, setProjectionSelection, width, height } = state;
+    const { mouseLoc, setProjectionSelection, width, height, layers } = state;
 
     const newMouseLoc = mouseLoc.copy();
     newMouseLoc.x = clamp(newMouseLoc.x, 0, width);
     newMouseLoc.y = clamp(newMouseLoc.y, 0, height);
 
+    const topLeftX = this.dragStartLocation.x;
+    const topLeftY = this.dragStartLocation.y;
+
+    const topRightX = newMouseLoc.x;
+    const topRightY = this.dragStartLocation.y;
+
+    const bottomLeftX = this.dragStartLocation.x;
+    const bottomLeftY = newMouseLoc.y;
+
+    const bottomRightX = newMouseLoc.x;
+    const bottomRightY = newMouseLoc.y;
+
     setProjectionSelection(
       new ProjectionSelection(
-        this.dragStartLocation.x,
-        this.dragStartLocation.y,
-        newMouseLoc.x,
-        this.dragStartLocation.y,
-        this.dragStartLocation.x,
-        newMouseLoc.y,
-        newMouseLoc.x,
-        newMouseLoc.y
+        topLeftX,
+        topLeftY,
+        topRightX,
+        topRightY,
+        bottomLeftX,
+        bottomLeftY,
+        bottomRightX,
+        bottomRightY
       )
     );
+
+    projectImage(state);
   }
 
   onMouseUp(state: PaintContextType, args: OnClickArgs): void {
-    const { setSelectionClickability } = state;
-    setSelectionClickability("CREATING");
-  }
-
-  onSelect(state: PaintContextType): void {
-    const { setSelectionClickability } = state;
-
-    setSelectionClickability("CREATING");
+    const {} = state;
   }
 
   onUnselect(state: PaintContextType): void {
-    const { setSelectionClickability, setProjectionSelection } = state;
+    const { setProjectionSelection, layers } = state;
 
-    setSelectionClickability("WORKING");
     setProjectionSelection(undefined);
+
+    for (const layer of layers) {
+      if (!layer.active) continue;
+
+      layer.temporaryLayer = undefined;
+    }
   }
 }
 

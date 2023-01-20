@@ -13,6 +13,7 @@ import {
   CSSProperties,
   useRef,
 } from "react";
+import { projectImage } from "./projectionSelectionMagic";
 import css from "./projectionSelectionNode.module.scss";
 
 type Props = {
@@ -101,6 +102,8 @@ const ProjectionSelectionNode: FC<Props> = ({ corner }) => {
               clamp(mouseLoc.y, 0, height)
             )
           );
+
+          projectImage(paintState);
         }
       },
       [
