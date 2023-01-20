@@ -15,6 +15,8 @@ class TemporaryLayer {
   pixels: Uint8ClampedArray;
   pixelsId: string;
 
+  pixelsCopy: Uint8ClampedArray;
+
   parentLayer: Layer;
 
   constructor(
@@ -45,6 +47,8 @@ class TemporaryLayer {
       this.pixels[i * 4 + 2] = color.b;
       this.pixels[i * 4 + 3] = color.a;
     }
+
+    this.pixelsCopy = new Uint8ClampedArray(this.pixels);
 
     this.pixelsId = randomString();
 

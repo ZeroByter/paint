@@ -40,8 +40,12 @@ export const projectImage = (
     bottomRightY
   );
 
-  const horizontalDistance = Math.max(topDistance, bottomDistance);
-  const verticalDistance = Math.max(leftDistance, rightDistance);
+  let horizontalDistance = Math.max(topDistance, bottomDistance);
+  let verticalDistance = Math.max(leftDistance, rightDistance);
+
+  //very dirty hack to prevent gaps when generating image... need to find a better way to detect gaps and fill them in...
+  horizontalDistance += horizontalDistance / 5;
+  verticalDistance += verticalDistance / 5;
 
   const topMarks = new Map<number, Location>();
   const bottomMarks = new Map<number, Location>();
@@ -94,19 +98,37 @@ export const projectImage = (
     tempLayer.pixels.fill(0);
 
     for (let y = 0; y < verticalDistance; y++) {
+      const verticalValue = y / verticalDistance;
+
+      const leftMark = leftMarks.get(verticalValue) as Location;
+      const rightMark = rightMarks.get(verticalValue) as Location;
+
       for (let x = 0; x < horizontalDistance; x++) {
         const horizontalValue = x / horizontalDistance;
-        const verticalValue = y / verticalDistance;
+
+        const tempLayerPixelIndex = tempLayer.getPixelIndex(
+          lerp(0, tempLayer.width, horizontalValue) >> 0,
+          lerp(0, tempLayer.height, verticalValue) >> 0
+        );
+        const tempLayerPixelR = tempLayer.pixelsCopy[tempLayerPixelIndex];
+        const tempLayerPixelG = tempLayer.pixelsCopy[tempLayerPixelIndex + 1];
+        const tempLayerPixelB = tempLayer.pixelsCopy[tempLayerPixelIndex + 2];
+        const tempLayerPixelA = tempLayer.pixelsCopy[tempLayerPixelIndex + 3];
 
         const topMark = topMarks.get(horizontalValue) as Location;
         const bottomMark = bottomMarks.get(horizontalValue) as Location;
-        const leftMark = leftMarks.get(verticalValue) as Location;
-        const rightMark = rightMarks.get(verticalValue) as Location;
 
         const finalX = lerp(leftMark.x, rightMark.x, horizontalValue) >> 0;
         const finalY = lerp(topMark.y, bottomMark.y, verticalValue) >> 0;
 
-        tempLayer.setPixelData(finalX, finalY, 255, 0, 0, 255);
+        tempLayer.setPixelData(
+          finalX,
+          finalY,
+          tempLayerPixelR,
+          tempLayerPixelG,
+          tempLayerPixelB,
+          tempLayerPixelA
+        );
       }
     }
 
