@@ -3,7 +3,7 @@ import Location from "@shared/types/location";
 import ProjectionSelection from "@shared/types/projectionSelection";
 import { PaintContextType } from "components/contexts/paint";
 import { projectImage } from "components/paint/projectionSelection/projectionSelectionMagic";
-import Tool, { OnClickArgs, OnDragArgs } from "./tool";
+import Tool, { OnClickArgs, OnDragArgs, OnKeyDownArgs } from "./tool";
 
 class ProjectionSelectTool extends Tool {
   dragStartLocation = new Location();
@@ -75,6 +75,28 @@ class ProjectionSelectTool extends Tool {
     setProjectionSelection(newSelection);
 
     projectImage(layers, newSelection);
+  }
+
+  onKeyDown(state: PaintContextType, args: OnKeyDownArgs): void {
+    const { setProjectionSelection, layers, setActiveToolId } = state;
+
+    if (args.code == "Enter" || args.code == "Escape") {
+      setProjectionSelection(undefined);
+
+      for (const layer of layers) {
+        if (!layer.active) continue;
+
+        if (layer.temporaryLayer) {
+          layer.pixels =
+            args.code == "Enter"
+              ? layer.temporaryLayer.pixels
+              : layer.temporaryLayer.pixelsCopy;
+          layer.temporaryLayer = undefined;
+        }
+      }
+
+      setActiveToolId("brush");
+    }
   }
 
   onMouseUp(state: PaintContextType, args: OnClickArgs): void {

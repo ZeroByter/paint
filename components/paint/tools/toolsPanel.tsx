@@ -20,6 +20,18 @@ const ToolsPanel: FC = () => {
     "keydown",
     useCallback(
       (e: KeyboardEvent) => {
+        const tool = Tools[activeToolId];
+
+        tool.onKeyDown(paintState, { code: e.code });
+      },
+      [activeToolId, paintState]
+    )
+  );
+
+  useWindowEvent(
+    "keydown",
+    useCallback(
+      (e: KeyboardEvent) => {
         if (e.ctrlKey) return;
 
         const tool = ToolKeyShortcuts[e.code];

@@ -120,6 +120,7 @@ const LayersContainer: FC<Props> = ({ children, containerRef }) => {
         offset.x,
         offset.y,
         paintState,
+        setFreeMouseLoc,
         setMouseLoc,
         setMouseScaledLoc,
         width,
