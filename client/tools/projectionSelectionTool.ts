@@ -89,7 +89,10 @@ class ProjectionSelectTool extends Tool {
     for (const layer of layers) {
       if (!layer.active) continue;
 
-      layer.temporaryLayer = undefined;
+      if (layer.temporaryLayer) {
+        layer.pixels = layer.temporaryLayer.pixelsCopy;
+        layer.temporaryLayer = undefined;
+      }
     }
   }
 }

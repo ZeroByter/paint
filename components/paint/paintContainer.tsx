@@ -43,6 +43,7 @@ const PaintContainer: FC = () => {
     layers,
     selection,
     setSelection,
+    setProjectionSelection,
     offset,
     setOffset,
   } = paintState;
@@ -67,11 +68,12 @@ const PaintContainer: FC = () => {
             );
             loadFromImage(paintState, image);
             setSelection(new Selection());
+            setProjectionSelection(undefined);
           };
           image.src = window.URL.createObjectURL(file);
         }
       },
-      [height, layers, paintState, setSelection, width]
+      [height, layers, paintState, setProjectionSelection, setSelection, width]
     )
   );
 

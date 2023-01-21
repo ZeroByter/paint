@@ -264,6 +264,7 @@ export const cropToSelection = (
   state.setWidth(selection.width);
   state.setHeight(selection.height);
 
+  state.setProjectionSelection(undefined);
   state.setSelection(new Selection());
 };
 
