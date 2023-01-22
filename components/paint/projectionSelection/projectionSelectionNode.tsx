@@ -1,4 +1,5 @@
 import useWindowEvent from "@client/hooks/useWindowEvent";
+import Tools from "@client/tools";
 import { clamp, getDistance, ilerp } from "@client/utils";
 import Location from "@shared/types/location";
 import { PaintFetcher } from "components/contexts/paint";
@@ -6,7 +7,6 @@ import { getRealScale } from "components/contexts/paintUtils";
 import {
   FC,
   useCallback,
-  useEffect,
   useMemo,
   useState,
   MouseEvent as ReactMouseEvent,
@@ -104,7 +104,9 @@ const ProjectionSelectionNode: FC<Props> = ({ corner }) => {
 
           setProjectionSelection(newSelection);
 
-          projectImage(layers, newSelection);
+          if (!Tools["projectionSelect"].isInverse) {
+            projectImage(layers, newSelection);
+          }
         }
       },
       [

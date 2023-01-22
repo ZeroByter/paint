@@ -3,13 +3,19 @@ import { UndoPixel } from "@client/undo/undoPixelColor";
 import { clamp, getDistance } from "@client/utils";
 import Location from "@shared/types/location";
 import ProjectionSelection from "@shared/types/projectionSelection";
+import Selection from "@shared/types/selection";
 import { PaintContextType } from "components/contexts/paint";
-import { addUndoAction } from "components/contexts/paintUtils";
-import { projectImage } from "components/paint/projectionSelection/projectionSelectionMagic";
+import { addUndoAction, selectTool } from "components/contexts/paintUtils";
+import {
+  inverseProjectImage,
+  projectImage,
+} from "components/paint/projectionSelection/projectionSelectionMagic";
+import Tools from ".";
 import Tool, { OnClickArgs, OnDragArgs, OnKeyDownArgs } from "./tool";
 
 class ProjectionSelectTool extends Tool {
   dragStartLocation = new Location();
+  isInverse = false;
 
   constructor() {
     super();
@@ -19,20 +25,26 @@ class ProjectionSelectTool extends Tool {
     this.hidden = true;
   }
 
+  setInverse(isInverse: boolean): void {
+    this.isInverse = isInverse;
+  }
+
   onSelect(state: PaintContextType): void {
     const { layers, width, height } = state;
 
-    for (const layer of layers) {
-      if (!layer.active) continue;
+    if (!this.isInverse) {
+      for (const layer of layers) {
+        if (!layer.active) continue;
 
-      layer.createTemporaryLayer(width, height, 0, 0);
+        layer.createTemporaryLayer(width, height, 0, 0);
 
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-          layer.setPixelData(x, y, 0, 0, 0, 0);
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            layer.setPixelData(x, y, 0, 0, 0, 0);
+          }
         }
+        layer.updatePixels();
       }
-      layer.updatePixels();
     }
   }
 
@@ -77,48 +89,75 @@ class ProjectionSelectTool extends Tool {
 
     setProjectionSelection(newSelection);
 
-    projectImage(layers, newSelection);
+    if (!this.isInverse) {
+      projectImage(layers, newSelection);
+    }
   }
 
   onKeyDown(state: PaintContextType, args: OnKeyDownArgs): void {
-    const { setProjectionSelection, layers, setActiveToolId } = state;
+    const {
+      setSelection,
+      setProjectionSelection,
+      projectionSelection,
+      layers,
+      setActiveToolId,
+    } = state;
 
     if (args.code == "Enter" || args.code == "Escape") {
       setProjectionSelection(undefined);
 
-      const pixels = new Map<string, Map<number, UndoPixel>>();
+      if (!this.isInverse) {
+        //regular projection
+        const pixels = new Map<string, Map<number, UndoPixel>>();
 
-      for (const layer of layers) {
-        if (!layer.active) continue;
+        for (const layer of layers) {
+          if (!layer.active) continue;
 
-        if (layer.temporaryLayer) {
-          layer.pixels =
-            args.code == "Enter"
-              ? layer.temporaryLayer.pixels
-              : layer.temporaryLayer.pixelsCopy;
+          if (layer.temporaryLayer) {
+            layer.pixels =
+              args.code == "Enter"
+                ? layer.temporaryLayer.pixels
+                : layer.temporaryLayer.pixelsCopy;
 
-          pixels.set(layer.id, new Map<number, UndoPixel>());
-          const pixelsData = pixels.get(layer.id);
-          if (pixelsData) {
-            for (let i = 0; i < layer.pixels.length / 4; i++) {
-              const r = layer.pixels[i * 4];
-              const g = layer.pixels[i * 4 + 1];
-              const b = layer.pixels[i * 4 + 2];
-              const a = layer.pixels[i * 4 + 3];
+            pixels.set(layer.id, new Map<number, UndoPixel>());
+            const pixelsData = pixels.get(layer.id);
+            if (pixelsData) {
+              for (let i = 0; i < layer.pixels.length / 4; i++) {
+                const r = layer.pixels[i * 4];
+                const g = layer.pixels[i * 4 + 1];
+                const b = layer.pixels[i * 4 + 2];
+                const a = layer.pixels[i * 4 + 3];
 
-              pixelsData.set(i, { r, g, b, a });
+                pixelsData.set(i, { r, g, b, a });
+              }
             }
-          }
 
-          layer.temporaryLayer = undefined;
+            layer.temporaryLayer = undefined;
+          }
+        }
+
+        if (args.code == "Enter") {
+          addUndoAction(state, new ProjectionAction(pixels));
+        }
+
+        selectTool(state, "brush");
+      } else {
+        if (projectionSelection) {
+          const resultArea = inverseProjectImage(layers, projectionSelection);
+          Tools["selectHardMove"].forceSelection = new Selection(
+            0,
+            0,
+            resultArea.horizontalDistance,
+            resultArea.verticalDistance
+          );
+
+          selectTool(state, "selectHardMove");
+
+          // if (args.code == "Enter") {
+          //   addUndoAction(state, new ProjectionAction(pixels));
+          // }
         }
       }
-
-      if (args.code == "Enter") {
-        addUndoAction(state, new ProjectionAction(pixels));
-      }
-
-      setActiveToolId("brush");
     }
   }
 
@@ -131,12 +170,14 @@ class ProjectionSelectTool extends Tool {
 
     setProjectionSelection(undefined);
 
-    for (const layer of layers) {
-      if (!layer.active) continue;
+    if (!this.isInverse) {
+      for (const layer of layers) {
+        if (!layer.active) continue;
 
-      if (layer.temporaryLayer) {
-        layer.pixels = layer.temporaryLayer.pixelsCopy;
-        layer.temporaryLayer = undefined;
+        if (layer.temporaryLayer) {
+          layer.pixels = layer.temporaryLayer.pixelsCopy;
+          layer.temporaryLayer = undefined;
+        }
       }
     }
   }

@@ -1,7 +1,7 @@
 import useWindowEvent from "@client/hooks/useWindowEvent";
 import Tools, { ToolKeyShortcuts, ToolTypes } from "@client/tools";
 import { PaintFetcher } from "components/contexts/paint";
-import { setNotification } from "components/contexts/paintUtils";
+import { selectTool, setNotification } from "components/contexts/paintUtils";
 import { isArray } from "lodash/fp";
 import { FC, useCallback } from "react";
 import ToolButton from "./toolButton";
@@ -9,7 +9,7 @@ import css from "./toolsPanel.module.scss";
 
 const ToolsPanel: FC = () => {
   const paintState = PaintFetcher();
-  const { setActiveToolId, activeToolId } = paintState;
+  const { activeToolId } = paintState;
 
   const renderTools = Object.entries(Tools).map(([id, tool]) => {
     if (tool.hidden) return null;
@@ -36,8 +36,6 @@ const ToolsPanel: FC = () => {
 
         const tool = ToolKeyShortcuts[e.code];
         if (tool) {
-          Tools[activeToolId].onUnselect(paintState);
-
           if (isArray(tool)) {
             let newToolId: ToolTypes;
 
@@ -47,16 +45,14 @@ const ToolsPanel: FC = () => {
               newToolId = tool[0];
             }
 
-            setActiveToolId(newToolId);
-            Tools[newToolId].onSelect(paintState);
+            selectTool(paintState, newToolId);
 
             setNotification(
               paintState,
               `Selected tool '${Tools[newToolId].tooltip}'`
             );
           } else {
-            setActiveToolId(tool);
-            Tools[tool].onSelect(paintState);
+            selectTool(paintState, tool);
 
             setNotification(
               paintState,
@@ -65,7 +61,7 @@ const ToolsPanel: FC = () => {
           }
         }
       },
-      [activeToolId, paintState, setActiveToolId]
+      [activeToolId, paintState]
     )
   );
 

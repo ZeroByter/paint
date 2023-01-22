@@ -5,7 +5,7 @@ import { clamp } from "@client/utils";
 import Color from "@shared/types/color";
 import Selection from "@shared/types/selection";
 import { PaintFetcher } from "components/contexts/paint";
-import { loadFromImage } from "components/contexts/paintUtils";
+import { loadFromImage, selectTool } from "components/contexts/paintUtils";
 import ToolbarProvider from "components/contexts/toolbar";
 import ToolbarContainer, {
   MenuItem,
@@ -15,7 +15,7 @@ import { FC, useCallback } from "react";
 
 const PaintToolbar: FC = () => {
   const paintState = PaintFetcher();
-  const { width, height, layers, setActiveToolId, setSelection } = paintState;
+  const { width, height, layers, setSelection } = paintState;
 
   const handleLoadUrl = () => {
     const url = prompt(
@@ -108,8 +108,18 @@ const PaintToolbar: FC = () => {
   );
 
   const selectProjectionSelectionTool = () => {
-    setActiveToolId("projectionSelect");
     setSelection(new Selection());
+
+    selectTool(paintState, "projectionSelect", false);
+    Tools["projectionSelect"].setInverse(false);
+    Tools["projectionSelect"].onSelect(paintState);
+  };
+
+  const selectInverseProjectionSelectionTool = () => {
+    setSelection(new Selection());
+
+    selectTool(paintState, "projectionSelect", false);
+    Tools["projectionSelect"].setInverse(true);
     Tools["projectionSelect"].onSelect(paintState);
   };
 
@@ -130,7 +140,10 @@ const PaintToolbar: FC = () => {
       text: "Effects",
       subItems: [
         { text: "Project Layer", onClick: selectProjectionSelectionTool },
-        { text: "Inverse Project Layer", onClick: noop },
+        {
+          text: "Inverse Project Layer",
+          onClick: selectInverseProjectionSelectionTool,
+        },
       ],
     },
     {

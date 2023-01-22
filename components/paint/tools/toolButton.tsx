@@ -1,6 +1,7 @@
 import Tools, { ToolTypes } from "@client/tools";
 import Tool from "@client/tools/tool";
 import { PaintFetcher } from "components/contexts/paint";
+import { selectTool } from "components/contexts/paintUtils";
 import { FC } from "react";
 import css from "./toolButton.module.scss";
 
@@ -13,11 +14,7 @@ const ToolButton: FC<Props> = ({ id, tool }) => {
   const contextState = PaintFetcher();
 
   const handleClick = () => {
-    Tools[contextState.activeToolId].onUnselect(contextState);
-
-    contextState.setActiveToolId(id);
-
-    Tools[id].onSelect(contextState);
+    selectTool(contextState, id);
   };
 
   return (

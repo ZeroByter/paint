@@ -8,9 +8,8 @@ import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
 import { PaintContextType } from "./paint";
 import { randomString } from "@shared/utils";
-import UndoPixelsAbility, {
-  getUndoPixelColorType,
-} from "@client/undo/undoPixelColor";
+import { getUndoPixelColorType } from "@client/undo/undoPixelColor";
+import Tools, { ToolTypes } from "@client/tools";
 
 export const scaleToSize = (
   state: PaintContextType,
@@ -357,4 +356,18 @@ export const canAffectPixel = (
   }
 
   return true;
+};
+
+export const selectTool = (
+  state: PaintContextType,
+  id: ToolTypes,
+  autoOnSelect = true
+) => {
+  Tools[state.activeToolId].onUnselect(state);
+
+  state.setActiveToolId(id);
+
+  if (autoOnSelect) {
+    Tools[id].onSelect(state);
+  }
 };
