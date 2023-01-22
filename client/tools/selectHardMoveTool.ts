@@ -3,11 +3,7 @@ import { UndoPixel } from "@client/undo/undoPixelColor";
 import { clamp } from "@client/utils";
 import Location from "@shared/types/location";
 import { PaintContextType } from "components/contexts/paint";
-import {
-  addUndoAction,
-  getRealScale,
-  selectTool,
-} from "components/contexts/paintUtils";
+import { addUndoAction, getRealScale } from "components/contexts/paintUtils";
 import SelectMoveTool from "./selectMoveTool";
 import Selection from "@shared/types/selection";
 
@@ -25,55 +21,12 @@ class SelectHardMoveTool extends SelectMoveTool {
     this.editingState = "EDITING_HARD";
   }
 
-  onSelectMove(
-    state: PaintContextType,
-    selectionStartPos: Location,
-    offset: Location
-  ): void {
-    super.onSelectMove(state, selectionStartPos, offset);
-
-    const { setSelection, selection, width, height, layers } = state;
-    const scale = getRealScale(state);
-
-    const useSelection = this.forceSelection ?? selection;
-
-    if (!useSelection.isValid()) return;
-
-    for (const layer of layers) {
-      if (!layer.active) continue;
-
-      if (!layer.temporaryLayer) continue;
-
-      //moving temporaryLayer of each active layer
-      layer.temporaryLayer.x = clamp(
-        selectionStartPos.x + Math.round(offset.x / scale),
-        0,
-        width - useSelection.width
-      );
-      layer.temporaryLayer.y = clamp(
-        selectionStartPos.y + Math.round(offset.y / scale),
-        0,
-        height - useSelection.height
-      );
+  customSetSelection(state: PaintContextType, newSelection: Selection) {
+    if (this.forceSelection) {
+      this.forceSelection = newSelection;
     }
 
-    //moving selection
-    setSelection(
-      useSelection.newLocation(
-        new Location(
-          clamp(
-            selectionStartPos.x + Math.round(offset.x / scale),
-            0,
-            width - useSelection.width
-          ),
-          clamp(
-            selectionStartPos.y + Math.round(offset.y / scale),
-            0,
-            height - useSelection.height
-          )
-        )
-      )
-    );
+    state.setSelection(newSelection);
   }
 
   onSelect(state: PaintContextType): void {
@@ -114,6 +67,58 @@ class SelectHardMoveTool extends SelectMoveTool {
       }
       layer.updatePixels();
     }
+  }
+
+  onSelectMove(
+    state: PaintContextType,
+    selectionStartPos: Location,
+    offset: Location
+  ): void {
+    super.onSelectMove(state, selectionStartPos, offset);
+
+    const { selection, width, height, layers } = state;
+    const scale = getRealScale(state);
+
+    const useSelection = this.forceSelection ?? selection;
+
+    if (!useSelection.isValid()) return;
+
+    for (const layer of layers) {
+      if (!layer.active) continue;
+
+      if (!layer.temporaryLayer) continue;
+
+      //moving temporaryLayer of each active layer
+      layer.temporaryLayer.x = clamp(
+        selectionStartPos.x + Math.round(offset.x / scale),
+        0,
+        width - useSelection.width
+      );
+      layer.temporaryLayer.y = clamp(
+        selectionStartPos.y + Math.round(offset.y / scale),
+        0,
+        height - useSelection.height
+      );
+    }
+
+    //moving selection
+    this.customSetSelection(
+      state,
+      useSelection.newLocation(
+        new Location(
+          clamp(
+            selectionStartPos.x + Math.round(offset.x / scale),
+            0,
+            width - useSelection.width
+          ),
+          clamp(
+            selectionStartPos.y + Math.round(offset.y / scale),
+            0,
+            height - useSelection.height
+          )
+        )
+      )
+    );
   }
 
   onUnselect(state: PaintContextType): void {

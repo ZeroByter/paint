@@ -47,6 +47,9 @@ export const projectImage = (
   horizontalDistance += horizontalDistance / 5;
   verticalDistance += verticalDistance / 5;
 
+  horizontalDistance = horizontalDistance >> 0;
+  verticalDistance = verticalDistance >> 0;
+
   const topMarks = new Map<number, Location>();
   const bottomMarks = new Map<number, Location>();
   const leftMarks = new Map<number, Location>();
@@ -178,6 +181,9 @@ export const inverseProjectImage = (
   horizontalDistance += horizontalDistance / 5;
   verticalDistance += verticalDistance / 5;
 
+  horizontalDistance = horizontalDistance >> 0;
+  verticalDistance = verticalDistance >> 0;
+
   const topMarks = new Map<number, Location>();
   const bottomMarks = new Map<number, Location>();
   const leftMarks = new Map<number, Location>();
@@ -223,13 +229,13 @@ export const inverseProjectImage = (
   for (const layer of layers) {
     if (!layer.active) continue;
 
-    for (let y = 0; y < verticalDistance; y++) {
+    for (let y = 1; y < verticalDistance; y++) {
       const verticalValue = y / verticalDistance;
 
       const leftMark = leftMarks.get(verticalValue) as Location;
       const rightMark = rightMarks.get(verticalValue) as Location;
 
-      for (let x = 0; x < horizontalDistance; x++) {
+      for (let x = 1; x < horizontalDistance; x++) {
         const horizontalValue = x / horizontalDistance;
 
         const topMark = topMarks.get(horizontalValue) as Location;
@@ -245,8 +251,8 @@ export const inverseProjectImage = (
         const tempLayerPixelA = layer.pixels[tempLayerPixelIndex + 3];
 
         layer.setPixelData(
-          x,
-          y,
+          x - 1,
+          y - 1,
           tempLayerPixelR,
           tempLayerPixelG,
           tempLayerPixelB,

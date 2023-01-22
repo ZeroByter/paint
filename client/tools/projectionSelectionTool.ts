@@ -147,12 +147,11 @@ class ProjectionSelectTool extends Tool {
           Tools["selectHardMove"].forceSelection = new Selection(
             0,
             0,
-            resultArea.horizontalDistance,
-            resultArea.verticalDistance
+            resultArea.horizontalDistance - 1,
+            resultArea.verticalDistance - 1
           );
-
+          setSelection(Tools["selectHardMove"].forceSelection);
           selectTool(state, "selectHardMove");
-
           // if (args.code == "Enter") {
           //   addUndoAction(state, new ProjectionAction(pixels));
           // }
