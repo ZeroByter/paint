@@ -55,8 +55,9 @@ class SelectTool extends Tool {
   }
 
   onSelect(state: PaintContextType): void {
-    const { setSelectionClickability } = state;
+    const { setSelectionClickability, setProjectionSelection } = state;
 
+    setProjectionSelection(undefined);
     setSelectionClickability("CREATING");
   }
 

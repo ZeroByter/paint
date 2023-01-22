@@ -3,12 +3,18 @@ import css from "./toolbarButton.module.scss";
 import { MenuItem } from "./toolbarContainer";
 
 type Props = {
+  index: number;
   menuItem: MenuItem;
   menuActive: boolean;
   setMenuActive: (newActiveMenu: number) => void;
 };
 
-const ToolbarButton: FC<Props> = ({ menuItem, menuActive, setMenuActive }) => {
+const ToolbarButton: FC<Props> = ({
+  index,
+  menuItem,
+  menuActive,
+  setMenuActive,
+}) => {
   const renderSubItems = menuItem.subItems.map((subItem, index) => {
     return (
       <button key={index} onClick={subItem.onClick}>
@@ -19,7 +25,7 @@ const ToolbarButton: FC<Props> = ({ menuItem, menuActive, setMenuActive }) => {
 
   return (
     <div className={css.root}>
-      <button onClick={() => setMenuActive(0)}>{menuItem.text}</button>
+      <button onClick={() => setMenuActive(index)}>{menuItem.text}</button>
       {menuActive && (
         <div className={css.menuContainer} onClick={() => setMenuActive(-1)}>
           {renderSubItems}

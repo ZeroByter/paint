@@ -1,6 +1,5 @@
 import { clamp, getDistance, ilerp, lerp } from "@client/utils";
 import Location from "@shared/types/location";
-import Selection from "@shared/types/selection";
 import { PaintFetcher } from "components/contexts/paint";
 import { getRealScale } from "components/contexts/paintUtils";
 import {
@@ -8,7 +7,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
   MouseEvent as ReactMouseEvent,
 } from "react";

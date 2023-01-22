@@ -15,6 +15,8 @@ class TemporaryLayer {
   pixels: Uint8ClampedArray;
   pixelsId: string;
 
+  pixelsCopy: Uint8ClampedArray;
+
   parentLayer: Layer;
 
   constructor(
@@ -46,6 +48,8 @@ class TemporaryLayer {
       this.pixels[i * 4 + 3] = color.a;
     }
 
+    this.pixelsCopy = new Uint8ClampedArray(this.pixels);
+
     this.pixelsId = randomString();
 
     this.parentLayer = layer;
@@ -53,14 +57,11 @@ class TemporaryLayer {
 
   getPixelIndex(x: number, y: number) {
     const index = x + y * this.width;
-    if (x < 0 || y < 0 || x > this.width - 1 || y > this.height - 1) return -1;
-
     return index * 4;
   }
 
   getPixelColor(x: number, y: number) {
     const index = this.getPixelIndex(x, y);
-    if (index == -1) return new Color();
 
     return new Color(
       this.pixels[index],
@@ -79,7 +80,6 @@ class TemporaryLayer {
     a: number
   ) {
     const index = this.getPixelIndex(x, y);
-    if (index == -1) return;
 
     this.pixels[index] = r;
     this.pixels[index + 1] = g;

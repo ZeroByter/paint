@@ -1,7 +1,7 @@
 import useWindowEvent from "@client/hooks/useWindowEvent";
-import Tools, { ToolKeyShortcuts } from "@client/tools";
+import Tools, { ToolKeyShortcuts, ToolTypes } from "@client/tools";
 import { PaintFetcher } from "components/contexts/paint";
-import { setNotification } from "components/contexts/paintUtils";
+import { selectTool, setNotification } from "components/contexts/paintUtils";
 import { isArray } from "lodash/fp";
 import { FC, useCallback } from "react";
 import ToolButton from "./toolButton";
@@ -9,22 +9,35 @@ import css from "./toolsPanel.module.scss";
 
 const ToolsPanel: FC = () => {
   const paintState = PaintFetcher();
-  const { setActiveToolId, activeToolId } = paintState;
+  const { activeToolId } = paintState;
 
   const renderTools = Object.entries(Tools).map(([id, tool]) => {
-    return <ToolButton key={id} id={id} tool={tool} />;
+    if (tool.hidden) return null;
+    return <ToolButton key={id} id={id as ToolTypes} tool={tool} />;
   });
 
   useWindowEvent(
     "keydown",
     useCallback(
       (e: KeyboardEvent) => {
+        const tool = Tools[activeToolId];
+
+        tool.onKeyDown(paintState, { code: e.code });
+      },
+      [activeToolId, paintState]
+    )
+  );
+
+  useWindowEvent(
+    "keydown",
+    useCallback(
+      (e: KeyboardEvent) => {
+        if (e.ctrlKey) return;
+
         const tool = ToolKeyShortcuts[e.code];
         if (tool) {
-          Tools[activeToolId].onUnselect(paintState);
-
           if (isArray(tool)) {
-            let newToolId = "";
+            let newToolId: ToolTypes;
 
             if (tool.includes(activeToolId)) {
               newToolId = tool[(tool.indexOf(activeToolId) + 1) % tool.length];
@@ -32,16 +45,14 @@ const ToolsPanel: FC = () => {
               newToolId = tool[0];
             }
 
-            setActiveToolId(newToolId);
-            Tools[newToolId].onSelect(paintState);
+            selectTool(paintState, newToolId);
 
             setNotification(
               paintState,
               `Selected tool '${Tools[newToolId].tooltip}'`
             );
           } else {
-            setActiveToolId(tool);
-            Tools[tool].onSelect(paintState);
+            selectTool(paintState, tool);
 
             setNotification(
               paintState,
@@ -50,7 +61,7 @@ const ToolsPanel: FC = () => {
           }
         }
       },
-      [activeToolId, paintState, setActiveToolId]
+      [activeToolId, paintState]
     )
   );
 

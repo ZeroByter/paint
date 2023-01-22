@@ -11,15 +11,22 @@ export type OnDragArgs = {
   accurateMouseLoc: Location;
 };
 
+export type OnKeyDownArgs = {
+  code: string;
+};
+
 class Tool {
   text = "";
   tooltip = "";
+  hidden = false;
 
   onSelect(state: PaintContextType) {}
   onUnselect(state: PaintContextType) {}
 
   onMouseDown(state: PaintContextType, args: OnClickArgs) {}
   onMouseUp(state: PaintContextType, args: OnClickArgs) {}
+
+  onKeyDown(state: PaintContextType, args: OnKeyDownArgs) {}
 
   onDrag(state: PaintContextType, args: OnDragArgs) {}
 }

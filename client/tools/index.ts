@@ -2,12 +2,12 @@ import BrushTool from "./brushTool";
 import ColorPickerTool from "./colorPickerTool";
 import EraserTool from "./eraserTool";
 import PencilTool from "./pencilTool";
+import ProjectionSelectTool from "./projectionSelectionTool";
 import SelectHardMoveTool from "./selectHardMoveTool";
 import SelectSoftMoveTool from "./selectSoftMoveTool";
 import SelectTool from "./selectTool";
-import Tool from "./tool";
 
-export const ToolKeyShortcuts: { [id: string]: string | string[] } = {
+export const ToolKeyShortcuts: { [id: string]: ToolTypes | ToolTypes[] } = {
   KeyE: "eraser",
   KeyS: "select",
   KeyP: "pencil",
@@ -16,7 +16,10 @@ export const ToolKeyShortcuts: { [id: string]: string | string[] } = {
   KeyM: ["selectSoftMove", "selectHardMove"],
 };
 
-const Tools: { [id: string]: Tool } = {
+const Tools = {
+  //hidden tools
+  projectionSelect: new ProjectionSelectTool(),
+  //normal visible tools
   select: new SelectTool(),
   selectSoftMove: new SelectSoftMoveTool(),
   brush: new BrushTool(),
@@ -25,5 +28,7 @@ const Tools: { [id: string]: Tool } = {
   eraser: new EraserTool(),
   colorpicker: new ColorPickerTool(),
 };
+
+export type ToolTypes = keyof typeof Tools;
 
 export default Tools;

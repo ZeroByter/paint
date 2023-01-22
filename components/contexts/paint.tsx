@@ -4,6 +4,8 @@ import Color from "@shared/types/color";
 import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
 import Selection, { SelectionClickability } from "@shared/types/selection";
+import ProjectionSelection from "@shared/types/projectionSelection";
+import Tools, { ToolTypes } from "@client/tools";
 import {
   createContext,
   FC,
@@ -37,6 +39,8 @@ export type PaintContextType = {
   setMouseLoc: (newLoc: Location) => void;
   mouseScaledLoc: Location;
   setMouseScaledLoc: (newLoc: Location) => void;
+  freeMouseLoc: Location;
+  setFreeMouseLoc: (newLoc: Location) => void;
 
   layers: Layer[];
   setLayers: (newScale: Layer[]) => void;
@@ -50,11 +54,15 @@ export type PaintContextType = {
 
   selection: Selection;
   setSelection: (newSelection: Selection) => void;
+  projectionSelection: ProjectionSelection | undefined;
+  setProjectionSelection: (
+    newSelection: ProjectionSelection | undefined
+  ) => void;
   selectionClickability: SelectionClickability;
   setSelectionClickability: (newClickability: SelectionClickability) => void;
 
-  activeToolId: string;
-  setActiveToolId: (newToolId: string) => void;
+  activeToolId: ToolTypes;
+  setActiveToolId: (newToolId: ToolTypes) => void;
 
   brushSize: number;
   setBrushSize: (newSize: number) => void;
@@ -92,6 +100,7 @@ const PaintProvider: FC<Props> = ({ children }) => {
 
   const [mouseLoc, setMouseLoc] = useState(new Location());
   const [mouseScaledLoc, setMouseScaledLoc] = useState(new Location());
+  const [freeMouseLoc, setFreeMouseLoc] = useState(new Location());
 
   const [layers, setLayers] = useState<Layer[]>([]);
 
@@ -104,10 +113,13 @@ const PaintProvider: FC<Props> = ({ children }) => {
   const [lastColorChanged, setLastColorChanged] = useState<0 | 1>(0);
 
   const [selection, setSelection] = useState(new Selection(0, 0, 0, 0));
+  const [projectionSelection, setProjectionSelection] = useState<
+    ProjectionSelection | undefined
+  >();
   const [selectionClickability, setSelectionClickability] =
     useState<SelectionClickability>("WORKING");
 
-  const [activeToolId, setActiveToolId] = useState("brush");
+  const [activeToolId, setActiveToolId] = useState<ToolTypes>("brush");
 
   const [brushSize, setBrushSize] = useState(3);
   const [brushHardness, setBrushHardness] = useState(0.5);
@@ -129,6 +141,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setMouseLoc,
     mouseScaledLoc,
     setMouseScaledLoc,
+    freeMouseLoc,
+    setFreeMouseLoc,
     layers,
     setLayers,
     primaryColor,
@@ -139,6 +153,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setLastColorChanged,
     selection,
     setSelection,
+    projectionSelection,
+    setProjectionSelection,
     selectionClickability,
     setSelectionClickability,
     activeToolId,

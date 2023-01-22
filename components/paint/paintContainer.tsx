@@ -28,6 +28,7 @@ import {
   setNotification,
   undoAction,
 } from "components/contexts/paintUtils";
+import ProjectionSelectionContainer from "./projectionSelection/projectionSelectionContainer";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -42,6 +43,7 @@ const PaintContainer: FC = () => {
     layers,
     selection,
     setSelection,
+    setProjectionSelection,
     offset,
     setOffset,
   } = paintState;
@@ -66,11 +68,12 @@ const PaintContainer: FC = () => {
             );
             loadFromImage(paintState, image);
             setSelection(new Selection());
+            setProjectionSelection(undefined);
           };
           image.src = window.URL.createObjectURL(file);
         }
       },
-      [height, layers, paintState, setSelection, width]
+      [height, layers, paintState, setProjectionSelection, setSelection, width]
     )
   );
 
@@ -238,6 +241,7 @@ const PaintContainer: FC = () => {
           {/* <CursorHandle /> */}
         </LayersContainer>
         <SelectionContainer />
+        <ProjectionSelectionContainer />
       </div>
       <LayersPanel />
       <ColorsPanel />
