@@ -5,44 +5,20 @@ import { getUndoPixelColor } from "components/contexts/paintUtils";
 import UndoAction from "./undoAction";
 import UndoPixelsAbility, { UndoPixel } from "./undoPixelColor";
 
-export default class HardMoveAction
+export default class ProjectionAction
   extends UndoAction
   implements UndoPixelsAbility
 {
   pixels: Map<string, Map<number, UndoPixel>>;
 
-  width: number;
-  height: number;
-
-  sourceX: number;
-  sourceY: number;
-  targetX: number;
-  targetY: number;
-
-  constructor(
-    pixels: Map<string, Map<number, UndoPixel>>,
-    width: number,
-    height: number,
-    sourceX: number,
-    sourceY: number,
-    targetX: number,
-    targetY: number
-  ) {
+  constructor(pixels: Map<string, Map<number, UndoPixel>>) {
     super();
 
     this.pixels = pixels;
-
-    this.width = width;
-    this.height = height;
-
-    this.sourceX = sourceX;
-    this.sourceY = sourceY;
-    this.targetX = targetX;
-    this.targetY = targetY;
   }
 
   undo(state: PaintContextType): void {
-    const { layers } = state;
+    const { layers, width, height } = state;
 
     const layersMap: { [id: string]: Layer } = {};
     for (const layer of layers) {
@@ -55,46 +31,17 @@ export default class HardMoveAction
 
       if (!layer) continue;
 
-      const targetPixels: Color[] = [];
-      for (let y = 0; y < this.height; y++) {
-        for (let x = 0; x < this.width; x++) {
-          targetPixels.push(
-            layer.getPixelColor(this.targetX + x, this.targetY + y)
-          );
-        }
-      }
-
-      for (let y = 0; y < this.height; y++) {
-        for (let x = 0; x < this.width; x++) {
-          const beforeActionPixel = getUndoPixelColor(
-            state,
-            layerId,
-            this.targetX + x,
-            this.targetY + y
-          );
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const beforeActionPixel = getUndoPixelColor(state, layerId, x, y);
 
           layer.setPixelData(
-            this.targetX + x,
-            this.targetY + y,
+            x,
+            y,
             beforeActionPixel.r,
             beforeActionPixel.g,
             beforeActionPixel.b,
             beforeActionPixel.a
-          );
-        }
-      }
-
-      for (let y = 0; y < this.height; y++) {
-        for (let x = 0; x < this.width; x++) {
-          const targetPixel = targetPixels[x + y * this.width];
-
-          layer.setPixelData(
-            this.sourceX + x,
-            this.sourceY + y,
-            targetPixel.r,
-            targetPixel.g,
-            targetPixel.b,
-            targetPixel.a
           );
         }
       }
@@ -117,29 +64,17 @@ export default class HardMoveAction
 
       if (!layer) continue;
 
-      for (let y = 0; y < this.height; y++) {
-        for (let x = 0; x < this.width; x++) {
-          layer.setPixelData(this.sourceX + x, this.sourceY + y, 0, 0, 0, 0);
-        }
+      const newPixels = new Uint8ClampedArray(pixels.size * 4);
+
+      const pixelsEntries = pixels.entries();
+      for (const [index, pixel] of pixelsEntries) {
+        newPixels[index * 4] = pixel.r;
+        newPixels[index * 4 + 1] = pixel.g;
+        newPixels[index * 4 + 2] = pixel.b;
+        newPixels[index * 4 + 3] = pixel.a;
       }
 
-      for (let y = 0; y < this.height; y++) {
-        for (let x = 0; x < this.width; x++) {
-          const sourcePixel = pixels.get(x + y * this.width);
-
-          if (!sourcePixel) continue;
-
-          layer.setPixelData(
-            this.targetX + x,
-            this.targetY + y,
-            sourcePixel.r,
-            sourcePixel.g,
-            sourcePixel.b,
-            sourcePixel.a
-          );
-        }
-      }
-
+      layer.pixels = newPixels;
       layer.updatePixels();
     }
   }
@@ -150,31 +85,11 @@ export default class HardMoveAction
     x: number,
     y: number
   ) {
-    if (!this.pixels.has(layerId)) return null;
+    const layer = this.pixels.get(layerId);
+    if (!layer) return null;
 
-    if (
-      x > this.targetX - 1 &&
-      y > this.targetY - 1 &&
-      x < this.targetX + this.width &&
-      y < this.targetY + this.height
-    ) {
-      const layer = this.pixels.get(layerId);
-      if (!layer) return null;
-      const localX = x - this.targetX;
-      const localY = y - this.targetY;
-      const index = localX + localY * this.width;
-      return layer.get(index) ?? null;
-    }
+    const pixel = layer.get(x + y * state.width);
 
-    if (
-      x > this.sourceX - 1 &&
-      y > this.sourceY - 1 &&
-      x < this.sourceX + this.width &&
-      y < this.sourceY + this.height
-    ) {
-      return { r: 0, g: 0, b: 0, a: 0 };
-    }
-
-    return null;
+    return pixel ?? null;
   }
 }

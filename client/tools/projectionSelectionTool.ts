@@ -1,7 +1,10 @@
+import ProjectionAction from "@client/undo/projectionAction";
+import { UndoPixel } from "@client/undo/undoPixelColor";
 import { clamp, getDistance } from "@client/utils";
 import Location from "@shared/types/location";
 import ProjectionSelection from "@shared/types/projectionSelection";
 import { PaintContextType } from "components/contexts/paint";
+import { addUndoAction } from "components/contexts/paintUtils";
 import { projectImage } from "components/paint/projectionSelection/projectionSelectionMagic";
 import Tool, { OnClickArgs, OnDragArgs, OnKeyDownArgs } from "./tool";
 
@@ -83,6 +86,8 @@ class ProjectionSelectTool extends Tool {
     if (args.code == "Enter" || args.code == "Escape") {
       setProjectionSelection(undefined);
 
+      const pixels = new Map<string, Map<number, UndoPixel>>();
+
       for (const layer of layers) {
         if (!layer.active) continue;
 
@@ -91,8 +96,26 @@ class ProjectionSelectTool extends Tool {
             args.code == "Enter"
               ? layer.temporaryLayer.pixels
               : layer.temporaryLayer.pixelsCopy;
+
+          pixels.set(layer.id, new Map<number, UndoPixel>());
+          const pixelsData = pixels.get(layer.id);
+          if (pixelsData) {
+            for (let i = 0; i < layer.pixels.length / 4; i++) {
+              const r = layer.pixels[i * 4];
+              const g = layer.pixels[i * 4 + 1];
+              const b = layer.pixels[i * 4 + 2];
+              const a = layer.pixels[i * 4 + 3];
+
+              pixelsData.set(i, { r, g, b, a });
+            }
+          }
+
           layer.temporaryLayer = undefined;
         }
+      }
+
+      if (args.code == "Enter") {
+        addUndoAction(state, new ProjectionAction(pixels));
       }
 
       setActiveToolId("brush");
