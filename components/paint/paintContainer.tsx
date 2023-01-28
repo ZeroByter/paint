@@ -222,13 +222,19 @@ const PaintContainer: FC = () => {
     )
   );
 
-  const renderLayers = layers.map((layer) => {
-    return <Canvas key={layer.id} layer={layer} />;
+  const renderLayers = layers.map((layer, index) => {
+    return <Canvas key={layer.id} order={index} layer={layer} />;
   });
-  const renderTemporaryLayers = layers.map((layer) => {
+  const renderTemporaryLayers = layers.map((layer, index) => {
     if (!layer.temporaryLayer) return null;
 
-    return <Canvas key={`${layer.id}-temp1`} layer={layer.temporaryLayer} />;
+    return (
+      <Canvas
+        key={`${layer.id}-temp1`}
+        order={index}
+        layer={layer.temporaryLayer}
+      />
+    );
   });
 
   return (

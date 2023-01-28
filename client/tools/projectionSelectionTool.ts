@@ -5,7 +5,13 @@ import Location from "@shared/types/location";
 import ProjectionSelection from "@shared/types/projectionSelection";
 import Selection from "@shared/types/selection";
 import { PaintContextType } from "components/contexts/paint";
-import { addUndoAction, selectTool } from "components/contexts/paintUtils";
+import {
+  addUndoAction,
+  createNewLayer,
+  createNewLayerAt,
+  selectTool,
+  setActiveLayers,
+} from "components/contexts/paintUtils";
 import {
   inverseProjectImage,
   projectImage,
@@ -36,7 +42,8 @@ class ProjectionSelectTool extends Tool {
       for (const layer of layers) {
         if (!layer.active) continue;
 
-        layer.createTemporaryLayer(width, height, 0, 0);
+        const newTempLayer = layer.createTemporaryLayer(width, height, 0, 0);
+        newTempLayer.setPixelsFromLayer();
 
         for (let y = 0; y < height; y++) {
           for (let x = 0; x < width; x++) {
@@ -100,7 +107,6 @@ class ProjectionSelectTool extends Tool {
       setProjectionSelection,
       projectionSelection,
       layers,
-      setActiveToolId,
     } = state;
 
     if (args.code == "Enter" || args.code == "Escape") {
@@ -142,16 +148,48 @@ class ProjectionSelectTool extends Tool {
 
         selectTool(state, "brush");
       } else {
+        //inverse projection
         if (projectionSelection) {
-          const resultArea = inverseProjectImage(layers, projectionSelection);
-          Tools["selectHardMove"].forceSelection = new Selection(
-            0,
-            0,
-            resultArea.horizontalDistance - 1,
-            resultArea.verticalDistance - 1
+          const inverseProjectionResult = inverseProjectImage(
+            layers,
+            projectionSelection
           );
-          setSelection(Tools["selectHardMove"].forceSelection);
+
+          let lastActiveLayer = 0;
+          for (const index in layers) {
+            const layer = layers[index];
+            const indexNumber = parseInt(index);
+
+            if (layer.active && indexNumber > lastActiveLayer)
+              lastActiveLayer = indexNumber;
+          }
+
+          const newLayer = createNewLayerAt(state, lastActiveLayer);
+          const newTempLayer = newLayer.createTemporaryLayer(
+            inverseProjectionResult.horizontalDistance,
+            inverseProjectionResult.verticalDistance,
+            projectionSelection.topLeftX,
+            projectionSelection.topLeftY
+          );
+
+          newTempLayer.pixels = inverseProjectionResult.pixels;
+          newTempLayer.pixelsCopy = new Uint8ClampedArray(
+            inverseProjectionResult.pixels
+          );
+          newTempLayer.updatePixels();
+
+          setActiveLayers(state, [newLayer.id], [...layers, newLayer]);
+
+          const newSelection = new Selection(
+            projectionSelection.topLeftX,
+            projectionSelection.topLeftY,
+            inverseProjectionResult.horizontalDistance,
+            inverseProjectionResult.verticalDistance
+          );
+          Tools["selectHardMove"].forceSelection = newSelection;
+          setSelection(newSelection);
           selectTool(state, "selectHardMove");
+
           // if (args.code == "Enter") {
           //   addUndoAction(state, new ProjectionAction(pixels));
           // }

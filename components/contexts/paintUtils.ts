@@ -46,8 +46,12 @@ export const getRealScale = (
   return lerp(0.25, 1600, scaleOverride ?? state.scale);
 };
 
-export const setActiveLayers = (state: PaintContextType, ids: string[]) => {
-  const newLayers = [...state.layers];
+export const setActiveLayers = (
+  state: PaintContextType,
+  ids: string[],
+  overrideLayers?: Layer[]
+) => {
+  const newLayers = overrideLayers ?? [...state.layers];
   for (const layer of newLayers) {
     layer.active = ids.includes(layer.id);
   }
@@ -370,4 +374,31 @@ export const selectTool = (
   if (autoOnSelect) {
     Tools[id].onSelect(state);
   }
+};
+
+export const createNewLayer = (state: PaintContextType) => {
+  const { layers, setLayers, width, height } = state;
+
+  const newLayer = new Layer(width, height, false);
+
+  const newLayers = [...layers];
+  newLayers.push(newLayer);
+  setLayers(newLayers);
+
+  return newLayer;
+};
+
+export const createNewLayerAt = (
+  state: PaintContextType,
+  afterIndex: number
+) => {
+  const { layers, setLayers, width, height } = state;
+
+  const newLayer = new Layer(width, height, false);
+
+  const newLayers = [...layers];
+  newLayers.splice(afterIndex, 0, newLayer);
+  setLayers(newLayers);
+
+  return newLayer;
 };

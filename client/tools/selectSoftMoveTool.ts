@@ -18,22 +18,14 @@ class SelectSoftMoveTool extends SelectMoveTool {
     selectionStartPos: Location,
     offset: Location
   ): void {
-    const { setSelection, selection, width, height } = state;
+    const { setSelection, selection } = state;
     const scale = getRealScale(state);
 
     setSelection(
       selection.newLocation(
         new Location(
-          clamp(
-            selectionStartPos.x + Math.round(offset.x / scale),
-            0,
-            width - selection.width
-          ),
-          clamp(
-            selectionStartPos.y + Math.round(offset.y / scale),
-            0,
-            height - selection.height
-          )
+          selectionStartPos.x + Math.round(offset.x / scale),
+          selectionStartPos.y + Math.round(offset.y / scale)
         )
       )
     );

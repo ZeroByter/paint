@@ -1,3 +1,5 @@
+import { addColors } from "@client/layersToImageData";
+import { UndoPixel } from "@client/undo/undoPixelColor";
 import { getDistance, lerp } from "@client/utils";
 import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
@@ -174,51 +176,51 @@ export const inverseProjectImage = (
     bottomRightY
   );
 
-  let horizontalDistance = Math.max(topDistance, bottomDistance);
-  let verticalDistance = Math.max(leftDistance, rightDistance);
+  const horizontalDistance = Math.max(topDistance, bottomDistance) >> 0;
+  const verticalDistance = Math.max(leftDistance, rightDistance) >> 0;
 
   //very dirty hack to prevent gaps when generating image... need to find a better way to detect gaps and fill them in...
-  horizontalDistance += horizontalDistance / 5;
-  verticalDistance += verticalDistance / 5;
+  let scaledHorizontalDistance = horizontalDistance + horizontalDistance / 5;
+  let scaledVerticalDistance = verticalDistance + verticalDistance / 5;
 
-  horizontalDistance = horizontalDistance >> 0;
-  verticalDistance = verticalDistance >> 0;
+  scaledHorizontalDistance = scaledHorizontalDistance >> 0;
+  scaledVerticalDistance = scaledVerticalDistance >> 0;
 
   const topMarks = new Map<number, Location>();
   const bottomMarks = new Map<number, Location>();
   const leftMarks = new Map<number, Location>();
   const rightMarks = new Map<number, Location>();
 
-  for (let y = 0; y < verticalDistance; y++) {
-    const verticalValue = y / verticalDistance;
+  for (let y = 0; y < scaledVerticalDistance; y++) {
+    const verticalValue = y / scaledVerticalDistance;
 
     leftMarks.set(
-      verticalValue,
+      y,
       new Location(
         lerp(topLeftX, bottomLeftX, verticalValue),
         lerp(topLeftY, bottomLeftY, verticalValue)
       )
     );
     rightMarks.set(
-      verticalValue,
+      y,
       new Location(
         lerp(topRightX, bottomRightX, verticalValue),
         lerp(topRightY, bottomRightY, verticalValue)
       )
     );
   }
-  for (let x = 0; x < horizontalDistance; x++) {
-    const horizontalValue = x / horizontalDistance;
+  for (let x = 0; x < scaledHorizontalDistance; x++) {
+    const horizontalValue = x / scaledHorizontalDistance;
 
     topMarks.set(
-      horizontalValue,
+      x,
       new Location(
         lerp(topLeftX, topRightX, horizontalValue),
         lerp(topLeftY, topRightY, horizontalValue)
       )
     );
     bottomMarks.set(
-      horizontalValue,
+      x,
       new Location(
         lerp(bottomLeftX, bottomRightX, horizontalValue),
         lerp(bottomLeftY, bottomRightY, horizontalValue)
@@ -226,46 +228,57 @@ export const inverseProjectImage = (
     );
   }
 
+  const pixels = new Uint8ClampedArray(
+    horizontalDistance * verticalDistance * 4
+  );
+
   for (const layer of layers) {
     if (!layer.active) continue;
 
-    for (let y = 1; y < verticalDistance; y++) {
+    for (let y = 0; y < verticalDistance; y++) {
       const verticalValue = y / verticalDistance;
 
-      const leftMark = leftMarks.get(verticalValue) as Location;
-      const rightMark = rightMarks.get(verticalValue) as Location;
+      const leftMark = leftMarks.get(y) as Location;
+      const rightMark = rightMarks.get(y) as Location;
 
-      for (let x = 1; x < horizontalDistance; x++) {
+      for (let x = 0; x < horizontalDistance; x++) {
         const horizontalValue = x / horizontalDistance;
 
-        const topMark = topMarks.get(horizontalValue) as Location;
-        const bottomMark = bottomMarks.get(horizontalValue) as Location;
+        const topMark = topMarks.get(x) as Location;
+        const bottomMark = bottomMarks.get(x) as Location;
 
         const finalX = lerp(leftMark.x, rightMark.x, horizontalValue) >> 0;
         const finalY = lerp(topMark.y, bottomMark.y, verticalValue) >> 0;
 
-        const tempLayerPixelIndex = layer.getPixelIndex(finalX, finalY);
-        const tempLayerPixelR = layer.pixels[tempLayerPixelIndex];
-        const tempLayerPixelG = layer.pixels[tempLayerPixelIndex + 1];
-        const tempLayerPixelB = layer.pixels[tempLayerPixelIndex + 2];
-        const tempLayerPixelA = layer.pixels[tempLayerPixelIndex + 3];
+        const pixelIndex = layer.getPixelIndex(finalX, finalY);
+        const pixelR = layer.pixels[pixelIndex];
+        const pixelG = layer.pixels[pixelIndex + 1];
+        const pixelB = layer.pixels[pixelIndex + 2];
+        const pixelA = layer.pixels[pixelIndex + 3];
 
-        layer.setPixelData(
-          x - 1,
-          y - 1,
-          tempLayerPixelR,
-          tempLayerPixelG,
-          tempLayerPixelB,
-          tempLayerPixelA
+        const localPixelIndex = x + y * horizontalDistance;
+
+        const addedColor = addColors(
+          pixelR,
+          pixelG,
+          pixelB,
+          pixelA,
+          pixels[localPixelIndex * 4],
+          pixels[localPixelIndex * 4 + 1],
+          pixels[localPixelIndex * 4 + 2],
+          pixels[localPixelIndex * 4 + 3]
         );
+        pixels[localPixelIndex * 4] = addedColor.r;
+        pixels[localPixelIndex * 4 + 1] = addedColor.g;
+        pixels[localPixelIndex * 4 + 2] = addedColor.b;
+        pixels[localPixelIndex * 4 + 3] = addedColor.a;
       }
     }
-
-    layer.updatePixels();
   }
 
   return {
     horizontalDistance,
     verticalDistance,
+    pixels,
   };
 };

@@ -6,7 +6,6 @@ class Layer {
   id: string;
 
   name: string;
-  order: number;
   active: boolean;
   visible: boolean;
 
@@ -20,16 +19,10 @@ class Layer {
 
   temporaryLayer?: TemporaryLayer;
 
-  constructor(
-    width: number,
-    height: number,
-    initial: boolean,
-    newOrder: number = 0
-  ) {
+  constructor(width: number, height: number, initial: boolean) {
     this.id = randomString();
 
     this.name = initial ? "Background" : "Layer #";
-    this.order = newOrder;
     this.active = initial;
     this.visible = true;
 
@@ -104,6 +97,7 @@ class Layer {
 
   createTemporaryLayer(width: number, height: number, x: number, y: number) {
     this.temporaryLayer = new TemporaryLayer(this, width, height, x, y);
+    return this.temporaryLayer;
   }
 
   clone() {
@@ -112,7 +106,6 @@ class Layer {
     newLayer.id = this.id;
 
     newLayer.name = this.name;
-    newLayer.order = this.order;
     newLayer.active = this.active;
     newLayer.visible = this.visible;
 
