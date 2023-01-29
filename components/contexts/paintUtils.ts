@@ -402,3 +402,9 @@ export const createNewLayerAt = (
 
   return newLayer;
 };
+
+export const deleteLayerById = (state: PaintContextType, id: string) => {
+  const { layers, setLayers } = state;
+
+  setLayers(layers.filter((layer) => layer.id != id));
+};

@@ -1,3 +1,4 @@
+import InverseProjectionAction from "@client/undo/inverseProjectionAction";
 import ProjectionAction from "@client/undo/projectionAction";
 import { UndoPixel } from "@client/undo/undoPixelColor";
 import { clamp, getDistance } from "@client/utils";
@@ -155,13 +156,18 @@ class ProjectionSelectTool extends Tool {
             projectionSelection
           );
 
+          const affectedLayerIds = [];
           let lastActiveLayer = 0;
           for (const index in layers) {
             const layer = layers[index];
             const indexNumber = parseInt(index);
 
-            if (layer.active && indexNumber > lastActiveLayer)
+            if (!layer.active) continue;
+            affectedLayerIds.push(layer.id);
+
+            if (indexNumber > lastActiveLayer) {
               lastActiveLayer = indexNumber;
+            }
           }
 
           const newLayer = createNewLayerAt(state, lastActiveLayer);
@@ -176,7 +182,8 @@ class ProjectionSelectTool extends Tool {
           newTempLayer.pixelsCopy = new Uint8ClampedArray(
             inverseProjectionResult.pixels
           );
-          newTempLayer.updatePixels();
+          newTempLayer.pasteOntoLayer();
+          newLayer.temporaryLayer = undefined;
 
           setActiveLayers(state, [newLayer.id], [...layers, newLayer]);
 
@@ -190,9 +197,20 @@ class ProjectionSelectTool extends Tool {
           setSelection(newSelection);
           selectTool(state, "selectHardMove");
 
-          // if (args.code == "Enter") {
-          //   addUndoAction(state, new ProjectionAction(pixels));
-          // }
+          if (args.code == "Enter") {
+            addUndoAction(
+              state,
+              new InverseProjectionAction(
+                affectedLayerIds,
+                newLayer.id,
+                newLayer.name,
+                newLayer.active,
+                newLayer.visible,
+                newLayer.pixels,
+                lastActiveLayer
+              )
+            );
+          }
         }
       }
     }
