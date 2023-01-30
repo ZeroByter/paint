@@ -21,6 +21,8 @@ export type ColorPerLayer = {
 };
 
 export type PaintContextType = {
+  updateCallbacks: MutableRefObject<UpdateCallback[]>;
+
   undoActions: MutableRefObject<UndoAction[]>;
   redoActions: MutableRefObject<UndoAction[]>;
 
@@ -87,7 +89,13 @@ type NotificationData = {
   image?: ImageData;
 };
 
+interface UpdateCallback {
+  (param: PaintContextType): void;
+}
+
 const PaintProvider: FC<Props> = ({ children }) => {
+  const updateCallbacks = useRef<UpdateCallback[]>([]);
+
   const undoActions = useRef<UndoAction[]>([]);
   const redoActions = useRef<UndoAction[]>([]);
 
@@ -126,7 +134,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
 
   const [notificationData, setNotificationData] = useState<NotificationData>();
 
-  const stateValue = {
+  const stateValue: PaintContextType = {
+    updateCallbacks,
     undoActions,
     redoActions,
     width,
@@ -166,6 +175,11 @@ const PaintProvider: FC<Props> = ({ children }) => {
     notificationData,
     setNotificationData,
   };
+
+  const firstUpdate = updateCallbacks.current.shift();
+  if (firstUpdate) {
+    firstUpdate(stateValue);
+  }
 
   return (
     <PaintContext.Provider value={stateValue}>{children}</PaintContext.Provider>
