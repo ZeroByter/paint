@@ -251,7 +251,7 @@ const PaintContainer: FC = () => {
         <ProjectionSelectionContainer />
       </div>
       <LayersPanel />
-      <HistoryPanel />
+      {/* <HistoryPanel /> */}
       <ColorsPanel />
       <ToolsPanel />
       <Notification />
