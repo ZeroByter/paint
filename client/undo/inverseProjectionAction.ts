@@ -97,11 +97,13 @@ export default class InverseProjectionAction
     x: number,
     y: number
   ) {
-    const layer = this.pixels.get(layerId);
-    if (!layer) return null;
+    return null;
 
-    const pixel = layer.get(x + y * state.width);
+    // const layer = this.pixels.get(layerId);
+    // if (!layer) return null;
 
-    return pixel ?? null;
+    // const pixel = layer.get(x + y * state.width);
+
+    // return pixel ?? null;
   }
 }

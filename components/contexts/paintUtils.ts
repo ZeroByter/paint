@@ -6,7 +6,7 @@ import { ilerp, lerp } from "@client/utils";
 import Color from "@shared/types/color";
 import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
-import { PaintContextType } from "./paint";
+import { PaintContextType, UpdateCallback } from "./paint";
 import { randomString } from "@shared/utils";
 import { getUndoPixelColorType } from "@client/undo/undoPixelColor";
 import Tools, { ToolTypes } from "@client/tools";
@@ -407,4 +407,13 @@ export const deleteLayerById = (state: PaintContextType, id: string) => {
   const { layers, setLayers } = state;
 
   setLayers(layers.filter((layer) => layer.id != id));
+};
+
+export const addUpdateCallbacks = (
+  state: PaintContextType,
+  callbacks: UpdateCallback[]
+) => {
+  const { updateCallbacks, setUpdateCallbacks } = state;
+
+  setUpdateCallbacks([...updateCallbacks, ...callbacks]);
 };
