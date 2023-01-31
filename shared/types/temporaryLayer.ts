@@ -10,8 +10,6 @@ class TemporaryLayer {
   width: number;
   height: number;
 
-  order: number;
-
   pixels: Uint8ClampedArray;
   pixelsId: string;
 
@@ -33,26 +31,27 @@ class TemporaryLayer {
     this.width = width;
     this.height = height;
 
-    this.order = layer.order + 0.5;
-
     this.pixels = new Uint8ClampedArray(width * height * 4);
-    for (let i = 0; i < this.pixels.length / 4; i++) {
-      const x = i % width;
-      const y = (i / width) >> 0; //fast floor bit operation for positive numbers
+    this.pixelsCopy = new Uint8ClampedArray(this.pixels);
 
-      const color = layer.getPixelColor(this.x + x, this.y + y);
+    this.pixelsId = randomString();
+
+    this.parentLayer = layer;
+  }
+
+  setPixelsFromLayer() {
+    for (let i = 0; i < this.pixels.length / 4; i++) {
+      const x = i % this.width;
+      const y = (i / this.width) >> 0; //fast floor bit operation for positive numbers
+
+      const color = this.parentLayer.getPixelColor(this.x + x, this.y + y);
 
       this.pixels[i * 4] = color.r;
       this.pixels[i * 4 + 1] = color.g;
       this.pixels[i * 4 + 2] = color.b;
       this.pixels[i * 4 + 3] = color.a;
     }
-
     this.pixelsCopy = new Uint8ClampedArray(this.pixels);
-
-    this.pixelsId = randomString();
-
-    this.parentLayer = layer;
   }
 
   getPixelIndex(x: number, y: number) {

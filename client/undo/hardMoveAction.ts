@@ -52,6 +52,7 @@ export default class HardMoveAction
     const layerIds = this.pixels.keys();
     for (const layerId of layerIds) {
       const layer = layersMap[layerId];
+      const layerPixels = this.pixels.get(layerId) as Map<number, UndoPixel>;
 
       if (!layer) continue;
 
@@ -86,16 +87,18 @@ export default class HardMoveAction
 
       for (let y = 0; y < this.height; y++) {
         for (let x = 0; x < this.width; x++) {
-          const targetPixel = targetPixels[x + y * this.width];
+          const targetPixel = layerPixels.get(x + y * this.width);
 
-          layer.setPixelData(
-            this.sourceX + x,
-            this.sourceY + y,
-            targetPixel.r,
-            targetPixel.g,
-            targetPixel.b,
-            targetPixel.a
-          );
+          if (targetPixel) {
+            layer.setPixelData(
+              this.sourceX + x,
+              this.sourceY + y,
+              targetPixel.r,
+              targetPixel.g,
+              targetPixel.b,
+              targetPixel.a
+            );
+          }
         }
       }
 

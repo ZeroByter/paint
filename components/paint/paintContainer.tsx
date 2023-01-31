@@ -29,6 +29,7 @@ import {
   undoAction,
 } from "components/contexts/paintUtils";
 import ProjectionSelectionContainer from "./projectionSelection/projectionSelectionContainer";
+import HistoryPanel from "./history/historyPanel";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -222,13 +223,19 @@ const PaintContainer: FC = () => {
     )
   );
 
-  const renderLayers = layers.map((layer) => {
-    return <Canvas key={layer.id} layer={layer} />;
+  const renderLayers = layers.map((layer, index) => {
+    return <Canvas key={layer.id} order={index} layer={layer} />;
   });
-  const renderTemporaryLayers = layers.map((layer) => {
+  const renderTemporaryLayers = layers.map((layer, index) => {
     if (!layer.temporaryLayer) return null;
 
-    return <Canvas key={`${layer.id}-temp1`} layer={layer.temporaryLayer} />;
+    return (
+      <Canvas
+        key={`${layer.id}-temp1`}
+        order={index}
+        layer={layer.temporaryLayer}
+      />
+    );
   });
 
   return (
@@ -244,6 +251,7 @@ const PaintContainer: FC = () => {
         <ProjectionSelectionContainer />
       </div>
       <LayersPanel />
+      <HistoryPanel />
       <ColorsPanel />
       <ToolsPanel />
       <Notification />

@@ -14,9 +14,10 @@ import css from "./canvas.module.scss";
 
 type Props = {
   layer: Layer | TemporaryLayer;
+  order: number;
 };
 
-const Canvas: FC<Props> = ({ layer }) => {
+const Canvas: FC<Props> = ({ layer, order }) => {
   const paintState = PaintFetcher();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -65,15 +66,16 @@ const Canvas: FC<Props> = ({ layer }) => {
             width: "auto",
             left: `${layer.x}px`,
             top: `${layer.y}px`,
+            zIndex: order + 0.5,
           }
         : {};
 
     return {
-      zIndex: layer.order,
+      zIndex: order,
       imageRendering: getRealScale(paintState) > 3 ? "pixelated" : "auto",
       ...temporaryLayerCSS,
     };
-  }, [layer, paintState]);
+  }, [layer, order, paintState]);
 
   return (
     <canvas

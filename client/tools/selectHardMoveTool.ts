@@ -13,11 +13,13 @@ class SelectHardMoveTool extends SelectMoveTool {
 
   forceSelection?: Selection;
 
+  pixels = new Map<string, Map<number, UndoPixel>>();
+
   constructor() {
     super();
 
     this.text = "HM";
-    this.tooltip = "Select";
+    this.tooltip = "Hard Move";
     this.editingState = "EDITING_HARD";
   }
 
@@ -43,18 +45,29 @@ class SelectHardMoveTool extends SelectMoveTool {
     this.sourceX = useSelection.x;
     this.sourceY = useSelection.y;
 
+    this.pixels = new Map<string, Map<number, UndoPixel>>();
+
     for (const layer of layers) {
       if (!layer.active) continue;
 
-      layer.createTemporaryLayer(
+      this.pixels.set(layer.id, new Map<number, UndoPixel>());
+
+      const newTempLayer = layer.createTemporaryLayer(
         useSelection.width,
         useSelection.height,
         useSelection.x,
         useSelection.y
       );
+      newTempLayer.setPixelsFromLayer();
 
       for (let y = 0; y < useSelection.height; y++) {
         for (let x = 0; x < useSelection.width; x++) {
+          const pixel = layer.getPixelColor(
+            useSelection.x + x,
+            useSelection.y + y
+          );
+          this.pixels.get(layer.id)?.set(x + y * useSelection.width, pixel);
+
           layer.setPixelData(
             useSelection.x + x,
             useSelection.y + y,
@@ -76,7 +89,7 @@ class SelectHardMoveTool extends SelectMoveTool {
   ): void {
     super.onSelectMove(state, selectionStartPos, offset);
 
-    const { selection, width, height, layers } = state;
+    const { selection, layers } = state;
     const scale = getRealScale(state);
 
     const useSelection = this.forceSelection ?? selection;
@@ -89,16 +102,10 @@ class SelectHardMoveTool extends SelectMoveTool {
       if (!layer.temporaryLayer) continue;
 
       //moving temporaryLayer of each active layer
-      layer.temporaryLayer.x = clamp(
-        selectionStartPos.x + Math.round(offset.x / scale),
-        0,
-        width - useSelection.width
-      );
-      layer.temporaryLayer.y = clamp(
-        selectionStartPos.y + Math.round(offset.y / scale),
-        0,
-        height - useSelection.height
-      );
+      layer.temporaryLayer.x =
+        selectionStartPos.x + Math.round(offset.x / scale);
+      layer.temporaryLayer.y =
+        selectionStartPos.y + Math.round(offset.y / scale);
     }
 
     //moving selection
@@ -106,16 +113,8 @@ class SelectHardMoveTool extends SelectMoveTool {
       state,
       useSelection.newLocation(
         new Location(
-          clamp(
-            selectionStartPos.x + Math.round(offset.x / scale),
-            0,
-            width - useSelection.width
-          ),
-          clamp(
-            selectionStartPos.y + Math.round(offset.y / scale),
-            0,
-            height - useSelection.height
-          )
+          selectionStartPos.x + Math.round(offset.x / scale),
+          selectionStartPos.y + Math.round(offset.y / scale)
         )
       )
     );
@@ -128,39 +127,27 @@ class SelectHardMoveTool extends SelectMoveTool {
 
     const useSelection = this.forceSelection ?? selection;
 
-    const pixels = new Map<string, Map<number, UndoPixel>>();
+    if (useSelection.isValid()) {
+      for (const layer of layers) {
+        if (!layer.temporaryLayer) continue;
 
-    for (const layer of layers) {
-      if (!layer.temporaryLayer) continue;
-
-      pixels.set(layer.id, new Map<number, UndoPixel>());
-      layer.temporaryLayer.pasteOntoLayer();
-
-      for (let y = 0; y < useSelection.height; y++) {
-        for (let x = 0; x < useSelection.width; x++) {
-          const pixel = layer.getPixelColor(
-            useSelection.x + x,
-            useSelection.y + y
-          );
-          pixels.get(layer.id)?.set(x + y * useSelection.width, pixel);
-        }
+        layer.temporaryLayer.pasteOntoLayer();
+        layer.temporaryLayer = undefined;
       }
 
-      layer.temporaryLayer = undefined;
+      addUndoAction(
+        state,
+        new HardMoveAction(
+          this.pixels,
+          useSelection.width,
+          useSelection.height,
+          this.sourceX,
+          this.sourceY,
+          useSelection.x,
+          useSelection.y
+        )
+      );
     }
-
-    addUndoAction(
-      state,
-      new HardMoveAction(
-        pixels,
-        useSelection.width,
-        useSelection.height,
-        this.sourceX,
-        this.sourceY,
-        useSelection.x,
-        useSelection.y
-      )
-    );
 
     this.forceSelection = undefined;
   }

@@ -2,7 +2,8 @@ import { clamp } from "@client/utils";
 import Location from "@shared/types/location";
 import Selection from "@shared/types/selection";
 import { PaintContextType } from "components/contexts/paint";
-import Tool, { OnClickArgs, OnDragArgs } from "./tool";
+import { selectTool } from "components/contexts/paintUtils";
+import Tool, { OnClickArgs, OnDragArgs, OnKeyDownArgs } from "./tool";
 
 class SelectTool extends Tool {
   dragStartLocation = new Location();
@@ -65,6 +66,12 @@ class SelectTool extends Tool {
     const { setSelectionClickability } = state;
 
     setSelectionClickability("WORKING");
+  }
+
+  onKeyDown(state: PaintContextType, args: OnKeyDownArgs): void {
+    if (args.code == "Enter" || args.code == "Escape") {
+      selectTool(state, "brush");
+    }
   }
 }
 

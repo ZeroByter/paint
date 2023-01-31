@@ -1,11 +1,20 @@
+import InverseProjectionAction from "@client/undo/inverseProjectionAction";
 import ProjectionAction from "@client/undo/projectionAction";
 import { UndoPixel } from "@client/undo/undoPixelColor";
 import { clamp, getDistance } from "@client/utils";
+import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
 import ProjectionSelection from "@shared/types/projectionSelection";
 import Selection from "@shared/types/selection";
 import { PaintContextType } from "components/contexts/paint";
-import { addUndoAction, selectTool } from "components/contexts/paintUtils";
+import {
+  addUndoAction,
+  addUpdateCallbacks,
+  createNewLayer,
+  createNewLayerAt,
+  selectTool,
+  setActiveLayers,
+} from "components/contexts/paintUtils";
 import {
   inverseProjectImage,
   projectImage,
@@ -36,7 +45,8 @@ class ProjectionSelectTool extends Tool {
       for (const layer of layers) {
         if (!layer.active) continue;
 
-        layer.createTemporaryLayer(width, height, 0, 0);
+        const newTempLayer = layer.createTemporaryLayer(width, height, 0, 0);
+        newTempLayer.setPixelsFromLayer();
 
         for (let y = 0; y < height; y++) {
           for (let x = 0; x < width; x++) {
@@ -95,13 +105,7 @@ class ProjectionSelectTool extends Tool {
   }
 
   onKeyDown(state: PaintContextType, args: OnKeyDownArgs): void {
-    const {
-      setSelection,
-      setProjectionSelection,
-      projectionSelection,
-      layers,
-      setActiveToolId,
-    } = state;
+    const { setProjectionSelection, projectionSelection, layers } = state;
 
     if (args.code == "Enter" || args.code == "Escape") {
       setProjectionSelection(undefined);
@@ -142,19 +146,83 @@ class ProjectionSelectTool extends Tool {
 
         selectTool(state, "brush");
       } else {
+        //inverse projection
         if (projectionSelection) {
-          const resultArea = inverseProjectImage(layers, projectionSelection);
-          Tools["selectHardMove"].forceSelection = new Selection(
-            0,
-            0,
-            resultArea.horizontalDistance - 1,
-            resultArea.verticalDistance - 1
+          const inverseProjectionResult = inverseProjectImage(
+            layers,
+            projectionSelection
           );
-          setSelection(Tools["selectHardMove"].forceSelection);
-          selectTool(state, "selectHardMove");
-          // if (args.code == "Enter") {
-          //   addUndoAction(state, new ProjectionAction(pixels));
-          // }
+
+          const affectedLayerIds: string[] = [];
+          let lastActiveLayer = 0;
+          for (const index in layers) {
+            const layer = layers[index];
+            const indexNumber = parseInt(index);
+
+            if (!layer.active) continue;
+            affectedLayerIds.push(layer.id);
+
+            if (indexNumber > lastActiveLayer) {
+              lastActiveLayer = indexNumber;
+            }
+          }
+
+          let newLayer: Layer;
+
+          const callbacks = [
+            (state: PaintContextType) => {
+              newLayer = createNewLayerAt(state, lastActiveLayer + 1);
+              const newTempLayer = newLayer.createTemporaryLayer(
+                inverseProjectionResult.horizontalDistance,
+                inverseProjectionResult.verticalDistance,
+                projectionSelection.topLeftX,
+                projectionSelection.topLeftY
+              );
+
+              newTempLayer.pixels = inverseProjectionResult.pixels;
+              newTempLayer.pixelsCopy = new Uint8ClampedArray(
+                inverseProjectionResult.pixels
+              );
+              newTempLayer.pasteOntoLayer();
+              newLayer.temporaryLayer = undefined;
+              newLayer.createPixelsCopy();
+
+              if (args.code == "Enter") {
+                addUndoAction(
+                  state,
+                  new InverseProjectionAction(
+                    affectedLayerIds,
+                    newLayer.id,
+                    newLayer.name,
+                    newLayer.active,
+                    newLayer.visible,
+                    new Uint8ClampedArray(newLayer.pixels),
+                    lastActiveLayer
+                  )
+                );
+              }
+            },
+            (state: PaintContextType) => {
+              setActiveLayers(state, [newLayer.id]);
+            },
+            (state: PaintContextType) => {
+              const { setSelection } = state;
+
+              const newSelection = new Selection(
+                projectionSelection.topLeftX,
+                projectionSelection.topLeftY,
+                inverseProjectionResult.horizontalDistance,
+                inverseProjectionResult.verticalDistance
+              );
+
+              setSelection(newSelection);
+            },
+            (state: PaintContextType) => {
+              selectTool(state, "selectHardMove");
+            },
+          ];
+
+          addUpdateCallbacks(state, callbacks);
         }
       }
     }

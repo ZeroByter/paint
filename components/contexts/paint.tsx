@@ -12,17 +12,25 @@ import {
   MutableRefObject,
   ReactNode,
   useContext,
+  useEffect,
   useRef,
   useState,
 } from "react";
+import { randomString } from "@shared/utils";
 
 export type ColorPerLayer = {
   [id: string]: Color;
 };
 
 export type PaintContextType = {
+  updateCallbacks: UpdateCallback[];
+  setUpdateCallbacks: (newCallbacks: UpdateCallback[]) => void;
+
   undoActions: MutableRefObject<UndoAction[]>;
   redoActions: MutableRefObject<UndoAction[]>;
+
+  undoRedoId: string;
+  setUndoRedoId: (newId: string) => void;
 
   width: number;
   setWidth: (newWidth: number) => void;
@@ -87,9 +95,17 @@ type NotificationData = {
   image?: ImageData;
 };
 
+export interface UpdateCallback {
+  (param: PaintContextType): void;
+}
+
 const PaintProvider: FC<Props> = ({ children }) => {
+  const [updateCallbacks, setUpdateCallbacks] = useState<UpdateCallback[]>([]);
+
   const undoActions = useRef<UndoAction[]>([]);
   const redoActions = useRef<UndoAction[]>([]);
+
+  const [undoRedoId, setUndoRedoId] = useState(randomString());
 
   const [width, setWidth] = useState(50);
   const [height, setHeight] = useState(50);
@@ -126,9 +142,14 @@ const PaintProvider: FC<Props> = ({ children }) => {
 
   const [notificationData, setNotificationData] = useState<NotificationData>();
 
-  const stateValue = {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const stateValue: PaintContextType = {
+    updateCallbacks,
+    setUpdateCallbacks,
     undoActions,
     redoActions,
+    undoRedoId,
+    setUndoRedoId,
     width,
     setWidth,
     height,
@@ -166,6 +187,14 @@ const PaintProvider: FC<Props> = ({ children }) => {
     notificationData,
     setNotificationData,
   };
+
+  useEffect(() => {
+    if (updateCallbacks.length > 0) {
+      const [firstUpdate] = updateCallbacks;
+      firstUpdate(stateValue);
+      setUpdateCallbacks(updateCallbacks.slice(1));
+    }
+  }, [updateCallbacks, stateValue]);
 
   return (
     <PaintContext.Provider value={stateValue}>{children}</PaintContext.Provider>

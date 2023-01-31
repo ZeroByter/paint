@@ -1,5 +1,9 @@
 import Layer from "@shared/types/layer";
 import { PaintFetcher } from "components/contexts/paint";
+import {
+  createNewLayer,
+  setActiveLayers,
+} from "components/contexts/paintUtils";
 import { FC, MouseEvent, useEffect, useState } from "react";
 import LayerContainer from "./layerContainer";
 import css from "./layersPanel.module.scss";
@@ -7,7 +11,8 @@ import css from "./layersPanel.module.scss";
 const LayersPanel: FC = () => {
   const [shift, setShift] = useState(false);
 
-  const { width, height, layers, setLayers } = PaintFetcher();
+  const paintState = PaintFetcher();
+  const { width, height, layers, setLayers } = paintState;
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -31,17 +36,13 @@ const LayersPanel: FC = () => {
   });
 
   const handleAddLayerClick = (e: MouseEvent<HTMLButtonElement>) => {
-    const newLayers = [
-      ...layers,
-      new Layer(width, height, false, layers.length),
-    ].sort((a, b) => a.order - b.order);
-
-    setLayers(newLayers);
+    const newLayer = createNewLayer(paintState);
+    setActiveLayers(paintState, [newLayer.id], [...layers, newLayer]);
   };
 
   return (
     <div className={css.root}>
-      <div>{renderLayers}</div>
+      <div className={css.layers}>{renderLayers}</div>
       <div>
         <button onClick={handleAddLayerClick}>add layer</button>
       </div>

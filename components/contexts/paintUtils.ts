@@ -6,7 +6,7 @@ import { ilerp, lerp } from "@client/utils";
 import Color from "@shared/types/color";
 import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
-import { PaintContextType } from "./paint";
+import { PaintContextType, UpdateCallback } from "./paint";
 import { randomString } from "@shared/utils";
 import { getUndoPixelColorType } from "@client/undo/undoPixelColor";
 import Tools, { ToolTypes } from "@client/tools";
@@ -46,8 +46,12 @@ export const getRealScale = (
   return lerp(0.25, 1600, scaleOverride ?? state.scale);
 };
 
-export const setActiveLayers = (state: PaintContextType, ids: string[]) => {
-  const newLayers = [...state.layers];
+export const setActiveLayers = (
+  state: PaintContextType,
+  ids: string[],
+  overrideLayers?: Layer[]
+) => {
+  const newLayers = overrideLayers ?? [...state.layers];
   for (const layer of newLayers) {
     layer.active = ids.includes(layer.id);
   }
@@ -192,6 +196,8 @@ export const isMouseInsideImage = (state: PaintContextType) => {
 export const addUndoAction = (state: PaintContextType, action: UndoAction) => {
   state.redoActions.current = [];
   state.undoActions.current.push(action);
+
+  state.setUndoRedoId(randomString());
 };
 
 export const undoAction = (state: PaintContextType) => {
@@ -201,6 +207,8 @@ export const undoAction = (state: PaintContextType) => {
   undoAction.undo(state);
 
   state.redoActions.current.push(undoAction);
+
+  state.setUndoRedoId(randomString());
 
   return true;
 };
@@ -212,6 +220,8 @@ export const redoAction = (state: PaintContextType) => {
   redoAction.redo(state);
 
   state.undoActions.current.push(redoAction);
+
+  state.setUndoRedoId(randomString());
 
   return true;
 };
@@ -370,4 +380,46 @@ export const selectTool = (
   if (autoOnSelect) {
     Tools[id].onSelect(state);
   }
+};
+
+export const createNewLayer = (state: PaintContextType) => {
+  const { layers, setLayers, width, height } = state;
+
+  const newLayer = new Layer(width, height, false);
+
+  const newLayers = [...layers];
+  newLayers.push(newLayer);
+  setLayers(newLayers);
+
+  return newLayer;
+};
+
+export const createNewLayerAt = (
+  state: PaintContextType,
+  afterIndex: number
+) => {
+  const { layers, setLayers, width, height } = state;
+
+  const newLayer = new Layer(width, height, false);
+
+  const newLayers = [...layers];
+  newLayers.splice(afterIndex, 0, newLayer);
+  setLayers(newLayers);
+
+  return newLayer;
+};
+
+export const deleteLayerById = (state: PaintContextType, id: string) => {
+  const { layers, setLayers } = state;
+
+  setLayers(layers.filter((layer) => layer.id != id));
+};
+
+export const addUpdateCallbacks = (
+  state: PaintContextType,
+  callbacks: UpdateCallback[]
+) => {
+  const { updateCallbacks, setUpdateCallbacks } = state;
+
+  setUpdateCallbacks([...updateCallbacks, ...callbacks]);
 };
