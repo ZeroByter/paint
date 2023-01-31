@@ -196,6 +196,8 @@ export const isMouseInsideImage = (state: PaintContextType) => {
 export const addUndoAction = (state: PaintContextType, action: UndoAction) => {
   state.redoActions.current = [];
   state.undoActions.current.push(action);
+
+  state.setUndoRedoId(randomString());
 };
 
 export const undoAction = (state: PaintContextType) => {
@@ -205,6 +207,8 @@ export const undoAction = (state: PaintContextType) => {
   undoAction.undo(state);
 
   state.redoActions.current.push(undoAction);
+
+  state.setUndoRedoId(randomString());
 
   return true;
 };
@@ -216,6 +220,8 @@ export const redoAction = (state: PaintContextType) => {
   redoAction.redo(state);
 
   state.undoActions.current.push(redoAction);
+
+  state.setUndoRedoId(randomString());
 
   return true;
 };

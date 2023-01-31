@@ -171,7 +171,7 @@ class ProjectionSelectTool extends Tool {
 
           const callbacks = [
             (state: PaintContextType) => {
-              newLayer = createNewLayerAt(state, lastActiveLayer);
+              newLayer = createNewLayerAt(state, lastActiveLayer + 1);
               const newTempLayer = newLayer.createTemporaryLayer(
                 inverseProjectionResult.horizontalDistance,
                 inverseProjectionResult.verticalDistance,
@@ -185,8 +185,25 @@ class ProjectionSelectTool extends Tool {
               );
               newTempLayer.pasteOntoLayer();
               newLayer.temporaryLayer = undefined;
+              newLayer.createPixelsCopy();
 
-              setActiveLayers(state, [newLayer.id], [...layers, newLayer]);
+              if (args.code == "Enter") {
+                addUndoAction(
+                  state,
+                  new InverseProjectionAction(
+                    affectedLayerIds,
+                    newLayer.id,
+                    newLayer.name,
+                    newLayer.active,
+                    newLayer.visible,
+                    newLayer.pixels,
+                    lastActiveLayer
+                  )
+                );
+              }
+            },
+            (state: PaintContextType) => {
+              setActiveLayers(state, [newLayer.id]);
             },
             (state: PaintContextType) => {
               const { setSelection } = state;
@@ -202,22 +219,6 @@ class ProjectionSelectTool extends Tool {
             },
             (state: PaintContextType) => {
               selectTool(state, "selectHardMove");
-            },
-            (state: PaintContextType) => {
-              if (args.code == "Enter") {
-                addUndoAction(
-                  state,
-                  new InverseProjectionAction(
-                    affectedLayerIds,
-                    newLayer.id,
-                    newLayer.name,
-                    newLayer.active,
-                    newLayer.visible,
-                    newLayer.pixels,
-                    lastActiveLayer
-                  )
-                );
-              }
             },
           ];
 

@@ -29,6 +29,7 @@ import {
   undoAction,
 } from "components/contexts/paintUtils";
 import ProjectionSelectionContainer from "./projectionSelection/projectionSelectionContainer";
+import HistoryPanel from "./history/historyPanel";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -250,6 +251,7 @@ const PaintContainer: FC = () => {
         <ProjectionSelectionContainer />
       </div>
       <LayersPanel />
+      <HistoryPanel />
       <ColorsPanel />
       <ToolsPanel />
       <Notification />

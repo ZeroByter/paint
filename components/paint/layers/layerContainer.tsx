@@ -34,7 +34,7 @@ const LayerContainer: FC<Props> = ({ layer, shiftKey }) => {
         checked={layer.active}
         onChange={handleActiveLayerChange}
       />
-      {layer.name}
+      {layer.name} ({layer.id})
     </div>
   );
 };

@@ -1,0 +1,12 @@
+.root {
+  position: fixed;
+  top: 65px;
+  right: 5px;
+  background: hsl(0deg 0% 20%);
+  padding: 4px 6px;
+
+  .layers {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+}
