@@ -196,7 +196,7 @@ class ProjectionSelectTool extends Tool {
                     newLayer.name,
                     newLayer.active,
                     newLayer.visible,
-                    newLayer.pixels,
+                    new Uint8ClampedArray(newLayer.pixels),
                     lastActiveLayer
                   )
                 );

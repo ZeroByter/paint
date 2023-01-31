@@ -19,7 +19,7 @@ class SelectHardMoveTool extends SelectMoveTool {
     super();
 
     this.text = "HM";
-    this.tooltip = "Select";
+    this.tooltip = "Hard Move";
     this.editingState = "EDITING_HARD";
   }
 
@@ -127,25 +127,27 @@ class SelectHardMoveTool extends SelectMoveTool {
 
     const useSelection = this.forceSelection ?? selection;
 
-    for (const layer of layers) {
-      if (!layer.temporaryLayer) continue;
+    if (useSelection.isValid()) {
+      for (const layer of layers) {
+        if (!layer.temporaryLayer) continue;
 
-      layer.temporaryLayer.pasteOntoLayer();
-      layer.temporaryLayer = undefined;
+        layer.temporaryLayer.pasteOntoLayer();
+        layer.temporaryLayer = undefined;
+      }
+
+      addUndoAction(
+        state,
+        new HardMoveAction(
+          this.pixels,
+          useSelection.width,
+          useSelection.height,
+          this.sourceX,
+          this.sourceY,
+          useSelection.x,
+          useSelection.y
+        )
+      );
     }
-
-    addUndoAction(
-      state,
-      new HardMoveAction(
-        this.pixels,
-        useSelection.width,
-        useSelection.height,
-        this.sourceX,
-        this.sourceY,
-        useSelection.x,
-        useSelection.y
-      )
-    );
 
     this.forceSelection = undefined;
   }

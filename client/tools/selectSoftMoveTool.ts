@@ -1,7 +1,6 @@
-import { clamp } from "@client/utils";
 import Location from "@shared/types/location";
 import { PaintContextType } from "components/contexts/paint";
-import { getRealScale } from "components/contexts/paintUtils";
+import { getRealScale, selectTool } from "components/contexts/paintUtils";
 import SelectMoveTool from "./selectMoveTool";
 
 class SelectSoftMoveTool extends SelectMoveTool {
@@ -9,7 +8,7 @@ class SelectSoftMoveTool extends SelectMoveTool {
     super();
 
     this.text = "SM";
-    this.tooltip = "Select";
+    this.tooltip = "Soft Move";
     this.editingState = "EDITING";
   }
 

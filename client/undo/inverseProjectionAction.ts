@@ -98,16 +98,16 @@ export default class InverseProjectionAction
     x: number,
     y: number
   ) {
-    if (layerId === this.newLayerId) {
-      const { width } = state;
+    // if (layerId === this.newLayerId) {
+    //   const { width } = state;
 
-      const r = this.newLayerPixels[x + y * width * 4];
-      const g = this.newLayerPixels[x + y * width * 4 + 1];
-      const b = this.newLayerPixels[x + y * width * 4 + 2];
-      const a = this.newLayerPixels[x + y * width * 4 + 3];
+    //   const r = this.newLayerPixels[x + y * width * 4];
+    //   const g = this.newLayerPixels[x + y * width * 4 + 1];
+    //   const b = this.newLayerPixels[x + y * width * 4 + 2];
+    //   const a = this.newLayerPixels[x + y * width * 4 + 3];
 
-      return { r, g, b, a };
-    }
+    //   return { r, g, b, a };
+    // }
 
     return null;
   }
