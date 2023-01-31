@@ -251,7 +251,7 @@ const PaintContainer: FC = () => {
         <ProjectionSelectionContainer />
       </div>
       <LayersPanel />
-      {/* <HistoryPanel /> */}
+      {process.env.NODE_ENV == "development" && <HistoryPanel />}
       <ColorsPanel />
       <ToolsPanel />
       <Notification />
