@@ -1,3 +1,4 @@
+import Color from "@shared/types/color";
 import Layer from "@shared/types/layer";
 import { PaintContextType } from "components/contexts/paint";
 import {
@@ -97,13 +98,17 @@ export default class InverseProjectionAction
     x: number,
     y: number
   ) {
+    if (layerId === this.newLayerId) {
+      const { width } = state;
+
+      const r = this.newLayerPixels[x + y * width * 4];
+      const g = this.newLayerPixels[x + y * width * 4 + 1];
+      const b = this.newLayerPixels[x + y * width * 4 + 2];
+      const a = this.newLayerPixels[x + y * width * 4 + 3];
+
+      return { r, g, b, a };
+    }
+
     return null;
-
-    // const layer = this.pixels.get(layerId);
-    // if (!layer) return null;
-
-    // const pixel = layer.get(x + y * state.width);
-
-    // return pixel ?? null;
   }
 }
