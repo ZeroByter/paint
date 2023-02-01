@@ -179,12 +179,7 @@ class ProjectionSelectTool extends Tool {
               );
 
               newTempLayer.pixels = inverseProjectionResult.pixels;
-              // newTempLayer.pixelsCopy = new Uint8ClampedArray(
-              //   inverseProjectionResult.pixels
-              // );
               newTempLayer.pasteOntoLayer();
-              // newLayer.temporaryLayer = undefined;
-              // newLayer.createPixelsCopy();
 
               if (args.code == "Enter") {
                 addUndoAction(

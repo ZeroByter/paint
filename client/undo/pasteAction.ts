@@ -1,46 +1,56 @@
-import Layer from "@shared/types/layer";
-import Selection from "@shared/types/selection";
 import { PaintContextType } from "components/contexts/paint";
-import { loadFromImage } from "components/contexts/paintUtils";
-import { clone, cloneDeep } from "lodash/fp";
+import {
+  addUpdateCallbacks,
+  createNewLayerAt,
+  deleteLayerById,
+  loadFromImage,
+  setActiveLayers,
+} from "components/contexts/paintUtils";
 import UndoAction from "./undoAction";
 
 export default class PasteAction extends UndoAction {
-  beforeLayers: Layer[];
-  beforeWidth: number;
-  beforeHeight: number;
+  newLayerId: string;
+  newLayerName: string;
+  newLayerActive: boolean;
+  newLayerVisible: boolean;
 
-  afterImage: HTMLImageElement;
+  newLayerPixels: Uint8ClampedArray;
+  lastActiveLayer: number;
 
   constructor(
-    beforeLayers: Layer[],
-    beforeWidth: number,
-    beforeHeight: number,
-    afterImage: HTMLImageElement
+    newLayerId: string,
+    newLayerName: string,
+    newLayerActive: boolean,
+    newLayerVisible: boolean,
+    newLayerPixels: Uint8ClampedArray,
+    lastActiveLayer: number
   ) {
     super();
 
-    this.beforeLayers = [...beforeLayers];
-    this.beforeWidth = beforeWidth;
-    this.beforeHeight = beforeHeight;
-
-    this.afterImage = afterImage;
+    this.newLayerId = newLayerId;
+    this.newLayerName = newLayerName;
+    this.newLayerActive = newLayerActive;
+    this.newLayerVisible = newLayerVisible;
+    this.newLayerPixels = newLayerPixels;
+    this.lastActiveLayer = lastActiveLayer;
   }
 
   undo(state: PaintContextType): void {
-    const newLayers = this.beforeLayers;
-
-    state.setWidth(this.beforeWidth);
-    state.setHeight(this.beforeHeight);
-
-    for (const layer of this.beforeLayers) {
-      layer.updatePixels();
-    }
-
-    state.setLayers(newLayers);
+    deleteLayerById(state, this.newLayerId);
   }
 
   redo(state: PaintContextType): void {
-    loadFromImage(state, this.afterImage);
+    addUpdateCallbacks(state, [
+      (state: PaintContextType) => {
+        const newLayer = createNewLayerAt(state, this.lastActiveLayer + 1);
+        newLayer.id = this.newLayerId;
+        newLayer.name = this.newLayerName;
+        newLayer.pixels = this.newLayerPixels;
+        newLayer.createPixelsCopy();
+      },
+      (state: PaintContextType) => {
+        setActiveLayers(state, [this.newLayerId]);
+      },
+    ]);
   }
 }

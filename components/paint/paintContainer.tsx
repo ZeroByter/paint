@@ -69,14 +69,33 @@ const PaintContainer: FC = () => {
           image.onload = () => {
             let newLayer: Layer;
 
+            let lastActiveLayer = 0;
+            for (const index in layers) {
+              const layer = layers[index];
+              const indexNumber = parseInt(index);
+
+              if (!layer.active) continue;
+
+              if (indexNumber > lastActiveLayer) {
+                lastActiveLayer = indexNumber;
+              }
+            }
+
             addUpdateCallbacks(paintState, [
               (state: PaintContextType) => {
                 newLayer = loadOntoNewLayer(state, image);
 
-                // addUndoAction(
-                //   state,
-                //   new PasteAction(layers, image)
-                // );
+                addUndoAction(
+                  state,
+                  new PasteAction(
+                    newLayer.id,
+                    newLayer.name,
+                    newLayer.active,
+                    newLayer.visible,
+                    new Uint8ClampedArray(newLayer.temporaryLayer!.pixels),
+                    lastActiveLayer
+                  )
+                );
               },
               (state: PaintContextType) => {
                 setActiveLayers(state, [newLayer.id]);
@@ -96,7 +115,7 @@ const PaintContainer: FC = () => {
           image.src = window.URL.createObjectURL(file);
         }
       },
-      [paintState]
+      [layers, paintState]
     )
   );
 
