@@ -66,8 +66,8 @@ export const loadOntoNewLayer = (
   );
 
   newTempLayer.setPixelDataFromImage(image);
-  newTempLayer.pasteOntoLayer();
-  newLayer.temporaryLayer = undefined;
+  // newTempLayer.pasteOntoLayer();
+  // newLayer.temporaryLayer = undefined;
 
   return newLayer;
 };

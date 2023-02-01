@@ -33,6 +33,7 @@ import {
 } from "components/contexts/paintUtils";
 import ProjectionSelectionContainer from "./projectionSelection/projectionSelectionContainer";
 import HistoryPanel from "./history/historyPanel";
+import Tools from "@client/tools";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -87,6 +88,7 @@ const PaintContainer: FC = () => {
                 setProjectionSelection(undefined);
               },
               (state: PaintContextType) => {
+                Tools["selectHardMove"].existingTempLayer = true;
                 selectTool(state, "selectHardMove");
               },
             ]);
@@ -94,7 +96,7 @@ const PaintContainer: FC = () => {
           image.src = window.URL.createObjectURL(file);
         }
       },
-      [height, layers, paintState, width]
+      [paintState]
     )
   );
 

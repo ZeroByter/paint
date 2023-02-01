@@ -10,7 +10,6 @@ import { PaintContextType } from "components/contexts/paint";
 import {
   addUndoAction,
   addUpdateCallbacks,
-  createNewLayer,
   createNewLayerAt,
   selectTool,
   setActiveLayers,
@@ -180,12 +179,12 @@ class ProjectionSelectTool extends Tool {
               );
 
               newTempLayer.pixels = inverseProjectionResult.pixels;
-              newTempLayer.pixelsCopy = new Uint8ClampedArray(
-                inverseProjectionResult.pixels
-              );
+              // newTempLayer.pixelsCopy = new Uint8ClampedArray(
+              //   inverseProjectionResult.pixels
+              // );
               newTempLayer.pasteOntoLayer();
-              newLayer.temporaryLayer = undefined;
-              newLayer.createPixelsCopy();
+              // newLayer.temporaryLayer = undefined;
+              // newLayer.createPixelsCopy();
 
               if (args.code == "Enter") {
                 addUndoAction(
@@ -218,6 +217,7 @@ class ProjectionSelectTool extends Tool {
               setSelection(newSelection);
             },
             (state: PaintContextType) => {
+              Tools["selectHardMove"].existingTempLayer = true;
               selectTool(state, "selectHardMove");
             },
           ];

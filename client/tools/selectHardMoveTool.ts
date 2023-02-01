@@ -13,6 +13,8 @@ class SelectHardMoveTool extends SelectMoveTool {
 
   pixels = new Map<string, Map<number, UndoPixel>>();
 
+  existingTempLayer = false;
+
   constructor() {
     super();
 
@@ -40,17 +42,28 @@ class SelectHardMoveTool extends SelectMoveTool {
 
       this.pixels.set(layer.id, new Map<number, UndoPixel>());
 
-      const newTempLayer = layer.createTemporaryLayer(
-        selection.width,
-        selection.height,
-        selection.x,
-        selection.y
-      );
-      newTempLayer.setPixelsFromLayer();
+      if (!this.existingTempLayer) {
+        const newTempLayer = layer.createTemporaryLayer(
+          selection.width,
+          selection.height,
+          selection.x,
+          selection.y
+        );
+        newTempLayer.setPixelsFromLayer();
+      }
+
+      const useLayer = (
+        this.existingTempLayer && layer.temporaryLayer
+          ? layer.temporaryLayer
+          : layer
+      ) as Layer | TemporaryLayer;
 
       for (let y = 0; y < selection.height; y++) {
         for (let x = 0; x < selection.width; x++) {
-          const pixel = layer.getPixelColor(selection.x + x, selection.y + y);
+          const pixel = useLayer.getPixelColor(
+            selection.x + x,
+            selection.y + y
+          );
           this.pixels.get(layer.id)?.set(x + y * selection.width, pixel);
 
           layer.setPixelData(selection.x + x, selection.y + y, 0, 0, 0, 0);
@@ -99,6 +112,8 @@ class SelectHardMoveTool extends SelectMoveTool {
     super.onUnselect(state);
 
     const { layers, selection } = state;
+
+    this.existingTempLayer = false;
 
     if (selection.isValid()) {
       for (const layer of layers) {
