@@ -1,9 +1,11 @@
+import Layer from "@shared/types/layer";
 import { PaintContextType } from "components/contexts/paint";
 import {
   addUpdateCallbacks,
   createNewLayerAt,
   deleteLayerById,
   loadFromImage,
+  loadOntoNewLayer,
   setActiveLayers,
 } from "components/contexts/paintUtils";
 import UndoAction from "./undoAction";
@@ -15,6 +17,10 @@ export default class PasteAction extends UndoAction {
   newLayerVisible: boolean;
 
   newLayerPixels: Uint8ClampedArray;
+
+  imageWidth: number;
+  imageHeight: number;
+
   lastActiveLayer: number;
 
   constructor(
@@ -23,6 +29,8 @@ export default class PasteAction extends UndoAction {
     newLayerActive: boolean,
     newLayerVisible: boolean,
     newLayerPixels: Uint8ClampedArray,
+    imageWidth: number,
+    imageHeight: number,
     lastActiveLayer: number
   ) {
     super();
@@ -32,6 +40,8 @@ export default class PasteAction extends UndoAction {
     this.newLayerActive = newLayerActive;
     this.newLayerVisible = newLayerVisible;
     this.newLayerPixels = newLayerPixels;
+    this.imageWidth = imageWidth;
+    this.imageHeight = imageHeight;
     this.lastActiveLayer = lastActiveLayer;
   }
 
@@ -42,10 +52,16 @@ export default class PasteAction extends UndoAction {
   redo(state: PaintContextType): void {
     addUpdateCallbacks(state, [
       (state: PaintContextType) => {
-        const newLayer = createNewLayerAt(state, this.lastActiveLayer + 1);
+        const newLayer = loadOntoNewLayer(
+          state,
+          this.imageWidth,
+          this.imageHeight,
+          this.newLayerPixels
+        );
         newLayer.id = this.newLayerId;
         newLayer.name = this.newLayerName;
-        newLayer.pixels = this.newLayerPixels;
+        newLayer.temporaryLayer!.pasteOntoLayer();
+        newLayer.temporaryLayer = undefined;
         newLayer.createPixelsCopy();
       },
       (state: PaintContextType) => {

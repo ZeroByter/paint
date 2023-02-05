@@ -41,7 +41,9 @@ export const loadFromImage = (
 
 export const loadOntoNewLayer = (
   state: PaintContextType,
-  image: HTMLImageElement
+  width: number,
+  height: number,
+  pixels?: Uint8ClampedArray
 ) => {
   const { layers } = state;
 
@@ -58,14 +60,22 @@ export const loadOntoNewLayer = (
   }
 
   const newLayer = createNewLayerAt(state, lastActiveLayer + 1);
-  const newTempLayer = newLayer.createTemporaryLayer(
-    image.width,
-    image.height,
-    0,
-    0
-  );
+  const newTempLayer = newLayer.createTemporaryLayer(width, height, 0, 0);
 
-  newTempLayer.setPixelDataFromImage(image);
+  if (pixels) {
+    newTempLayer.pixels = pixels;
+  }
+
+  return newLayer;
+};
+
+export const loadOntoNewLayerImage = (
+  state: PaintContextType,
+  image: HTMLImageElement
+) => {
+  const newLayer = loadOntoNewLayer(state, image.width, image.height);
+
+  newLayer.temporaryLayer!.setPixelDataFromImage(image);
 
   return newLayer;
 };

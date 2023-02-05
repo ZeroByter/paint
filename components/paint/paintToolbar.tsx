@@ -127,6 +127,10 @@ const PaintToolbar: FC = () => {
     open("https://github.com/zerobyter/paint");
   };
 
+  const openTrello = () => {
+    open("https://trello.com/b/JvFPH5KM/paint-online");
+  };
+
   const toolbarMenuItems: MenuItem[] = [
     {
       text: "File",
@@ -148,7 +152,10 @@ const PaintToolbar: FC = () => {
     },
     {
       text: "About",
-      subItems: [{ text: "View GitHub", onClick: openGithub }],
+      subItems: [
+        { text: "View GitHub", onClick: openGithub },
+        { text: "View Trello", onClick: openTrello },
+      ],
     },
   ];
 

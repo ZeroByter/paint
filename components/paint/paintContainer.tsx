@@ -23,7 +23,7 @@ import {
   addUpdateCallbacks,
   cropToSelection,
   getRealScale,
-  loadOntoNewLayer,
+  loadOntoNewLayerImage,
   redoAction,
   scaleToSize,
   selectTool,
@@ -83,7 +83,7 @@ const PaintContainer: FC = () => {
 
             addUpdateCallbacks(paintState, [
               (state: PaintContextType) => {
-                newLayer = loadOntoNewLayer(state, image);
+                newLayer = loadOntoNewLayerImage(state, image);
 
                 addUndoAction(
                   state,
@@ -93,6 +93,8 @@ const PaintContainer: FC = () => {
                     newLayer.active,
                     newLayer.visible,
                     new Uint8ClampedArray(newLayer.temporaryLayer!.pixels),
+                    image.width,
+                    image.height,
                     lastActiveLayer
                   )
                 );
