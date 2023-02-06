@@ -108,8 +108,6 @@ const PaintToolbar: FC = () => {
   );
 
   const selectProjectionSelectionTool = () => {
-    setSelection(new Selection());
-
     selectTool(paintState, "projectionSelect", false);
     Tools["projectionSelect"].setInverse(false);
     Tools["projectionSelect"].onSelect(paintState);

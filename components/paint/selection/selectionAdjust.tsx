@@ -246,7 +246,7 @@ const SelectionAdjust: FC<Props> = ({ children, hoverIndex }) => {
     isMouseDownRef.current = true;
     mouseStartHoverIndex.current = hoverIndex;
     mouseStartDragMousePos.current = new Location(e.clientX, e.clientY);
-    mouseStartDragSelection.current = selection.copy();
+    mouseStartDragSelection.current = selection.clone();
   };
 
   const handleMouseUp = () => {

@@ -105,7 +105,14 @@ const ProjectionSelectionNode: FC<Props> = ({ corner }) => {
           setProjectionSelection(newSelection);
 
           if (!Tools["projectionSelect"].isInverse) {
-            projectImage(layers, newSelection);
+            const affectedPixels = projectImage(
+              layers,
+              newSelection,
+              Tools["projectionSelect"].initialSelection
+            );
+            if (affectedPixels) {
+              Tools["projectionSelect"].affectedPixels = affectedPixels;
+            }
           }
         }
       },
