@@ -26,6 +26,7 @@ const PaintToolbar: FC = () => {
     if (isEmpty(url)) return;
 
     const image = new Image();
+    image.crossOrigin = "Anonymous";
     image.src = url;
     image.onload = () => {
       loadFromImage(paintState, image);
@@ -46,6 +47,7 @@ const PaintToolbar: FC = () => {
         if (!file.type.startsWith("image")) continue;
 
         const image = new Image();
+        image.crossOrigin = "anonymous";
         image.onload = () => {
           loadFromImage(paintState, image);
         };

@@ -207,19 +207,19 @@ export const inverseProjectImage = (
   const verticalDistance = Math.max(leftDistance, rightDistance) >> 0;
 
   //very dirty hack to prevent gaps when generating image... need to find a better way to detect gaps and fill them in...
-  let scaledHorizontalDistance = horizontalDistance + horizontalDistance / 5;
-  let scaledVerticalDistance = verticalDistance + verticalDistance / 5;
+  // let scaledHorizontalDistance = horizontalDistance + horizontalDistance / 5;
+  // let scaledVerticalDistance = verticalDistance + verticalDistance / 5;
 
-  scaledHorizontalDistance = scaledHorizontalDistance >> 0;
-  scaledVerticalDistance = scaledVerticalDistance >> 0;
+  // scaledHorizontalDistance = scaledHorizontalDistance >> 0;
+  // scaledVerticalDistance = scaledVerticalDistance >> 0;
 
   const topMarks = new Map<number, Location>();
   const bottomMarks = new Map<number, Location>();
   const leftMarks = new Map<number, Location>();
   const rightMarks = new Map<number, Location>();
 
-  for (let y = 0; y < scaledVerticalDistance; y++) {
-    const verticalValue = y / scaledVerticalDistance;
+  for (let y = 0; y < verticalDistance; y++) {
+    const verticalValue = y / verticalDistance;
 
     leftMarks.set(
       y,
@@ -236,8 +236,8 @@ export const inverseProjectImage = (
       )
     );
   }
-  for (let x = 0; x < scaledHorizontalDistance; x++) {
-    const horizontalValue = x / scaledHorizontalDistance;
+  for (let x = 0; x < horizontalDistance; x++) {
+    const horizontalValue = x / horizontalDistance;
 
     topMarks.set(
       x,
