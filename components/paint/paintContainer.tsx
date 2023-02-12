@@ -24,6 +24,7 @@ import {
   cropToSelection,
   getRealScale,
   loadOntoNewLayerImage,
+  pasteImageProcess,
   redoAction,
   scaleToSize,
   selectTool,
@@ -68,61 +69,16 @@ const PaintContainer: FC = () => {
           const image = new Image();
           image.crossOrigin = "anonymous";
           image.onload = () => {
-            let newLayer: Layer;
-
-            let lastActiveLayer = 0;
-            for (const index in layers) {
-              const layer = layers[index];
-              const indexNumber = parseInt(index);
-
-              if (!layer.active) continue;
-
-              if (indexNumber > lastActiveLayer) {
-                lastActiveLayer = indexNumber;
-              }
-            }
-
-            if (image.width > width || height > height || true) {
-              setModalContents(<PasteBiggerImageModal />);
+            if (image.width > width || height > height) {
+              setModalContents(<PasteBiggerImageModal image={image} />);
             } else {
-              addUpdateCallbacks(paintState, [
-                (state: PaintContextType) => {
-                  newLayer = loadOntoNewLayerImage(state, image);
-
-                  addUndoAction(
-                    state,
-                    new PasteAction(
-                      newLayer.id,
-                      newLayer.name,
-                      newLayer.active,
-                      newLayer.visible,
-                      new Uint8ClampedArray(newLayer.temporaryLayer!.pixels),
-                      image.width,
-                      image.height,
-                      lastActiveLayer
-                    )
-                  );
-                },
-                (state: PaintContextType) => {
-                  setActiveLayers(state, [newLayer.id]);
-                },
-                (state: PaintContextType) => {
-                  const { setSelection, setProjectionSelection } = state;
-
-                  setSelection(new Selection(0, 0, image.width, image.height));
-                  setProjectionSelection(undefined);
-                },
-                (state: PaintContextType) => {
-                  Tools["selectHardMove"].existingTempLayer = true;
-                  selectTool(state, "selectHardMove");
-                },
-              ]);
+              pasteImageProcess(paintState, image);
             }
           };
           image.src = window.URL.createObjectURL(file);
         }
       },
-      [height, layers, paintState, setModalContents, width]
+      [height, paintState, setModalContents, width]
     )
   );
 

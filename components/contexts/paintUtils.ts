@@ -10,6 +10,7 @@ import { PaintContextType, UpdateCallback } from "./paint";
 import { randomString } from "@shared/utils";
 import { getUndoPixelColorType } from "@client/undo/undoPixelColor";
 import Tools, { ToolTypes } from "@client/tools";
+import PasteAction from "@client/undo/pasteAction";
 
 export const scaleToSize = (
   state: PaintContextType,
@@ -463,4 +464,88 @@ export const addUpdateCallbacks = (
   const { updateCallbacks, setUpdateCallbacks } = state;
 
   setUpdateCallbacks([...updateCallbacks, ...callbacks]);
+};
+
+export const pasteImageProcess = (
+  state: PaintContextType,
+  image: HTMLImageElement
+) => {
+  const { layers, width, height } = state;
+
+  let newLayer: Layer;
+
+  let lastActiveLayer = 0;
+  for (const index in layers) {
+    const layer = layers[index];
+    const indexNumber = parseInt(index);
+
+    if (!layer.active) continue;
+
+    if (indexNumber > lastActiveLayer) {
+      lastActiveLayer = indexNumber;
+    }
+  }
+
+  const actions = [];
+
+  if (image.width > width || image.height > height) {
+    actions.push((state: PaintContextType) => {
+      const { layers, setLayers, width, setWidth, height, setHeight } = state;
+
+      const newWidth = Math.max(image.width, width);
+      const newHeight = Math.max(image.height, height);
+
+      setWidth(newWidth);
+      setHeight(newHeight);
+
+      const newLayers = [...layers];
+
+      for (const layer of newLayers) {
+        layer.resize(newWidth, newHeight);
+
+        if (layer.temporaryLayer) {
+          layer.temporaryLayer.resize(newWidth, newHeight);
+        }
+      }
+
+      setLayers(newLayers);
+    });
+  }
+
+  actions.push(
+    ...[
+      (state: PaintContextType) => {
+        newLayer = loadOntoNewLayerImage(state, image);
+
+        addUndoAction(
+          state,
+          new PasteAction(
+            newLayer.id,
+            newLayer.name,
+            newLayer.active,
+            newLayer.visible,
+            new Uint8ClampedArray(newLayer.temporaryLayer!.pixels),
+            image.width,
+            image.height,
+            lastActiveLayer
+          )
+        );
+      },
+      (state: PaintContextType) => {
+        setActiveLayers(state, [newLayer.id]);
+      },
+      (state: PaintContextType) => {
+        const { setSelection, setProjectionSelection } = state;
+
+        setSelection(new Selection(0, 0, image.width, image.height));
+        setProjectionSelection(undefined);
+      },
+      (state: PaintContextType) => {
+        Tools["selectHardMove"].existingTempLayer = true;
+        selectTool(state, "selectHardMove");
+      },
+    ]
+  );
+
+  addUpdateCallbacks(state, actions);
 };

@@ -1,15 +1,23 @@
 import { PaintFetcher } from "components/contexts/paint";
+import { pasteImageProcess } from "components/contexts/paintUtils";
 import { FC } from "react";
 import css from "./pasteBiggerImage.module.scss";
 
-const PasteBiggerImageModal: FC = () => {
-  const { setModalContents } = PaintFetcher();
+type Props = {
+  image: HTMLImageElement;
+};
+
+const PasteBiggerImageModal: FC<Props> = ({ image }) => {
+  const paintState = PaintFetcher();
+  const { setModalContents } = paintState;
 
   const handleExpandClick = () => {
+    pasteImageProcess(paintState, image);
     setModalContents();
   };
 
   const handlePasteClick = () => {
+    pasteImageProcess(paintState, image);
     setModalContents();
   };
 

@@ -117,6 +117,15 @@ class Layer {
 
     return newLayer;
   }
+
+  resize(newWidth: number, newHeight: number) {
+    this.width = newWidth;
+    this.height = newHeight;
+
+    //TODO: reset pixels and pixelsCopy
+
+    this.updatePixels();
+  }
 }
 
 export type ActiveLayersState = { [id: string]: null };
