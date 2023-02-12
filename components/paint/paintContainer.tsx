@@ -34,6 +34,7 @@ import {
 import ProjectionSelectionContainer from "./projectionSelection/projectionSelectionContainer";
 import HistoryPanel from "./history/historyPanel";
 import Tools from "@client/tools";
+import PasteBiggerImageModal from "./modal/contents/pasteBiggerImage";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -47,9 +48,9 @@ const PaintContainer: FC = () => {
     setLayers,
     layers,
     selection,
-    setProjectionSelection,
     offset,
     setOffset,
+    setModalContents,
   } = paintState;
 
   useDocumentEvent(
@@ -81,43 +82,47 @@ const PaintContainer: FC = () => {
               }
             }
 
-            addUpdateCallbacks(paintState, [
-              (state: PaintContextType) => {
-                newLayer = loadOntoNewLayerImage(state, image);
+            if (image.width > width || height > height || true) {
+              setModalContents(<PasteBiggerImageModal />);
+            } else {
+              addUpdateCallbacks(paintState, [
+                (state: PaintContextType) => {
+                  newLayer = loadOntoNewLayerImage(state, image);
 
-                addUndoAction(
-                  state,
-                  new PasteAction(
-                    newLayer.id,
-                    newLayer.name,
-                    newLayer.active,
-                    newLayer.visible,
-                    new Uint8ClampedArray(newLayer.temporaryLayer!.pixels),
-                    image.width,
-                    image.height,
-                    lastActiveLayer
-                  )
-                );
-              },
-              (state: PaintContextType) => {
-                setActiveLayers(state, [newLayer.id]);
-              },
-              (state: PaintContextType) => {
-                const { setSelection, setProjectionSelection } = state;
+                  addUndoAction(
+                    state,
+                    new PasteAction(
+                      newLayer.id,
+                      newLayer.name,
+                      newLayer.active,
+                      newLayer.visible,
+                      new Uint8ClampedArray(newLayer.temporaryLayer!.pixels),
+                      image.width,
+                      image.height,
+                      lastActiveLayer
+                    )
+                  );
+                },
+                (state: PaintContextType) => {
+                  setActiveLayers(state, [newLayer.id]);
+                },
+                (state: PaintContextType) => {
+                  const { setSelection, setProjectionSelection } = state;
 
-                setSelection(new Selection(0, 0, image.width, image.height));
-                setProjectionSelection(undefined);
-              },
-              (state: PaintContextType) => {
-                Tools["selectHardMove"].existingTempLayer = true;
-                selectTool(state, "selectHardMove");
-              },
-            ]);
+                  setSelection(new Selection(0, 0, image.width, image.height));
+                  setProjectionSelection(undefined);
+                },
+                (state: PaintContextType) => {
+                  Tools["selectHardMove"].existingTempLayer = true;
+                  selectTool(state, "selectHardMove");
+                },
+              ]);
+            }
           };
           image.src = window.URL.createObjectURL(file);
         }
       },
-      [layers, paintState]
+      [height, layers, paintState, setModalContents, width]
     )
   );
 

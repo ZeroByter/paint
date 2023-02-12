@@ -10,6 +10,7 @@ import {
   createContext,
   FC,
   MutableRefObject,
+  ReactElement,
   ReactNode,
   useContext,
   useEffect,
@@ -31,6 +32,9 @@ export type PaintContextType = {
 
   undoRedoId: string;
   setUndoRedoId: (newId: string) => void;
+
+  modalContents?: ReactElement;
+  setModalContents: (newElement?: ReactElement) => void;
 
   width: number;
   setWidth: (newWidth: number) => void;
@@ -107,6 +111,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
 
   const [undoRedoId, setUndoRedoId] = useState(randomString());
 
+  const [modalContents, setModalContents] = useState<ReactElement>();
+
   const [width, setWidth] = useState(50);
   const [height, setHeight] = useState(50);
 
@@ -150,6 +156,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
     redoActions,
     undoRedoId,
     setUndoRedoId,
+    modalContents,
+    setModalContents,
     width,
     setWidth,
     height,

@@ -1,8 +1,9 @@
 import PaintProvider from "components/contexts/paint";
+import ModalContainer from "components/paint/modal";
 import PaintToolbar from "components/paint/paintToolbar";
 import ToolsToolbar from "components/paint/toolbar";
 import Head from "next/head";
-import PaintContainer from "../components/paint/paintContainer";
+import PaintContainer from "components/paint/paintContainer";
 import css from "./index.module.scss";
 
 export default function Home() {
@@ -19,6 +20,7 @@ export default function Home() {
           <ToolsToolbar />
           <PaintContainer />
         </div>
+        <ModalContainer />
       </PaintProvider>
     </>
   );
