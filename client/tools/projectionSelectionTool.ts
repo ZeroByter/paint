@@ -129,7 +129,12 @@ class ProjectionSelectTool extends Tool {
   }
 
   onKeyDown(state: PaintContextType, args: OnKeyDownArgs): void {
-    const { setProjectionSelection, projectionSelection, layers } = state;
+    const {
+      setProjectionSelection,
+      projectionSelection,
+      layers,
+      setSelection,
+    } = state;
 
     if (args.code == "Enter" || args.code == "Escape") {
       setProjectionSelection(undefined);
@@ -142,28 +147,24 @@ class ProjectionSelectTool extends Tool {
           if (!layer.active) continue;
 
           if (layer.temporaryLayer) {
-            // if (args.code == "Enter") {
-            //   if (this.initialSelection.isValid()) {
-            //     const layerAffectedPixels = this.affectedPixels.get(layer.id);
-            //     if (layerAffectedPixels) {
-            //       for (const [pixelIndex, pixel] of layerAffectedPixels) {
-            //         layer.pixels[pixelIndex * 4] = pixel.r;
-            //         layer.pixels[pixelIndex * 4 + 1] = pixel.g;
-            //         layer.pixels[pixelIndex * 4 + 2] = pixel.b;
-            //         layer.pixels[pixelIndex * 4 + 3] = pixel.a;
-            //       }
-            //     }
-            //   } else {
-            //     layer.pixels = layer.temporaryLayer.pixels;
-            //   }
-            // } else {
-            //   layer.pixels = layer.temporaryLayer.pixelsCopy;
-            // }
-
-            layer.pixels =
-              args.code == "Enter"
-                ? layer.temporaryLayer.pixels
-                : layer.temporaryLayer.pixelsCopy;
+            if (args.code == "Enter") {
+              if (this.initialSelection.isValid()) {
+                const layerAffectedPixels = this.affectedPixels.get(layer.id);
+                if (layerAffectedPixels) {
+                  for (const [pixelIndex, pixel] of layerAffectedPixels) {
+                    layer.pixels[pixelIndex * 4] = pixel.r;
+                    layer.pixels[pixelIndex * 4 + 1] = pixel.g;
+                    layer.pixels[pixelIndex * 4 + 2] = pixel.b;
+                    layer.pixels[pixelIndex * 4 + 3] = pixel.a;
+                  }
+                }
+              } else {
+                layer.pixels = layer.temporaryLayer.pixels;
+              }
+            } else {
+              layer.pixels = layer.temporaryLayer.pixelsCopy;
+            }
+            layer.updatePixels();
 
             pixels.set(layer.id, new Map<number, UndoPixel>());
             const pixelsData = pixels.get(layer.id);
@@ -185,6 +186,8 @@ class ProjectionSelectTool extends Tool {
         if (args.code == "Enter") {
           addUndoAction(state, new ProjectionAction(pixels));
         }
+
+        setSelection(new Selection());
 
         selectTool(state, "brush");
       } else {

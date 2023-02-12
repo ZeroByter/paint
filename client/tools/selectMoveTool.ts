@@ -1,5 +1,5 @@
 import Location from "@shared/types/location";
-import { SelectionClickability } from "@shared/types/selection";
+import Selection, { SelectionClickability } from "@shared/types/selection";
 import { PaintContextType } from "components/contexts/paint";
 import { selectTool } from "components/contexts/paintUtils";
 import Tool, { OnKeyDownArgs } from "./tool";
@@ -28,6 +28,9 @@ class SelectMoveTool extends Tool {
 
   onKeyDown(state: PaintContextType, args: OnKeyDownArgs): void {
     if (args.code == "Enter" || args.code == "Escape") {
+      if (args.code == "Escape") {
+        state.setSelection(new Selection());
+      }
       selectTool(state, "brush");
     }
   }
