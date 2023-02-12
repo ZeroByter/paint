@@ -70,6 +70,9 @@ class SelectTool extends Tool {
 
   onKeyDown(state: PaintContextType, args: OnKeyDownArgs): void {
     if (args.code == "Enter" || args.code == "Escape") {
+      if (args.code == "Escape") {
+        state.setSelection(new Selection());
+      }
       selectTool(state, "brush");
     }
   }

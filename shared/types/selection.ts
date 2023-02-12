@@ -27,7 +27,7 @@ class Selection {
     return new Selection(newLocation.x, newLocation.y, this.width, this.height);
   }
 
-  copy() {
+  clone() {
     return new Selection(this.x, this.y, this.width, this.height);
   }
 }

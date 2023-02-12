@@ -78,8 +78,6 @@ class Layer {
   }
 
   setPixelDataFromImage(image: HTMLImageElement) {
-    image.crossOrigin = "anonymous";
-
     const canvas = document.createElement("canvas");
     canvas.width = image.width;
     canvas.height = image.height;

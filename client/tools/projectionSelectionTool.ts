@@ -10,7 +10,6 @@ import { PaintContextType } from "components/contexts/paint";
 import {
   addUndoAction,
   addUpdateCallbacks,
-  createNewLayer,
   createNewLayerAt,
   selectTool,
   setActiveLayers,
@@ -24,6 +23,9 @@ import Tool, { OnClickArgs, OnDragArgs, OnKeyDownArgs } from "./tool";
 
 class ProjectionSelectTool extends Tool {
   dragStartLocation = new Location();
+  initialSelection = new Selection();
+  affectedPixels = new Map<string, Map<number, UndoPixel>>();
+
   isInverse = false;
 
   constructor() {
@@ -39,20 +41,35 @@ class ProjectionSelectTool extends Tool {
   }
 
   onSelect(state: PaintContextType): void {
-    const { layers, width, height } = state;
+    const { layers, width, height, selection } = state;
 
     if (!this.isInverse) {
+      this.initialSelection = selection.clone();
+
+      let workingX = 0;
+      let workingY = 0;
+      let workingWidth = width;
+      let workingHeight = height;
+
+      if (selection.isValid()) {
+        workingX = selection.x;
+        workingY = selection.y;
+        workingWidth = selection.width;
+        workingHeight = selection.height;
+      }
+
       for (const layer of layers) {
         if (!layer.active) continue;
 
         const newTempLayer = layer.createTemporaryLayer(width, height, 0, 0);
         newTempLayer.setPixelsFromLayer();
 
-        for (let y = 0; y < height; y++) {
-          for (let x = 0; x < width; x++) {
+        for (let y = workingY; y < workingY + workingHeight; y++) {
+          for (let x = workingX; x < workingX + workingWidth; x++) {
             layer.setPixelData(x, y, 0, 0, 0, 0);
           }
         }
+
         layer.updatePixels();
       }
     }
@@ -100,12 +117,24 @@ class ProjectionSelectTool extends Tool {
     setProjectionSelection(newSelection);
 
     if (!this.isInverse) {
-      projectImage(layers, newSelection);
+      const affectedPixels = projectImage(
+        layers,
+        newSelection,
+        this.initialSelection
+      );
+      if (affectedPixels) {
+        this.affectedPixels = affectedPixels;
+      }
     }
   }
 
   onKeyDown(state: PaintContextType, args: OnKeyDownArgs): void {
-    const { setProjectionSelection, projectionSelection, layers } = state;
+    const {
+      setProjectionSelection,
+      projectionSelection,
+      layers,
+      setSelection,
+    } = state;
 
     if (args.code == "Enter" || args.code == "Escape") {
       setProjectionSelection(undefined);
@@ -118,10 +147,24 @@ class ProjectionSelectTool extends Tool {
           if (!layer.active) continue;
 
           if (layer.temporaryLayer) {
-            layer.pixels =
-              args.code == "Enter"
-                ? layer.temporaryLayer.pixels
-                : layer.temporaryLayer.pixelsCopy;
+            if (args.code == "Enter") {
+              if (this.initialSelection.isValid()) {
+                const layerAffectedPixels = this.affectedPixels.get(layer.id);
+                if (layerAffectedPixels) {
+                  for (const [pixelIndex, pixel] of layerAffectedPixels) {
+                    layer.pixels[pixelIndex * 4] = pixel.r;
+                    layer.pixels[pixelIndex * 4 + 1] = pixel.g;
+                    layer.pixels[pixelIndex * 4 + 2] = pixel.b;
+                    layer.pixels[pixelIndex * 4 + 3] = pixel.a;
+                  }
+                }
+              } else {
+                layer.pixels = layer.temporaryLayer.pixels;
+              }
+            } else {
+              layer.pixels = layer.temporaryLayer.pixelsCopy;
+            }
+            layer.updatePixels();
 
             pixels.set(layer.id, new Map<number, UndoPixel>());
             const pixelsData = pixels.get(layer.id);
@@ -143,6 +186,8 @@ class ProjectionSelectTool extends Tool {
         if (args.code == "Enter") {
           addUndoAction(state, new ProjectionAction(pixels));
         }
+
+        setSelection(new Selection());
 
         selectTool(state, "brush");
       } else {
@@ -180,12 +225,7 @@ class ProjectionSelectTool extends Tool {
               );
 
               newTempLayer.pixels = inverseProjectionResult.pixels;
-              newTempLayer.pixelsCopy = new Uint8ClampedArray(
-                inverseProjectionResult.pixels
-              );
               newTempLayer.pasteOntoLayer();
-              newLayer.temporaryLayer = undefined;
-              newLayer.createPixelsCopy();
 
               if (args.code == "Enter") {
                 addUndoAction(
@@ -218,6 +258,7 @@ class ProjectionSelectTool extends Tool {
               setSelection(newSelection);
             },
             (state: PaintContextType) => {
+              Tools["selectHardMove"].existingTempLayer = true;
               selectTool(state, "selectHardMove");
             },
           ];
@@ -242,7 +283,7 @@ class ProjectionSelectTool extends Tool {
         if (!layer.active) continue;
 
         if (layer.temporaryLayer) {
-          layer.pixels = layer.temporaryLayer.pixelsCopy;
+          // layer.pixels = layer.temporaryLayer.pixelsCopy;
           layer.temporaryLayer = undefined;
         }
       }

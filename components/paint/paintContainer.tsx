@@ -3,7 +3,7 @@ import Canvas from "./canvas";
 import css from "./paintContainer.module.scss";
 import Layer from "@shared/types/layer";
 import LayersPanel from "./layers/layersPanel";
-import { PaintFetcher } from "components/contexts/paint";
+import { PaintContextType, PaintFetcher } from "components/contexts/paint";
 import { clamp } from "lodash";
 import RootContainer from "./rootContainer";
 import LayersContainer from "./layersContainer";
@@ -20,16 +20,20 @@ import useDocumentEvent from "@client/hooks/useDocumentEvent";
 import { ilerp, lerp } from "@client/utils";
 import {
   addUndoAction,
+  addUpdateCallbacks,
   cropToSelection,
   getRealScale,
-  loadFromImage,
+  loadOntoNewLayerImage,
   redoAction,
   scaleToSize,
+  selectTool,
+  setActiveLayers,
   setNotification,
   undoAction,
 } from "components/contexts/paintUtils";
 import ProjectionSelectionContainer from "./projectionSelection/projectionSelectionContainer";
 import HistoryPanel from "./history/historyPanel";
+import Tools from "@client/tools";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -43,7 +47,6 @@ const PaintContainer: FC = () => {
     setLayers,
     layers,
     selection,
-    setSelection,
     setProjectionSelection,
     offset,
     setOffset,
@@ -62,19 +65,59 @@ const PaintContainer: FC = () => {
           if (!file.type.startsWith("image")) continue;
 
           const image = new Image();
+          image.crossOrigin = "anonymous";
           image.onload = () => {
-            addUndoAction(
-              paintState,
-              new PasteAction(layers, width, height, image)
-            );
-            loadFromImage(paintState, image);
-            setSelection(new Selection());
-            setProjectionSelection(undefined);
+            let newLayer: Layer;
+
+            let lastActiveLayer = 0;
+            for (const index in layers) {
+              const layer = layers[index];
+              const indexNumber = parseInt(index);
+
+              if (!layer.active) continue;
+
+              if (indexNumber > lastActiveLayer) {
+                lastActiveLayer = indexNumber;
+              }
+            }
+
+            addUpdateCallbacks(paintState, [
+              (state: PaintContextType) => {
+                newLayer = loadOntoNewLayerImage(state, image);
+
+                addUndoAction(
+                  state,
+                  new PasteAction(
+                    newLayer.id,
+                    newLayer.name,
+                    newLayer.active,
+                    newLayer.visible,
+                    new Uint8ClampedArray(newLayer.temporaryLayer!.pixels),
+                    image.width,
+                    image.height,
+                    lastActiveLayer
+                  )
+                );
+              },
+              (state: PaintContextType) => {
+                setActiveLayers(state, [newLayer.id]);
+              },
+              (state: PaintContextType) => {
+                const { setSelection, setProjectionSelection } = state;
+
+                setSelection(new Selection(0, 0, image.width, image.height));
+                setProjectionSelection(undefined);
+              },
+              (state: PaintContextType) => {
+                Tools["selectHardMove"].existingTempLayer = true;
+                selectTool(state, "selectHardMove");
+              },
+            ]);
           };
           image.src = window.URL.createObjectURL(file);
         }
       },
-      [height, layers, paintState, setProjectionSelection, setSelection, width]
+      [layers, paintState]
     )
   );
 
@@ -251,7 +294,7 @@ const PaintContainer: FC = () => {
         <ProjectionSelectionContainer />
       </div>
       <LayersPanel />
-      {/* <HistoryPanel /> */}
+      {process.env.NODE_ENV == "development" && <HistoryPanel />}
       <ColorsPanel />
       <ToolsPanel />
       <Notification />

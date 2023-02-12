@@ -26,6 +26,7 @@ const PaintToolbar: FC = () => {
     if (isEmpty(url)) return;
 
     const image = new Image();
+    image.crossOrigin = "Anonymous";
     image.src = url;
     image.onload = () => {
       loadFromImage(paintState, image);
@@ -46,6 +47,7 @@ const PaintToolbar: FC = () => {
         if (!file.type.startsWith("image")) continue;
 
         const image = new Image();
+        image.crossOrigin = "anonymous";
         image.onload = () => {
           loadFromImage(paintState, image);
         };
@@ -108,8 +110,6 @@ const PaintToolbar: FC = () => {
   );
 
   const selectProjectionSelectionTool = () => {
-    setSelection(new Selection());
-
     selectTool(paintState, "projectionSelect", false);
     Tools["projectionSelect"].setInverse(false);
     Tools["projectionSelect"].onSelect(paintState);
@@ -125,6 +125,10 @@ const PaintToolbar: FC = () => {
 
   const openGithub = () => {
     open("https://github.com/zerobyter/paint");
+  };
+
+  const openTrello = () => {
+    open("https://trello.com/b/JvFPH5KM/paint-online");
   };
 
   const toolbarMenuItems: MenuItem[] = [
@@ -148,7 +152,10 @@ const PaintToolbar: FC = () => {
     },
     {
       text: "About",
-      subItems: [{ text: "View GitHub", onClick: openGithub }],
+      subItems: [
+        { text: "View GitHub", onClick: openGithub },
+        { text: "View Trello", onClick: openTrello },
+      ],
     },
   ];
 

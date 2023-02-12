@@ -39,6 +39,47 @@ export const loadFromImage = (
   scaleToSize(state, image.width, image.height);
 };
 
+export const loadOntoNewLayer = (
+  state: PaintContextType,
+  width: number,
+  height: number,
+  pixels?: Uint8ClampedArray
+) => {
+  const { layers } = state;
+
+  let lastActiveLayer = 0;
+  for (const index in layers) {
+    const layer = layers[index];
+    const indexNumber = parseInt(index);
+
+    if (!layer.active) continue;
+
+    if (indexNumber > lastActiveLayer) {
+      lastActiveLayer = indexNumber;
+    }
+  }
+
+  const newLayer = createNewLayerAt(state, lastActiveLayer + 1);
+  const newTempLayer = newLayer.createTemporaryLayer(width, height, 0, 0);
+
+  if (pixels) {
+    newTempLayer.pixels = pixels;
+  }
+
+  return newLayer;
+};
+
+export const loadOntoNewLayerImage = (
+  state: PaintContextType,
+  image: HTMLImageElement
+) => {
+  const newLayer = loadOntoNewLayer(state, image.width, image.height);
+
+  newLayer.temporaryLayer!.setPixelDataFromImage(image);
+
+  return newLayer;
+};
+
 export const getRealScale = (
   state: PaintContextType,
   scaleOverride?: number

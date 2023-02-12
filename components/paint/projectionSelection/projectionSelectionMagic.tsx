@@ -4,10 +4,12 @@ import { getDistance, lerp } from "@client/utils";
 import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
 import ProjectionSelection from "@shared/types/projectionSelection";
+import Selection from "@shared/types/selection";
 
 export const projectImage = (
   layers: Layer[],
-  projectionSelection: ProjectionSelection
+  projectionSelection: ProjectionSelection,
+  initialSelection: Selection
 ) => {
   if (!projectionSelection) return;
 
@@ -94,11 +96,27 @@ export const projectImage = (
     );
   }
 
+  const affectedPixels = new Map<string, Map<number, UndoPixel>>();
+
   for (const layer of layers) {
     if (!layer.active) continue;
 
     const tempLayer = layer.temporaryLayer;
     if (!tempLayer) continue;
+
+    affectedPixels.set(layer.id, new Map<number, UndoPixel>());
+
+    let workingX = 0;
+    let workingY = 0;
+    let workingWidth = tempLayer.width;
+    let workingHeight = tempLayer.height;
+
+    if (initialSelection.isValid()) {
+      workingX = initialSelection.x;
+      workingY = initialSelection.y;
+      workingWidth = initialSelection.width;
+      workingHeight = initialSelection.height;
+    }
 
     tempLayer.pixels.fill(0);
 
@@ -112,8 +130,8 @@ export const projectImage = (
         const horizontalValue = x / horizontalDistance;
 
         const tempLayerPixelIndex = tempLayer.getPixelIndex(
-          lerp(0, tempLayer.width, horizontalValue) >> 0,
-          lerp(0, tempLayer.height, verticalValue) >> 0
+          lerp(workingX, workingX + workingWidth, horizontalValue) >> 0,
+          lerp(workingY, workingY + workingHeight, verticalValue) >> 0
         );
         const tempLayerPixelR = tempLayer.pixelsCopy[tempLayerPixelIndex];
         const tempLayerPixelG = tempLayer.pixelsCopy[tempLayerPixelIndex + 1];
@@ -125,6 +143,13 @@ export const projectImage = (
 
         const finalX = lerp(leftMark.x, rightMark.x, horizontalValue) >> 0;
         const finalY = lerp(topMark.y, bottomMark.y, verticalValue) >> 0;
+
+        affectedPixels.get(layer.id)!.set(finalX + finalY * layer.width, {
+          r: tempLayerPixelR,
+          g: tempLayerPixelG,
+          b: tempLayerPixelB,
+          a: tempLayerPixelA,
+        });
 
         tempLayer.setPixelData(
           finalX,
@@ -139,6 +164,8 @@ export const projectImage = (
 
     tempLayer.updatePixels();
   }
+
+  return affectedPixels;
 };
 
 export const inverseProjectImage = (
@@ -180,19 +207,19 @@ export const inverseProjectImage = (
   const verticalDistance = Math.max(leftDistance, rightDistance) >> 0;
 
   //very dirty hack to prevent gaps when generating image... need to find a better way to detect gaps and fill them in...
-  let scaledHorizontalDistance = horizontalDistance + horizontalDistance / 5;
-  let scaledVerticalDistance = verticalDistance + verticalDistance / 5;
+  // let scaledHorizontalDistance = horizontalDistance + horizontalDistance / 5;
+  // let scaledVerticalDistance = verticalDistance + verticalDistance / 5;
 
-  scaledHorizontalDistance = scaledHorizontalDistance >> 0;
-  scaledVerticalDistance = scaledVerticalDistance >> 0;
+  // scaledHorizontalDistance = scaledHorizontalDistance >> 0;
+  // scaledVerticalDistance = scaledVerticalDistance >> 0;
 
   const topMarks = new Map<number, Location>();
   const bottomMarks = new Map<number, Location>();
   const leftMarks = new Map<number, Location>();
   const rightMarks = new Map<number, Location>();
 
-  for (let y = 0; y < scaledVerticalDistance; y++) {
-    const verticalValue = y / scaledVerticalDistance;
+  for (let y = 0; y < verticalDistance; y++) {
+    const verticalValue = y / verticalDistance;
 
     leftMarks.set(
       y,
@@ -209,8 +236,8 @@ export const inverseProjectImage = (
       )
     );
   }
-  for (let x = 0; x < scaledHorizontalDistance; x++) {
-    const horizontalValue = x / scaledHorizontalDistance;
+  for (let x = 0; x < horizontalDistance; x++) {
+    const horizontalValue = x / horizontalDistance;
 
     topMarks.set(
       x,
