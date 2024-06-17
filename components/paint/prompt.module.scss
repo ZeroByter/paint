@@ -1,0 +1,25 @@
+.root {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.1);
+
+  .container {
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: hsl(0deg 0% 20%);
+    padding: 6px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    .image {
+      max-width: 200px;
+    }
+  }
+}

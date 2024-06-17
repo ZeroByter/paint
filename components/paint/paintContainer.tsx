@@ -29,6 +29,7 @@ import {
   selectTool,
   setActiveLayers,
   setNotification,
+  setPrompt,
   undoAction,
 } from "components/contexts/paintUtils";
 import ProjectionSelectionContainer from "./projectionSelection/projectionSelectionContainer";
@@ -66,7 +67,7 @@ const PaintContainer: FC = () => {
 
           const image = new Image();
           image.crossOrigin = "anonymous";
-          image.onload = () => {
+          image.onload = async () => {
             let newLayer: Layer;
 
             let lastActiveLayer = 0;
@@ -78,6 +79,25 @@ const PaintContainer: FC = () => {
 
               if (indexNumber > lastActiveLayer) {
                 lastActiveLayer = indexNumber;
+              }
+            }
+
+            if(image.width > paintState.width || image.height > paintState.height){
+              // const buttons = [
+              //   "Expand canvas",
+              //   "Keep canvas size",
+              //   "Cancel"
+              // ]
+              // const choice = await setPrompt(paintState, "Pasted image is larger than current canvas.", buttons)
+
+              const buttons = [
+                "Yes",
+                "No",
+              ]
+              const choice = await setPrompt(paintState, "Resize canvas to fit image?", buttons)
+
+              if(choice == 0){
+                //TODO: do resize
               }
             }
 

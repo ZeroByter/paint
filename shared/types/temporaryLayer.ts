@@ -118,6 +118,13 @@ class TemporaryLayer {
 
     this.parentLayer.updatePixels();
   }
+
+  resize(oldWidth: number, oldHeight: number, newWidth: number, newHeight: number) {
+    // TODO: resize pixels data accordingly...
+    // just recalculate pixels from scratch according to canvas' pixel data
+
+    this.updatePixels()
+  }
 }
 
 export default TemporaryLayer;
