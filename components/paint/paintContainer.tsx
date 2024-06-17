@@ -25,6 +25,7 @@ import {
   getRealScale,
   loadOntoNewLayerImage,
   redoAction,
+  resize,
   scaleToSize,
   selectTool,
   setActiveLayers,
@@ -35,6 +36,7 @@ import {
 import ProjectionSelectionContainer from "./projectionSelection/projectionSelectionContainer";
 import HistoryPanel from "./history/historyPanel";
 import Tools from "@client/tools";
+import Prompt from "./prompt";
 
 const PaintContainer: FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -48,7 +50,6 @@ const PaintContainer: FC = () => {
     setLayers,
     layers,
     selection,
-    setProjectionSelection,
     offset,
     setOffset,
   } = paintState;
@@ -82,22 +83,21 @@ const PaintContainer: FC = () => {
               }
             }
 
-            if(image.width > paintState.width || image.height > paintState.height){
-              // const buttons = [
-              //   "Expand canvas",
-              //   "Keep canvas size",
-              //   "Cancel"
-              // ]
-              // const choice = await setPrompt(paintState, "Pasted image is larger than current canvas.", buttons)
+            if (
+              image.width > paintState.width ||
+              image.height > paintState.height
+            ) {
+              const buttons = ["Expand canvas", "Keep canvas size", "Cancel"];
+              const choice = await setPrompt(
+                paintState,
+                "Pasted image is larger than current canvas.",
+                buttons
+              );
 
-              const buttons = [
-                "Yes",
-                "No",
-              ]
-              const choice = await setPrompt(paintState, "Resize canvas to fit image?", buttons)
-
-              if(choice == 0){
-                //TODO: do resize
+              if (choice == 0) {
+                resize(paintState, image.width, image.height);
+              } else if (choice == 2) {
+                return;
               }
             }
 
@@ -150,6 +150,7 @@ const PaintContainer: FC = () => {
     const a = window.innerWidth / width;
     const b = (window.innerHeight - 31 - 60) / height; //TODO: 31 is a bad hard-wired variable, need to make this actually dynamic based on canvas's available size!
     setScale(ilerp(0.25, 1600, Math.min(b, a)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useDocumentEvent(
@@ -318,6 +319,7 @@ const PaintContainer: FC = () => {
       <ColorsPanel />
       <ToolsPanel />
       <Notification />
+      <Prompt />
     </RootContainer>
   );
 };

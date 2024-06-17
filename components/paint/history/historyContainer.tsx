@@ -1,8 +1,6 @@
-import { ChangeEvent, FC } from "react";
+import { FC } from "react";
 import css from "./historyContainer.module.scss";
-import _, { set } from "lodash/fp";
-import { PaintFetcher } from "components/contexts/paint";
-import { setActiveLayers } from "components/contexts/paintUtils";
+import _ from "lodash/fp";
 import UndoAction from "@client/undo/undoAction";
 import classNames from "classnames";
 

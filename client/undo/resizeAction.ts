@@ -2,7 +2,8 @@ import { PaintContextType } from "components/contexts/paint";
 import UndoAction from "./undoAction";
 import UndoPixelsAbility, { UndoPixel } from "./undoPixelColor";
 import { RESIZE_BACKGROUND_COLOR } from "@client/constants";
-import { resize } from "components/contexts/paintUtils";
+import { resize, resizeLayers } from "components/contexts/paintUtils";
+import Selection from "@shared/types/selection";
 
 export default class ResizeAction
   extends UndoAction
@@ -33,11 +34,17 @@ export default class ResizeAction
   }
 
   undo(state: PaintContextType): void {
-    resize(state, this.preWidth, this.preHeight);
+    resizeLayers(state, this.preWidth, this.preHeight);
+
+    state.setProjectionSelection(undefined);
+    state.setSelection(new Selection());
   }
 
   redo(state: PaintContextType): void {
-    resize(state, this.postWidth, this.postHeight);
+    resizeLayers(state, this.postWidth, this.postHeight);
+
+    state.setProjectionSelection(undefined);
+    state.setSelection(new Selection());
   }
 
   getUndoPixelColor(

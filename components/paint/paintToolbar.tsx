@@ -96,42 +96,7 @@ const PaintToolbar: FC = () => {
   }, [height, layers, width]);
 
   const handleResizeTest = () => {
-    const newWidth = 100;
-    const newHeight = 125;
-
-    const oldPixels = new Map<string, Map<number, UndoPixel>>();
-
-    for (let y = 0; y < paintState.height; y++) {
-      for (let x = 0; x < paintState.width; x++) {
-        for (const layer of layers) {
-          if (!oldPixels.has(layer.id)) {
-            oldPixels.set(layer.id, new Map<number, UndoPixel>());
-          }
-
-          const paintLocationIndex = x + y * width;
-
-          oldPixels
-            .get(layer.id)!
-            .set(paintLocationIndex, layer.getPixelColor(x, y));
-        }
-      }
-    }
-
-    resize(paintState, newWidth, newHeight);
-
-    paintState.setProjectionSelection(undefined);
-    paintState.setSelection(new Selection());
-
-    addUndoAction(
-      paintState,
-      new ResizeAction(
-        oldPixels,
-        paintState.width,
-        paintState.height,
-        newWidth,
-        newHeight
-      )
-    );
+    resize(paintState, 100, 125);
   };
 
   useWindowEvent(
