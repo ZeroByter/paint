@@ -328,7 +328,7 @@ export const getUndoPixelColor = (
   for (let i = 0; i < state.undoActions.current.length; i++) {
     const undoAction =
       state.undoActions.current[
-      state.undoActions.current.length - i - 1 - skipActions
+        state.undoActions.current.length - i - 1 - skipActions
       ];
 
     if (!undoAction) break;
@@ -386,15 +386,19 @@ export const setNotification = (
   });
 };
 
-export const setPrompt = (state: PaintContextType, text: string, buttons: string[]): Promise<number> => {
-  return new Promise(resolve => {
+export const setPrompt = (
+  state: PaintContextType,
+  text: string,
+  buttons: string[]
+): Promise<number> => {
+  return new Promise((resolve) => {
     state.setPromptData({
       text,
       buttons,
-      callback: resolve
-    })
-  })
-}
+      callback: resolve,
+    });
+  });
+};
 
 export const canAffectPixel = (
   state: PaintContextType,
@@ -475,15 +479,21 @@ export const addUpdateCallbacks = (
   setUpdateCallbacks([...updateCallbacks, ...callbacks]);
 };
 
-export const resize = (state: PaintContextType, newWidth: number, newHeight: number) => {
+export const resize = (
+  state: PaintContextType,
+  newWidth: number,
+  newHeight: number
+) => {
   for (const layer of state.layers) {
-    layer.resize(state.width, state.height, newWidth, newHeight)
-    layer.temporaryLayer?.resize(state.width, state.height, newWidth, newHeight)
+    layer.resize(state.width, state.height, newWidth, newHeight);
+    layer.temporaryLayer?.resize(
+      state.width,
+      state.height,
+      newWidth,
+      newHeight
+    );
   }
 
-  state.setWidth(newWidth)
-  state.setHeight(newHeight)
-
-  state.setProjectionSelection(undefined);
-  state.setSelection(new Selection());
-}
+  state.setWidth(newWidth);
+  state.setHeight(newHeight);
+};
