@@ -7,17 +7,17 @@ const HistoryPanel: FC = () => {
   const paintState = PaintFetcher();
   const { undoActions, redoActions } = paintState;
 
-  const renderRedoActions = redoActions.current
-    .map((redoAction) => {
-      return (
-        <HistoryContainer
-          key={redoAction.id}
-          undoAction={redoAction}
-          isRedo={true}
-        />
-      );
-    })
-    .toReversed();
+  const renderRedoActions = redoActions.current.map((redoAction) => {
+    return (
+      <HistoryContainer
+        key={redoAction.id}
+        undoAction={redoAction}
+        isRedo={true}
+      />
+    );
+  });
+
+  renderRedoActions.reverse();
 
   const renderUndoActions = undoActions.current.map((undoAction) => {
     return (
