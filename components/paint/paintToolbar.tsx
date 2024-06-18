@@ -1,11 +1,18 @@
 import useWindowEvent from "@client/hooks/useWindowEvent";
 import layersToImageData from "@client/layersToImageData";
 import Tools from "@client/tools";
+import ResizeAction from "@client/undo/resizeAction";
+import { UndoPixel } from "@client/undo/undoPixelColor";
 import { clamp } from "@client/utils";
 import Color from "@shared/types/color";
 import Selection from "@shared/types/selection";
 import { PaintFetcher } from "components/contexts/paint";
-import { loadFromImage, selectTool } from "components/contexts/paintUtils";
+import {
+  addUndoAction,
+  loadFromImage,
+  resize,
+  selectTool,
+} from "components/contexts/paintUtils";
 import ToolbarProvider from "components/contexts/toolbar";
 import ToolbarContainer, {
   MenuItem,
@@ -88,6 +95,10 @@ const PaintToolbar: FC = () => {
     downloadLink.click();
   }, [height, layers, width]);
 
+  const handleResizeTest = () => {
+    resize(paintState, 100, 125);
+  };
+
   useWindowEvent(
     "keydown",
     useCallback(
@@ -138,6 +149,7 @@ const PaintToolbar: FC = () => {
         { text: "Load (URL)", onClick: handleLoadUrl },
         { text: "Load (local)", onClick: handleLoadLocal },
         { text: "Download", onClick: handleSave },
+        { text: "TEST RESIZE", onClick: handleResizeTest },
       ],
     },
     {

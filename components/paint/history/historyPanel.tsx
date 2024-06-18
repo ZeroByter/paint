@@ -5,16 +5,37 @@ import css from "./historyPanel.module.scss";
 
 const HistoryPanel: FC = () => {
   const paintState = PaintFetcher();
-  const { undoActions } = paintState;
+  const { undoActions, redoActions } = paintState;
 
-  const renderLayers = undoActions.current.map((undoAction) => {
-    return <HistoryContainer key={undoAction.id} undoAction={undoAction} />;
+  const renderRedoActions = redoActions.current
+    .map((redoAction) => {
+      return (
+        <HistoryContainer
+          key={redoAction.id}
+          undoAction={redoAction}
+          isRedo={true}
+        />
+      );
+    })
+    .toReversed();
+
+  const renderUndoActions = undoActions.current.map((undoAction) => {
+    return (
+      <HistoryContainer
+        key={undoAction.id}
+        undoAction={undoAction}
+        isRedo={false}
+      />
+    );
   });
 
   return (
     <div className={css.root}>
       <div>history:</div>
-      <div className={css.layers}>{renderLayers}</div>
+      <div className={css.layers}>
+        {renderUndoActions}
+        {renderRedoActions}
+      </div>
     </div>
   );
 };

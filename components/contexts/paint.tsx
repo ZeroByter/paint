@@ -79,6 +79,9 @@ export type PaintContextType = {
 
   notificationData?: NotificationData;
   setNotificationData: (newData: NotificationData) => void;
+
+  promptData?: PromptData | null;
+  setPromptData: (newData: PromptData | null) => void;
 };
 
 export const PaintContext = createContext<PaintContextType>(
@@ -94,6 +97,12 @@ type NotificationData = {
   text: string;
   image?: ImageData;
 };
+
+type PromptData = {
+  text: string;
+  buttons: string[];
+  callback: (choice: number) => void;
+}
 
 export interface UpdateCallback {
   (param: PaintContextType): void;
@@ -142,6 +151,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
 
   const [notificationData, setNotificationData] = useState<NotificationData>();
 
+  const [promptData, setPromptData] = useState<PromptData | null>();
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const stateValue: PaintContextType = {
     updateCallbacks,
@@ -186,6 +197,8 @@ const PaintProvider: FC<Props> = ({ children }) => {
     setBrushHardness,
     notificationData,
     setNotificationData,
+    promptData,
+    setPromptData
   };
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { randomString } from "@shared/utils";
 import Color from "./color";
 import TemporaryLayer from "./temporaryLayer";
+import { RESIZE_BACKGROUND_COLOR } from "@client/constants";
 
 class Layer {
   id: string;
@@ -116,6 +117,47 @@ class Layer {
     newLayer.pixelsCopy = new Uint8ClampedArray(this.pixelsCopy);
 
     return newLayer;
+  }
+
+  resize(
+    oldWidth: number,
+    oldHeight: number,
+    newWidth: number,
+    newHeight: number
+  ) {
+    const newPixels = new Uint8ClampedArray(newWidth * newHeight * 4);
+
+    const selection = {
+      x: 0,
+      y: 0,
+    };
+
+    for (let y = 0; y < newHeight; y++) {
+      for (let x = 0; x < newWidth; x++) {
+        const newIndex = (x + y * newWidth) * 4;
+
+        if (x < oldWidth && y < oldHeight) {
+          const oldIndex = (selection.x + x + (selection.y + y) * oldWidth) * 4;
+
+          newPixels[newIndex] = this.pixels[oldIndex];
+          newPixels[newIndex + 1] = this.pixels[oldIndex + 1];
+          newPixels[newIndex + 2] = this.pixels[oldIndex + 2];
+          newPixels[newIndex + 3] = this.pixels[oldIndex + 3];
+        } else {
+          newPixels[newIndex] = RESIZE_BACKGROUND_COLOR.r;
+          newPixels[newIndex + 1] = RESIZE_BACKGROUND_COLOR.g;
+          newPixels[newIndex + 2] = RESIZE_BACKGROUND_COLOR.b;
+          newPixels[newIndex + 3] = RESIZE_BACKGROUND_COLOR.a;
+        }
+      }
+    }
+
+    this.pixels = newPixels;
+
+    this.width = newWidth;
+    this.height = newHeight;
+
+    this.updatePixels();
   }
 }
 

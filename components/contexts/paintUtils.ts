@@ -8,8 +8,9 @@ import Layer from "@shared/types/layer";
 import Location from "@shared/types/location";
 import { PaintContextType, UpdateCallback } from "./paint";
 import { randomString } from "@shared/utils";
-import { getUndoPixelColorType } from "@client/undo/undoPixelColor";
+import { UndoPixel, getUndoPixelColorType } from "@client/undo/undoPixelColor";
 import Tools, { ToolTypes } from "@client/tools";
+import ResizeAction from "@client/undo/resizeAction";
 
 export const scaleToSize = (
   state: PaintContextType,
@@ -386,6 +387,20 @@ export const setNotification = (
   });
 };
 
+export const setPrompt = (
+  state: PaintContextType,
+  text: string,
+  buttons: string[]
+): Promise<number> => {
+  return new Promise((resolve) => {
+    state.setPromptData({
+      text,
+      buttons,
+      callback: resolve,
+    });
+  });
+};
+
 export const canAffectPixel = (
   state: PaintContextType,
   x: number,
@@ -463,4 +478,63 @@ export const addUpdateCallbacks = (
   const { updateCallbacks, setUpdateCallbacks } = state;
 
   setUpdateCallbacks([...updateCallbacks, ...callbacks]);
+};
+
+export const resizeLayers = (
+  state: PaintContextType,
+  newWidth: number,
+  newHeight: number
+) => {
+  for (const layer of state.layers) {
+    layer.resize(state.width, state.height, newWidth, newHeight);
+    layer.temporaryLayer?.resize(
+      state.width,
+      state.height,
+      newWidth,
+      newHeight
+    );
+  }
+
+  state.setWidth(newWidth);
+  state.setHeight(newHeight);
+};
+
+export const resize = (
+  paintState: PaintContextType,
+  newWidth: number,
+  newHeight: number
+) => {
+  const oldPixels = new Map<string, Map<number, UndoPixel>>();
+
+  for (let y = 0; y < paintState.height; y++) {
+    for (let x = 0; x < paintState.width; x++) {
+      for (const layer of paintState.layers) {
+        if (!oldPixels.has(layer.id)) {
+          oldPixels.set(layer.id, new Map<number, UndoPixel>());
+        }
+
+        const paintLocationIndex = x + y * paintState.width;
+
+        oldPixels
+          .get(layer.id)!
+          .set(paintLocationIndex, layer.getPixelColor(x, y));
+      }
+    }
+  }
+
+  addUndoAction(
+    paintState,
+    new ResizeAction(
+      oldPixels,
+      paintState.width,
+      paintState.height,
+      newWidth,
+      newHeight
+    )
+  );
+
+  resizeLayers(paintState, newWidth, newHeight);
+
+  paintState.setProjectionSelection(undefined);
+  paintState.setSelection(new Selection());
 };
